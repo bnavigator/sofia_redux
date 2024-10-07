@@ -12,7 +12,6 @@ import time
 from astropy import log
 from astropy.stats import gaussian_fwhm_to_sigma
 import numpy as np
-from numpy.lib.nanfunctions import _replace_nan, _copyto
 from sofia_redux import toolkit as toolkit_module
 
 __all__ = ['robust_bool', 'valid_num', 'natural_sort', 'goodfile',
@@ -786,3 +785,81 @@ def byte_size_of_object(obj):
         marked.update(new_refr.keys())
 
     return sz
+
+
+def _replace_nan(a, val):
+    """
+    If `a` is of inexact type, make a copy of `a`, replace NaNs with
+    the `val` value, and return the copy together with a boolean mask
+    marking the locations where NaNs were present. If `a` is not of
+    inexact type, do nothing and return `a` together with a mask of None.
+
+    Note that scalars will end up as array scalars, which is important
+    for using the result as the value of the out argument in some
+    operations.
+
+    Copied from numpy 1.26 before it was removed in 2.0
+
+    Parameters
+    ----------
+    a : array-like
+        Input array.
+    val : float
+        NaN values are set to val before doing the operation.
+
+    Returns
+    -------
+    y : ndarray
+        If `a` is of inexact type, return a copy of `a` with the NaNs
+        replaced by the fill value, otherwise return `a`.
+    mask: {bool, None}
+        If `a` is of inexact type, return a boolean mask marking locations of
+        NaNs, otherwise return None.
+
+    """
+    a = np.asanyarray(a)
+
+    if a.dtype == np.object_:
+        # object arrays do not support `isnan` (gh-9009), so make a guess
+        mask = np.not_equal(a, a, dtype=bool)
+    elif issubclass(a.dtype.type, np.inexact):
+        mask = np.isnan(a)
+    else:
+        mask = None
+
+    if mask is not None:
+        a = np.array(a, subok=True, copy=True)
+        np.copyto(a, val, where=mask)
+
+    return a, mask
+
+
+def _copyto(a, val, mask):
+    """
+    Replace values in `a` with NaN where `mask` is True.  This differs from
+    copyto in that it will deal with the case where `a` is a numpy scalar.
+
+    Copied from numpy 1.26 before it was removed in 2.0
+
+    Parameters
+    ----------
+    a : ndarray or numpy scalar
+        Array or numpy scalar some of whose values are to be replaced
+        by val.
+    val : numpy scalar
+        Value used a replacement.
+    mask : ndarray, scalar
+        Boolean array. Where True the corresponding element of `a` is
+        replaced by `val`. Broadcasts.
+
+    Returns
+    -------
+    res : ndarray, scalar
+        Array with elements replaced or scalar `val`.
+
+    """
+    if isinstance(a, np.ndarray):
+        np.copyto(a, val, where=mask, casting='unsafe')
+    else:
+        a = a.dtype.type(val)
+    return a
