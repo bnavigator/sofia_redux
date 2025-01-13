@@ -275,7 +275,7 @@ def calculate_fit(data, maxidx, rmplngth):   # pragma: no cover
     return slopes, var
 
 
-def fit_data(data, rmplngth, s2n=10, threshold=5, allow_zero_variance=True,
+def fit_data(data, rmplngth=2, s2n=10, threshold=5, allow_zero_variance=True,
              average_ramps=True, bad_ramps=None):
     """
     Applies linear fit (y = ax + b) over the second dimension of a 4D array.
@@ -289,6 +289,8 @@ def fit_data(data, rmplngth, s2n=10, threshold=5, allow_zero_variance=True,
     ----------
     data : numpy.ndarray
         (ramps/spaxel, ramplength, nwave, nspaxel)
+    rmplngth : int, optional
+        Minimum ramp length
     s2n : float, optional
         Signal-to-noise below which data will be considered questionable
         and will be ignored.  Set <= 0 to turn off signal-to-noise filtering.
@@ -532,7 +534,7 @@ def process_extension(hdu, readout_range, rmplngth, threshold=5,
         return hdu1, hdu2
 
 
-def fit_ramps(filename, rmplngth, s2n=10, threshold=5, badpix_file=None,
+def fit_ramps(filename, rmplngth = 2, s2n=10, threshold=5, badpix_file=None,
               write=False, outdir=None, remove_first=True,
               subtract_bias=True, indpos_sigma=3.0):
     """
@@ -574,6 +576,8 @@ def fit_ramps(filename, rmplngth, s2n=10, threshold=5, badpix_file=None,
     filename : str
         Name of the chop-split, grating-split file (including the path
         if not in the current working directory)
+    rmplngth : int, optional
+        Minimum ramp length
     s2n : float, optional
         Signal-to-noise below which data will be considered questionable
         and will be ignored.  Set <= 0 to turn off signal-to-noise filtering.
