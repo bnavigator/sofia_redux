@@ -343,6 +343,12 @@ Some key parameters to note are listed below.
       remain the same, so use with caution.  This option is mostly
       used for testing purposes.
 
+   -  *Background scaling*: If set, the flux is scaled with the B-flux and the
+      two backgrounds (OTF and TP mode)
+
+   -  *Telluric scaling*: If set, B-fluxes are telluricly scaled with the
+      zenith angle at A.
+
 -  **Spatial Calibrate**
 
    -  *Rotate by detector angle*: By default, Redux rotates the data by
