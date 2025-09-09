@@ -13,7 +13,7 @@ from astropy import log, modeling, stats, table, wcs
 import numpy as np
 from scipy.stats import gmean
 
-from qad.ds9_adapter import DS9Adapter #added
+from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9Adapter #added
 from sofia_redux.pipeline.gui.matplotlib_viewer import MatplotlibPlot
 from sofia_redux.toolkit.utilities.fits import set_log_level
 
