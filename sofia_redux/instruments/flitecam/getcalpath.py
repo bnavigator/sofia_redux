@@ -12,7 +12,9 @@ from sofia_redux.instruments import flitecam as fdrp
 __all__ = ['getcalpath']
 
 # back up download URL for non-source installs
-DATA_URL = 'https://sofia-flitecam-reference.s3-us-gov-west-1.amazonaws.com/'
+# TODO: Change to a public SOFIA Data Center URL when available
+# ghtik#IRS-SOFIA-Data-Center/sofia_redux#77
+DATA_URL = 'https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/FLITECAM/'
 
 
 def getcalpath(header):
@@ -148,7 +150,7 @@ def getcalpath(header):
             if os.path.isfile(expected):
                 result[f] = expected
             else:
-                # for public pip/conda distributions, it may need
+                # for public distributions, it may need
                 # to be downloaded from S3
                 result[f] = _download_cache_file(row[f])
 
@@ -214,7 +216,7 @@ def _get_grism_cal(pathcal, result):
             if os.path.isfile(expected):
                 result[f] = expected
             else:
-                # for public pip/conda distributions, it may need
+                # for public distributions, it may need
                 # to be downloaded from S3
                 result[f] = _download_cache_file(row[f])
         elif f in ['waveshift', 'resolution'] and f in row and row[f] != '.':

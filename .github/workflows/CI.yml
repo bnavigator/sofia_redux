@@ -36,24 +36,29 @@ jobs:
           ref=${ref+"origin/$ref"}
           changedpyfiles=$(git diff --name-status ${ref:-HEAD~} -- '*.py' | grep -v '^D' | cut -f 2-)
           if [ -n "$changedpyfiles" ]; then
-            tox -e check-style -- $changedpyfiles
+            tox -e check-style -- --force-exclude $changedpyfiles
           else
             echo "No python files changed"
           fi
     
-  test-small:
-    name: Unit Tests (without scan)
+  unit-tests:
+    name: Unit Tests ${{ matrix.toxenv }}
     runs-on: self-hosted
-
+    strategy:
+      matrix:
+        toxenv:
+          - test-small-xdist
+          - test-oldestdeps-small-xdist
     steps:
       - name: checkout git
         uses: actions/checkout@v4
-      - name: Set up python
+        with:
+          fetch-depth: 0
+      - name: Set up python      
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
       - name: Install dependencies
         run: pip install tox
       - name: Run tests
-        run: tox -e test-small-xdist
-
+        run: tox -e ${{ matrix.toxenv }}

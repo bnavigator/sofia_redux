@@ -14,13 +14,11 @@ SOFIA raw and processed data can be accessed from the
 Archived data may not match the results of data processed
 with this pipeline software.
 
-SOFIA pipelines are developed internally by the USRA/SOFIA data processing
+SOFIA pipelines are developed internally by the SOFIA Data Center
 software team, then are published publicly at the
 `SOFIA Redux GitHub project
-<https://github.com/SOFIA-USRA/sofia_redux>`__.
-Contributions and feedback are welcome via the GitHub project, but
-merge requests cannot be directly accepted.  They will be internally reviewed,
-and pushed to the public site as needed.
+<https://github.com/SOFIA-Data-Center/sofia_redux>`__.
+Contributions and feedback are welcome via the GitHub project.
 
 Getting Started
 ===============
@@ -73,26 +71,19 @@ Manuals
 
 User's Manuals:
 
-.. toctree::
-   :maxdepth: 1
-
-   ../manuals/exes/users/users
-   ../manuals/fifils/users/users
-   ../manuals/flitecam/users/users
-   ../manuals/forcast/users/users
-   ../manuals/hawc/users/users
+- :doc:`../manuals/exes/users/users`
+- :doc:`../manuals/fifils/users/users`
+- :doc:`../manuals/flitecam/users/users`
+- :doc:`../manuals/forcast/users/users`
+- :doc:`../manuals/hawc/users/users`
 
 Developer's Manuals:
 
-.. toctree::
-   :maxdepth: 1
-
-   ../manuals/exes/developers/developers
-   ../manuals/fifils/developers/developers
-   ../manuals/flitecam/developers/developers
-   ../manuals/forcast/developers/developers
-   ../manuals/hawc/developers/developers
-
+- :doc:`../manuals/exes/developers/developers`
+- :doc:`../manuals/fifils/developers/developers`
+- :doc:`../manuals/flitecam/developers/developers`
+- :doc:`../manuals/forcast/developers/developers`
+- :doc:`../manuals/hawc/developers/developers`
 
 Submodules
 ==========

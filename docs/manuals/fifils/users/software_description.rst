@@ -78,10 +78,9 @@ matplotlib, pandas, astropy, configobj, numba, bottleneck, joblib,
 and astropy-helpers.
 Some display functions for the graphical user interface (GUI)
 additionally require the PyQt5, pyds9, photutils, and dill packages.
-All required external packages are available to install via the
-pip or conda package managers.  See the Anaconda environment file
-(environment.yml), or the pip requirements file (requirements.txt)
-distributed with `sofia_redux` for specific version requirements.
+All required external packages are available to install via
+PyPI.  See the `pyproject.toml` distributed with `sofia_redux`
+for up-to-date version dependencies.
 
 Running the pipeline interactively also requires an installation of
 SAO DS9 for FITS image display. See http://ds9.si.edu/ for download
@@ -93,8 +92,8 @@ Source Code Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The source code for the FIFI-LS pipeline maintained by the SOFIA Data
-Processing Systems (DPS) team can be obtained directly from the
-DPS, or from the external `GitHub repository <https://github.com/SOFIA-USRA/sofia_redux>`__.
+Center (SDC) team can be obtained directly from the
+external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
 This repository contains all needed configuration
 files, auxiliary files, and Python code to run the pipeline on FIFI-LS
 data in any observation mode.
@@ -102,7 +101,7 @@ data in any observation mode.
 After obtaining the source code, install the four Python libraries with
 the command::
 
-    python setup.py install
+    pip install .
 
 from the top-level directory.
 
@@ -343,6 +342,12 @@ Some key parameters to note are listed below.
       instead of the A. All other filenames and header settings will
       remain the same, so use with caution.  This option is mostly
       used for testing purposes.
+
+   -  *Background scaling*: If set, the flux is scaled with the B-flux and the
+      two backgrounds (OTF and TP mode)
+
+   -  *Telluric scaling*: If set, B-fluxes are telluricly scaled with the
+      zenith angle at A.
 
 -  **Spatial Calibrate**
 

@@ -111,10 +111,9 @@ matplotlib, pandas, astropy, configobj, numba, bottleneck, joblib,
 and photutils.
 Some display functions for the graphical user interface (GUI)
 additionally require the PyQt5, pyds9, and regions packages.
-All required external packages are available to install via the
-pip or conda package managers.  See the Anaconda environment file
-(environment.yml), or the pip requirements file (requirements.txt)
-distributed with `sofia_redux` for up-to-date version requirements.
+All required external packages are available to install via
+PyPI.  See the `pyproject.toml` distributed with `sofia_redux`
+for up-to-date version dependencies.
 
 Running the pipeline interactively also requires an installation of
 SAO DS9 for FITS image display. See http://ds9.si.edu/ for download
@@ -127,8 +126,8 @@ Source Code Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The source code for the FORCAST pipeline maintained by the SOFIA Data
-Processing Systems (DPS) team can be obtained directly from the
-DPS, or from the external `GitHub repository <https://github.com/SOFIA-USRA/sofia_redux>`.
+Center (SDC)  team can be obtained directly from the
+external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`.
 This repository contains all needed configuration
 files, auxiliary files, and Python code to run the pipeline on FORCAST
 data in any observation mode.

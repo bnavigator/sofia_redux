@@ -24,22 +24,23 @@ SOFIA raw and processed data can be accessed from the
 Archived data may not match the results of data processed
 with this pipeline software.
 
-SOFIA pipelines are developed internally by the USRA/SOFIA data processing
+SOFIA pipelines are developed internally by the SOFIA Data Center
 software team, then are published publicly at the
 `SOFIA Redux GitHub project
-<https://github.com/SOFIA-USRA/sofia_redux>`__.
-Contributions and feedback are welcome via the GitHub project, but
-merge requests cannot be directly accepted.  They will be internally reviewed,
-and pushed to the public site as needed.
+<https://github.com/SOFIA-Data-Center/sofia_redux>`__.
+Contributions and feedback are welcome via the GitHub project.
 
 For more information about installing and using this package, see
-the `online documentation <https://SOFIA-USRA.github.io/sofia_redux/>`__,
+the `online documentation <https://pages.github.tik.uni-stuttgart.de/IRS-SOFIA-Data-Center/sofia_redux/>`__,
 or `docs/install.rst <docs/install.rst>`__ in the source distribution.
 
 License
 -------
 
-This project is Copyright (c) Universities Space Research Association
+This project is Copyright (c) SOFIA Data Center,
+Institute of Space Systems, University of Stuttgart,
+funded through the German Aerospace Agency DLR under grant 50OK2404,
+formerly maintained by the Universities Space Research Association
 under Government Prime Contract Number NNA17BF53C and licensed under
 the terms of the BSD 3-Clause license.
 
