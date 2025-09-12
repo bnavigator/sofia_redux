@@ -702,7 +702,7 @@ class QADViewer(Viewer):
 
         #added for SAMP integration#####################
         try:
-            from qad.ds9_adapter import DS9Adapter
+            from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9Adapter
             #try to instantiate to test availability
             _ = DS9Adapter()
         except Exception:
