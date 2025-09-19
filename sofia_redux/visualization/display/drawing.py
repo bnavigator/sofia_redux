@@ -885,19 +885,12 @@ class Drawing(object):
 
         Parameters
         ----------
-        scatter_artist : PathCollection
-            The scatter plot artist to replace.
         drawstyle : str
             The line drawing style for the new line plot.
             Should be 'line' or 'step'.
         marker : str
             The marker symbol to use in the plot.  If None,
             the default 'o' symbol is used.
-
-        Returns
-        -------
-        line_artist : Line2D
-            The new line plot artist.
         """
         data = self.artist.get_offsets()
         color = self.artist.get_facecolor()[0]
