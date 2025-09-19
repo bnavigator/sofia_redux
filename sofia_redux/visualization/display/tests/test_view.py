@@ -595,16 +595,21 @@ class TestView(object):
         update_mock = mocker.patch.object(view.View,
                                           '_update_orders_from_gui')
 
+        blank_view.all_enabled_orders_button.clicked.connect(
+            blank_view.enable_all_orders)
+        blank_view.all_disabled_orders_button.clicked.connect(
+            blank_view.disable_all_orders)
+        qtbot.mouseClick(blank_view.all_enabled_orders_button,
+                         QtCore.Qt.LeftButton)
         qtbot.mouseClick(blank_view.all_disabled_orders_button,
                          QtCore.Qt.LeftButton)
-        assert update_mock.called_with((on_orders, True))
 
-        qtbot.mouseClick(blank_view.all_disabled_orders_button,
-                         QtCore.Qt.LeftButton)
-        assert update_mock.called_with((on_orders, False))
+        assert update_mock.call_count == 2
+        update_mock.assert_has_calls(
+            [call(on_orders, True),
+             call(on_orders, False)])
 
     def test_all_enabled_orders(self, qtbot, mocker, blank_view):
-
         blank_view.on_orders_selector.setText('1-3')
         blank_view.off_orders_selector.setText('4-6')
         mocker.patch.object(view.View, 'decode_orders', return_value=None)
@@ -737,7 +742,7 @@ class TestView(object):
         assert pane_mock.call_count == count
 
     @pytest.mark.parametrize('checked,pane_count,args',
-                             [(True, 2, [0, 1, 2]),
+                             [(True, 3, [0, 1, 2]),
                               (False, 2, [0]), (False, 0, [])])
     def test_all_panes_checking(self, blank_view, mocker, qtbot,
                                 checked, pane_count, args):
@@ -844,7 +849,7 @@ class TestView(object):
 
     @pytest.mark.parametrize('multi_ord,multi_ap,kind',
                              [(False, False, 'order'), (True, False, 'order'),
-                              (False, True, 'order'), (True, True, 'order')])
+                              (False, True, 'aperture'), (True, True, 'order')])
     def test_enabled_disabled_orders(self, blank_view, mocker, multi_ord,
                                      multi_ap, kind):
         mock = mocker.patch.object(figure.Figure, 'get_orders',
