@@ -88,9 +88,9 @@ def convert_flux(in_flux, start_unit, end_unit, wavelength,
     if isinstance(wave_unit, str):
         wave_unit = u.Unit(wave_unit)
     if isinstance(start_unit, str):
-        start_unit = u.Unit(start_unit, str)
+        start_unit = u.Unit(start_unit)
     if isinstance(end_unit, str):
-        end_unit = u.Unit(end_unit, str)
+        end_unit = u.Unit(end_unit)
 
     # check again in case new unit equalities were found
     if start_unit == end_unit:
