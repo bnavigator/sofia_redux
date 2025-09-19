@@ -720,7 +720,7 @@ class Gallery(object):
                 else:
                     try:
                         draw.get_artist().remove()
-                    except ValueError:
+                    except (ValueError, NotImplementedError):
                         continue
             self.arts[k] = new_draws
 
