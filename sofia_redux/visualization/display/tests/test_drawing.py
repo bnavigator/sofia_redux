@@ -220,8 +220,7 @@ class TestDrawing(object):
         updates = {'color': 'red'}
         draw.apply_updates(updates)
 
-        assert mock.call_count == 1
-        assert mock.called_with(updates)
+        mock.assert_called_once_with(updates)
 
     def test_set_data_lines(self, mocker, caplog):
         caplog.set_level(logging.DEBUG)
@@ -235,10 +234,12 @@ class TestDrawing(object):
         update = {'x_data': [3], 'y_data': [5]}
         update_draw = drawing.Drawing(updates=update)
         draw.set_data(update=update_draw)
-        assert line_mock.call_count == 1
         assert scatter_mock.call_count == 0
-        assert line_mock.called_with({'data': update['x_data'], 'artist': None,
-                                      'axis': None})
+        line_mock.assert_called_once_with(**{
+            'data': update['x_data'],
+            'artist': None,
+            'axis': 'x'
+        })
 
         update = {'z_data': [3], 'y_data': [5]}
         line_mock.reset_mock()
@@ -246,10 +247,12 @@ class TestDrawing(object):
 
         update_draw = drawing.Drawing(updates=update)
         draw.set_data(update=update_draw)
-        assert line_mock.call_count == 1
+        line_mock.assert_called_once_with(**{
+            'data': update['y_data'],
+            'artist': None,
+            'axis': 'y'
+        })
         assert scatter_mock.call_count == 0
-        assert line_mock.called_with({'data': update['y_data'], 'artist': None,
-                                      'axis': None})
 
         update = {'artist': ml.Line2D([3], [4])}
         line_mock.reset_mock()
@@ -257,10 +260,12 @@ class TestDrawing(object):
 
         update_draw = drawing.Drawing(updates=update)
         draw.set_data(update=update_draw)
-        assert line_mock.call_count == 1
+        line_mock.assert_called_once_with(**{
+            'data': None,
+            'artist': update['artist'],
+            'axis': None
+        })
         assert scatter_mock.call_count == 0
-        assert line_mock.called_with({'data': None, 'artist': update['artist'],
-                                      'axis': None})
 
     def test_set_data_scatter(self, mocker, caplog, one_dim_pane):
         x = np.arange(1, 10, 1)
@@ -278,9 +283,11 @@ class TestDrawing(object):
         update_draw = drawing.Drawing(updates=update)
         draw.set_data(update=update_draw)
         assert line_mock.call_count == 0
-        assert scatter_mock.call_count == 1
-        assert line_mock.called_with({'data': update['x_data'], 'artist': None,
-                                      'axis': None})
+        scatter_mock.assert_called_once_with(**{
+            'data': update['x_data'],
+            'artist': None,
+            'axis': 'x',
+        })
 
         update = {'z_data': [3], 'y_data': [5]}
         line_mock.reset_mock()
@@ -289,9 +296,11 @@ class TestDrawing(object):
         update_draw = drawing.Drawing(updates=update)
         draw.set_data(update=update_draw)
         assert line_mock.call_count == 0
-        assert scatter_mock.call_count == 1
-        assert line_mock.called_with({'data': update['y_data'], 'artist': None,
-                                      'axis': None})
+        scatter_mock.assert_called_once_with(**{
+            'data': update['y_data'],
+            'artist': None,
+            'axis': 'y',
+        })
 
         scatter2 = one_dim_pane.ax.scatter(x, y)
         update = {'artist': scatter2}
@@ -301,9 +310,11 @@ class TestDrawing(object):
         update_draw = drawing.Drawing(updates=update)
         draw.set_data(update=update_draw)
         assert line_mock.call_count == 0
-        assert scatter_mock.call_count == 1
-        assert line_mock.called_with({'data': None, 'artist': update['artist'],
-                                      'axis': None})
+        scatter_mock.assert_called_once_with(**{
+            'data': None,
+            'artist': update['artist'],
+            'axis': None,
+        })
 
     def test_set_data_patch(self, caplog, fill, mocker):
         line_mock = mocker.patch.object(drawing.Drawing, '_set_line_data')
@@ -329,30 +340,36 @@ class TestDrawing(object):
 
         update = {'x_data': [3], 'y_data': [5]}
         draw.set_data(update=update)
-        assert line_mock.call_count == 1
+        line_mock.assert_called_once_with(**{
+            'data': update['x_data'],
+            'artist': None,
+            'axis': 'x',
+        })
         assert scatter_mock.call_count == 0
-        assert line_mock.called_with({'data': update['x_data'], 'artist': None,
-                                      'axis': None})
 
         update = {'z_data': [3], 'y_data': [5]}
         line_mock.reset_mock()
         scatter_mock.reset_mock()
 
         draw.set_data(update=update)
-        assert line_mock.call_count == 1
+        line_mock.assert_called_once_with(**{
+            'data': update['y_data'],
+            'artist': None,
+            'axis': 'y',
+        })
         assert scatter_mock.call_count == 0
-        assert line_mock.called_with({'data': update['y_data'], 'artist': None,
-                                      'axis': None})
 
         update = {'artist': ml.Line2D([3], [4])}
         line_mock.reset_mock()
         scatter_mock.reset_mock()
 
         draw.set_data(update=update)
-        assert line_mock.call_count == 1
         assert scatter_mock.call_count == 0
-        assert line_mock.called_with({'data': None, 'artist': update['artist'],
-                                      'axis': None})
+        line_mock.assert_called_once_with(**{
+            'data': None,
+            'artist': update['artist'],
+            'axis': None
+        })
 
     def test_set_line_data(self, patch):
         x, y = [2], [3]

@@ -1131,7 +1131,7 @@ class TestPane(object):
                                      result):
         mock = mocker.patch.object(one_dim_pane, 'set_aperture_cycle')
         one_dim_pane.set_color_cycle_by_name(cycle)
-        assert mock.called_once
+        mock.assert_called_once()
         assert one_dim_pane.default_colors == getattr(one_dim_pane, result)
 
     @pytest.mark.parametrize('color, scheme, result',
@@ -1323,7 +1323,7 @@ class TestOneDimPane(object):
         one_dim_pane.fields['y'] = 'transmission'
         mock = mocker.patch.object(low_model.Spectrum, 'convert')
         one_dim_pane._convert_low_model_units(model, 0, 'y', '', 0)
-        assert mock.called_with('', None, None)
+        mock.assert_called_once_with('', None, None)
 
         mock.reset_mock()
         one_dim_pane.fields['y'] = 'spectral_flux'
@@ -1475,7 +1475,7 @@ class TestOneDimPane(object):
 
         limits = one_dim_pane.perform_zoom(points, direction)
         assert 'Changing axis limits' in caplog.text
-        assert mock.called_with(limits)
+        mock.assert_called_once_with(limits)
         if direction in ['x', 'b']:
             assert 'Updating x limits' in caplog.text
         if direction in ['y', 'b']:

@@ -1,6 +1,8 @@
 #  Licensed under a 3-clause BSD style license - see LICENSE.rst
 
 import logging
+from unittest.mock import call, ANY
+
 from astropy import units as u
 from matplotlib import figure as mpf
 from matplotlib import gridspec
@@ -54,7 +56,10 @@ class TestFigure(object):
         blank_figure.set_pane_highlight_flag(state)
 
         assert blank_figure.highlight_pane is state
-        assert art_mock.called_with({'state': state})
+        art_mock.assert_called_once_with(
+            state=state,
+            pane_numbers=[],
+        )
 
     @pytest.mark.parametrize('value', [True, False, None])
     def test_set_block_current_pane_signal(self, blank_figure, value):
@@ -141,8 +146,7 @@ class TestFigure(object):
                                    'reset_artists')
 
         blank_figure.remove_artists()
-
-        assert mock.called_with({'selection': 'all'})
+        mock.assert_called_once_with('all')
 
     def test_reset_artists_fail(self, blank_figure, mocker, caplog):
         sigs = signals.Signals()
@@ -164,7 +168,6 @@ class TestFigure(object):
         sigs = signals.Signals()
         add_mock = mocker.patch.object(gallery.Gallery, 'add_patches')
         blank_figure.panes = [pane.OneDimPane(sigs)]
-        blank_figure._current_pane = list()
         expected = {'pane_0': {'kind': 'border',
                                'artist': None,
                                'visible': True}}
@@ -172,34 +175,34 @@ class TestFigure(object):
         # test show, no current: visible
         blank_figure.highlight_pane = True
         blank_figure._add_pane_artists()
-        assert add_mock.called_with(expected)
+        add_mock.assert_called_once_with(expected)
 
         # test show, None current: visible
         blank_figure._current_pane = None
         blank_figure._add_pane_artists()
-        assert add_mock.called_with(expected)
+        add_mock.assert_called_with(expected)
 
         # test show, current matches: visible
         blank_figure._current_pane = [0]
         blank_figure._add_pane_artists()
-        assert add_mock.called_with(expected)
+        add_mock.assert_called_with(expected)
 
         # test show, current does not match: not visible
         expected['pane_0']['visible'] = False
         blank_figure._current_pane = [1]
         blank_figure._add_pane_artists()
-        assert add_mock.called_with(expected)
+        add_mock.assert_called_with(expected)
 
         # test no show, current does match: not visible
         blank_figure.highlight_pane = False
         blank_figure._current_pane = [0]
         blank_figure._add_pane_artists()
-        assert add_mock.called_with(expected)
+        add_mock.assert_called_with(expected)
 
         # test no show, current does not match: not visible
         blank_figure._current_pane = [1]
         blank_figure._add_pane_artists()
-        assert add_mock.called_with(expected)
+        add_mock.assert_called_with(expected)
 
     def test_add_crosshair(self, blank_figure, mocker):
 
@@ -356,7 +359,7 @@ class TestFigure(object):
             blank_figure.add_model_to_pane(high_model.Grism(grism_hdul))
 
         assert 'Added model to panes' not in caplog.text
-        assert remove_mock.called_once
+        remove_mock.assert_called_once
 
     def test_remove_model_from_pane(self, blank_figure, mocker):
 
@@ -481,14 +484,15 @@ class TestFigure(object):
         mid = 1
         state = True
         sigs = signals.Signals()
+        panes = [pane.OneDimPane(sigs), pane.OneDimPane(sigs)]
 
-        blank_figure.panes = [pane.OneDimPane(sigs), pane.OneDimPane(sigs)]
+        blank_figure.panes = panes
         with qtbot.wait_signal(blank_figure.signals.atrophy):
             blank_figure.set_enabled(pid, mid, state)
 
-        assert model_mock.called_with({'model_id': mid, 'state': state})
-        assert art_mock.called_with({'pane': pid})
-        assert vis_mock.called_once()
+        model_mock.assert_called_once_with(mid, state)
+        art_mock.assert_called_once_with(pane_=panes[pid], options=ANY)
+        vis_mock.assert_called_once()
 
     def test_set_all_enabled(self, blank_figure, mocker, qtbot):
         model_mock = mocker.patch.object(pane.OneDimPane,
@@ -500,14 +504,15 @@ class TestFigure(object):
         pid = 0
         state = True
         sigs = signals.Signals()
+        panes = [pane.OneDimPane(sigs), pane.OneDimPane(sigs)]
 
-        blank_figure.panes = [pane.OneDimPane(sigs), pane.OneDimPane(sigs)]
+        blank_figure.panes = panes
         with qtbot.wait_signal(blank_figure.signals.atrophy):
             blank_figure.set_all_enabled(pid, state)
 
-        assert model_mock.called_with({'state': state})
-        assert art_mock.called_with({'pane': pid})
-        assert vis_mock.called_once()
+        model_mock.assert_called_once_with(state)
+        art_mock.assert_called_once_with(pane_=panes[pid], options=ANY)
+        vis_mock.asseet_called_once()
 
     def test_get_markers(self, blank_figure, grism_hdul):
         model = high_model.Grism(grism_hdul)
@@ -551,9 +556,9 @@ class TestFigure(object):
             with qtbot.wait_signal(blank_figure.signals.atrophy):
                 blank_figure.crosshair(event)
 
-            assert art_mock.called_with({'data_point': (2, 3),
-                                         'direction': direction})
-            assert cross_mock.called_with({'mode': 'crosshair'})
+            art_mock.assert_called_once_with(
+                0, data_point=(2, 3), direction=direction)
+            cross_mock.assert_called_once_with(mode='crosshair')
 
     def test_reset_data_points_empty(self, blank_figure, mocker):
         mock = mocker.patch.object(gallery.Gallery, 'hide_cursor_markers')
@@ -599,12 +604,17 @@ class TestFigure(object):
         blank_figure.panes = panes
 
         blank_figure.clear_lines(flags='v', all_panes=True)
-        assert reset_mock.called_with({'panes': panes})
-        assert reset_mock.call_count == 1
-
+        # current pane is still unset
         blank_figure.clear_lines(flags='v', all_panes=False)
-        assert reset_mock.called_with({'panes': [panes[0]]})
-        assert reset_mock.call_count == 2
+        blank_figure.current_pane = 0
+        blank_figure.clear_lines(flags='v', all_panes=False)
+
+        assert reset_mock.call_count == 3
+        reset_mock.assert_has_calls([
+            call('v_guide', panes=panes),
+            call('v_guide', panes=[]),
+            call('v_guide', panes=[panes[0]]),
+        ])
 
     def test_add_remove_pane(self, blank_figure, qtbot):
         blank_figure.add_panes(1, 3)

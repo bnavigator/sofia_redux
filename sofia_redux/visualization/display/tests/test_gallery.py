@@ -2,6 +2,8 @@
 
 import copy
 import logging
+from unittest.mock import call
+
 import pytest
 import numpy as np
 import numpy.testing as npt
@@ -256,9 +258,10 @@ class TestGallery(object):
         order = 1
         ax = fig.add_subplot()
 
-        line_options = {'artist': ax.scatter(points[:, 0], points[:, 1]),
-                        'high_model': model_id, 'mid_model': order,
-                        'kind': 'line', 'state': 'stale'}
+        line_options = {'model_id': model_id, 'order': order, 'kind': 'line',
+                        'artist': ax.scatter(points[:, 0], points[:, 1]),
+                        'high_model': model_id,
+                        'state': 'stale'}
         line = drawing.Drawing(**line_options)
         mocker.patch.object(gallery.Gallery, 'artists_in_pane',
                             return_value=[line])
@@ -272,8 +275,8 @@ class TestGallery(object):
         obj = gallery.Gallery()
         obj.update_line_type(1, [update])
 
-        assert convert_mock.called_once()
-        assert convert_mock.called_with({'marker': None})
+        convert_mock.assert_called_once_with(
+            drawstyle='line', marker='None')
         assert line.get_artist().figure is not None
 
     @pytest.mark.parametrize('kinds,call_counts',
@@ -452,10 +455,9 @@ class TestGallery(object):
         assert clear_mock.call_count == 2
         assert 'Resetting alt artists' in caplog.text
 
-    @pytest.mark.parametrize('kind', ['lines', 'cursor', 'collections',
+    @pytest.mark.parametrize('kind', ['line', 'cursor', 'collections',
                                       'crosshair', 'patch', 'fit',
-                                      'line_alt', 'cursor_alt', 'ref_line',
-                                      'ref_label'])
+                                      'line_alt', 'cursor_alt'])
     def test_reset_artists_selections(self, caplog, mocker, kind):
         caplog.set_level(logging.DEBUG)
         clear_mock = mocker.patch.object(gallery.Gallery,
@@ -465,7 +467,24 @@ class TestGallery(object):
         obj.reset_artists(selection=kind)
 
         assert f'Resetting {kind}' in caplog.text
-        assert clear_mock.called_with({'selection': kind})
+        clear_mock.assert_called_once_with(kind=kind, panes=None)
+
+    @pytest.mark.parametrize(
+        'selection',
+        ['ref_line', 'ref_label', 'reference'])
+    def test_reset_artists_selections2(self, caplog, mocker, selection):
+        caplog.set_level(logging.DEBUG)
+        clear_mock = mocker.patch.object(gallery.Gallery,
+                                         '_clear_artists')
+        obj = gallery.Gallery()
+        obj.arts = {'line': list(), 'crosshair': list()}
+        obj.reset_artists(selection=selection)
+
+        assert f'Resetting {selection}' in caplog.text
+        clear_mock.assert_called_once_with(
+            kind=['ref_line', 'ref_label'], panes=None
+        )
+
 
     def test_reset_artists_guide(self, caplog, mocker):
         caplog.set_level(logging.DEBUG)
@@ -475,7 +494,9 @@ class TestGallery(object):
         obj.reset_artists(selection='v_guide')
 
         assert 'Resetting v_guide' in caplog.text
-        assert clear_mock.called_with({'selection': 'v'})
+        clear_mock.assert_called_once_with(
+            flag='v', panes=None
+        )
 
     def test_reset_artists_fail(self, caplog):
         caplog.set_level(logging.DEBUG)
@@ -554,8 +575,9 @@ class TestGallery(object):
         count = obj.add_drawings(draws)
 
         assert count == 2
-        assert patch.called_with(draw_1)
-        assert patch.called_with(draw_2)
+        patch.assert_has_calls([
+            call(draw_1),
+            call(draw_2)])
 
     def test_add_drawing_empty(self):
         draw = drawing.Drawing(kind='line')
@@ -798,10 +820,10 @@ class TestGallery(object):
         m2 = mocker.patch.object(obj, 'add_drawings')
 
         obj.update_reference_data('pane', 'updates')
-        assert m1.call_count == 1
-        assert m1.called_with(kind=['ref_line', 'ref_label'], panes=['pane'])
-        assert m2.call_count == 1
-        assert m2.called_with('updates')
+        m1.assert_called_once_with(
+            kind=['ref_line', 'ref_label'],
+            panes=['pane'])
+        m2.assert_called_once_with('updates')
 
     @pytest.mark.parametrize('visible,pane_id,overlaps,'
                              'update_count,new_count,new_text',

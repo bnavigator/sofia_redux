@@ -43,4 +43,4 @@ class TestController(object):
 
         controller.main()
 
-        assert open_mock.called_once()
+        open_mock.assert_called_once()

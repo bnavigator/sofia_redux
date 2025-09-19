@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
 import logging
+from unittest.mock import call
+
 import pytest
 import matplotlib.backend_bases as mbb
 from sofia_redux.visualization.display import (view, figure, cursor_location,
@@ -75,7 +77,7 @@ class TestView(object):
         qtbot.keyClick(blank_view, QtCore.Qt.Key_Delete)
 
         assert 'Key pushed in view: Del' in caplog.text
-        assert mock.call_count == 1
+        mock.assert_called_once()
 
     def test_key_press_event_delete_file(self, blank_view, mocker, qtbot,
                                          caplog):
@@ -85,7 +87,7 @@ class TestView(object):
         mock = mocker.patch.object(view.View, 'remove_file_from_pane')
         qtbot.keyClick(blank_view, QtCore.Qt.Key_Backspace)
         assert 'Key pushed in view: Backspace' in caplog.text
-        assert mock.call_count == 1
+        mock.assert_called_once()
 
     def test_atrophy_controls(self, blank_view, mocker, qtbot, caplog):
         caplog.set_level(logging.DEBUG)
@@ -94,8 +96,8 @@ class TestView(object):
 
         blank_view.atrophy_controls()
 
-        assert clear_mock.call_count == 1
-        assert update_mock.call_count == 1
+        clear_mock.assert_called_once()
+        update_mock.assert_called_once()
         assert 'Controls no longer in sync' in caplog.text
 
     def test_hold_atrophy(self, blank_view, mocker):
@@ -148,7 +150,10 @@ class TestView(object):
         with qtbot.wait_signal(blank_view.signals.atrophy_bg_partial):
             blank_view.axis_limits_changed()
 
-        assert limit_mock.called_with({'panes': 'all'})
+        limit_mock.assert_called_once_with(
+            {'x': [0.0, 1.0], 'y_alt': [2.0, 3.0], 'y': [2.0, 3.0]},
+            target={'axis': 'all'},
+        )
 
     def test_axis_scale_changed_all(self, blank_view, mocker, qtbot):
         mocker.patch.object(view.View, '_pull_scale_from_gui',
@@ -160,7 +165,9 @@ class TestView(object):
         with qtbot.wait_signal(blank_view.signals.atrophy_bg_partial):
             blank_view.axis_scale_changed()
 
-        assert scale_mock.called_with({'panes': 'all'})
+        scale_mock.assert_called_once_with(
+            'log', target={'axis': 'primary', 'pane': []}
+        )
 
     def test_axis_unit_changed_all(self, blank_view, mocker, qtbot):
         mocker.patch.object(view.View, '_pull_units_from_gui',
@@ -172,7 +179,9 @@ class TestView(object):
         with qtbot.wait_signal(blank_view.signals.atrophy_bg_full):
             blank_view.axis_unit_changed()
 
-        assert unit_mock.called_with({'panes': 'all'})
+        unit_mock.assert_called_once_with(
+            units='Jy', target={'axis': 'primary', 'pane': []}
+        )
 
     def test_axis_field_changed_all(self, blank_view, mocker, qtbot, caplog):
         mocker.patch.object(view.View, '_pull_fields_from_gui',
@@ -185,8 +194,10 @@ class TestView(object):
         with qtbot.wait_signal(blank_view.signals.atrophy_bg_full):
             blank_view.axis_field_changed()
 
-        assert field_mock.called_with({'panes': 'all'})
-        assert clear_mock.call_count == 1
+        field_mock.assert_called_once_with(
+            fields='flux', target={'axis': 'primary', 'pane': []}
+        )
+        clear_mock.assert_called_once()
 
     def test_update_cursor_loc_labels_blank(self, blank_view):
         data_coords = dict()
@@ -215,7 +226,7 @@ class TestView(object):
         assert not blank_view._cursor_popout
         assert not blank_view.cursor_checkbox.isChecked()
         assert blank_view.cursor_location_window is None
-        assert cid_mock.called_with('cursor')
+        cid_mock.assert_called_once_with('cursor')
 
     @pytest.mark.parametrize('x_scale,y_scale,x_log,x_lin,y_log,y_lin',
                              [('lin', 'lin', False, True, False, True),
@@ -345,7 +356,10 @@ class TestView(object):
 
         blank_view.add_panes(2, kind=kind)
 
-        assert add_mock.called_with({'n_dims': [1, 2]})
+        add_mock.assert_called_once_with(
+            n_panes=2,
+            n_dims=[1, 2],
+        )
 
         with pytest.raises(eye_error.EyeError) as msg:
             blank_view.add_panes(2, kind=['spectrum', 'cube'])
@@ -359,7 +373,7 @@ class TestView(object):
 
         blank_view.select_pane(item)
 
-        assert pane_mock.called_with(pane_id)
+        pane_mock.assert_called_once_with(pane_id)
 
     def test_enable_model(self, blank_view, mocker):
         pane_mock = mocker.patch.object(figure.Figure, 'set_enabled')
@@ -377,8 +391,7 @@ class TestView(object):
         model_id = 2
         item.setData(0, QtCore.Qt.UserRole, (pane_id, model_id))
         blank_view.enable_model(item)
-        assert pane_mock.call_count == 1
-        assert pane_mock.called_with([pane_id, model_id, state])
+        pane_mock.assert_called_once_with(pane_id, model_id, state)
 
     @pytest.mark.parametrize('state,id_state,label',
                              [(True, False, 'Hide all'),
@@ -394,7 +407,7 @@ class TestView(object):
 
         qtbot.mouseClick(button, QtCore.Qt.LeftButton)
 
-        assert enable_mock.called_with([pane_id, state])
+        enable_mock.assert_called_once_with(pane_id, state)
         assert button.text() == label
         assert button.property('id') == (pane_id, id_state)
 
@@ -434,7 +447,7 @@ class TestView(object):
 
         assert show_mock.call_count == show_count
         assert add_mock.call_count == add_count
-        assert clear_mock.call_count == 1
+        clear_mock.assert_called_once()
 
     @pytest.mark.parametrize('x_check,y_check,x_out,y_out',
                              [(True, True, 'linear', 'linear'),
@@ -474,7 +487,7 @@ class TestView(object):
                                         'set_overplot_state')
         with qtbot.wait_signal(blank_view.signals.atrophy_bg_full):
             blank_view.toggle_overplot()
-        assert flag_mock.call_count == 1
+        flag_mock.assert_called_once()
 
     def test_setup_overplot_flag(self, blank_view, blank_pane, mocker):
         blank_view.setup_overplot_flag(blank_pane)
@@ -502,8 +515,8 @@ class TestView(object):
         blank_view.fit_results = fit_mock
         text = 'tab10'
         blank_view.select_color_cycle(text)
-        assert fig_mock.called_with(text)
-        assert fit_mock.update_colors.called_with(None)
+        fig_mock.assert_called_once_with(text)
+        fit_mock.update_colors.assert_called_once_with(None)
 
     def test_fit_visibility(self, blank_view, mocker, qtbot):
         blank_view.fit_results = fitting_results.FittingResults(blank_view)
@@ -513,8 +526,8 @@ class TestView(object):
                                           'gather_models')
         with qtbot.wait_signal(blank_view.signals.atrophy):
             blank_view.toggle_fit_visibility()
-        assert flag_mock.call_count == 1
-        assert gather_mock.call_count == 1
+        flag_mock.assert_called_once()
+        gather_mock.assert_called_once()
 
     def test_fit_unit_change(self, blank_view, mocker, qtbot):
         blank_view.fit_results = fitting_results.FittingResults(blank_view)
@@ -599,7 +612,7 @@ class TestView(object):
 
         blank_view.enable_all_orders()
 
-        assert update_mock.called_once
+        update_mock.assert_called_once()
         assert blank_view.on_orders_selector.text() == '*'
         assert blank_view.off_orders_selector.text() == '-'
 
@@ -614,7 +627,7 @@ class TestView(object):
 
         assert blank_view.on_orders_selector.text() == '-'
         assert blank_view.off_orders_selector.text() == '*'
-        assert update_mock.called_once
+        update_mock.assert_called_once()
 
     def test_off_orders_changed(self, mocker, blank_view, qtbot):
         on_orders = [1, 2, 3]
@@ -625,14 +638,14 @@ class TestView(object):
         blank_view.off_orders_changed()
         qtbot.wait(1000)
 
-        assert update_mock.called_with((on_orders, False))
+        update_mock.assert_called_once_with(on_orders, False)
 
     def test_all_filenames_checking(self, mocker, blank_view):
         mock = mocker.patch.object(view.View, '_update_order_selector')
 
         blank_view.all_filenames_checking()
 
-        assert mock.called_once
+        mock.assert_called_once()
 
     def test_popout_cursor_position(self, blank_view, mocker):
         show_mock = mocker.patch.object(QtWidgets.QDialog, 'show')
@@ -644,12 +657,12 @@ class TestView(object):
         blank_view.popout_cursor_position()
         assert isinstance(blank_view.cursor_location_window,
                           cursor_location.CursorLocation)
-        assert show_mock.call_count == 1
+        show_mock.assert_called_once()
         assert raise_mock.call_count == 0
 
         blank_view.popout_cursor_position()
-        assert show_mock.call_count == 1
-        assert raise_mock.call_count == 1
+        show_mock.assert_called_once()
+        raise_mock.assert_called_once()
 
     def test_figure_clicked(self, blank_view, mocker, qtbot):
         event = mbb.MouseEvent('test', mbb.FigureCanvasBase(), 0, 0)
@@ -660,12 +673,12 @@ class TestView(object):
                             return_value=0)
 
         blank_view.figure_clicked(event)
-        assert mock.called_once
+        mock.assert_called_once()
 
     def test_filename_table_selection_changed(self, blank_view, mocker):
         mock = mocker.patch.object(view.View, '_update_order_selector')
         blank_view.filename_table_selection_changed()
-        assert mock.called_once
+        mock.assert_called_once()
         assert not blank_view.all_filenames_checkbox.isChecked()
 
     def test_all_filenames_selection_changed(self, blank_view, mocker):
@@ -676,8 +689,8 @@ class TestView(object):
                                         '_update_filename_table_selection')
 
         blank_view.all_filenames_selection_changed()
-        assert order_mock.called_once
-        assert file_mock.called_with(True)
+        order_mock.assert_called_once()
+        file_mock.assert_called_once_with(all_=True)
 
     def test_merge_dict(self):
         one = {'a': [1], 'b': [1, 4]}
@@ -703,8 +716,8 @@ class TestView(object):
         blank_view.all_filenames_checkbox.setChecked(True)
         blank_view.filename_order_selector_changed()
         assert not blank_view.all_filenames_checkbox.isChecked()
-        assert pane_mock.called_once()
-        assert order_mock.called_once()
+        pane_mock.assert_called_once()
+        order_mock.assert_called_once()
 
     @pytest.mark.parametrize('text,count', [(1, 1), ('one', 0)])
     def test_pane_order_selector_changed(self, blank_view, mocker, text,
@@ -734,7 +747,7 @@ class TestView(object):
                             return_value=pane_count)
         with qtbot.wait_signal(blank_view.signals.current_pane_changed):
             blank_view.all_panes_checking()
-        assert pane_mock.called_with(args)
+        pane_mock.assert_called_once_with(args)
 
     def test_remove_file_from_pane(self, blank_view, mocker):
         mocker.patch.object(view.View, '_parse_filename_table_selection',
@@ -743,8 +756,7 @@ class TestView(object):
                                           'remove_model_from_pane')
 
         blank_view.remove_file_from_pane()
-
-        assert remove_mock.called_with('x', 'y')
+        remove_mock.assert_called_once_with(model_id='x', panes='y')
 
     @pytest.mark.parametrize('text,checked,count', [('none', False, 0),
                                                     ('1', False, 1),
@@ -842,8 +854,13 @@ class TestView(object):
         blank_view.multi_aper = multi_ap
 
         enabled, disabled = blank_view._enabled_disabled_orders(0, 'test')
-        assert mock.called_with({'kind': kind, 'model_id': 'test',
-                                 'target': 0})
+        mock.assert_called_with(
+            enabled_only=False,
+            target=0,
+            model_id='test',
+            group_by_model=False,
+            kind=kind
+        )
         assert enabled == [1, 2]
         assert disabled == [0, 3]
 
