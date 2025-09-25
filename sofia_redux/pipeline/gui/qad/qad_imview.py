@@ -2032,31 +2032,33 @@ class QADImView(object):
         """Start up DS9."""
         log.debug('Starting DS9.')
 
-        # lazy import pyds9 because it has non-trivial startup behavior
-        #try:
-        #    import pyds9
-        #except (ImportError, ValueError):
-            # PyDS9 sometimes fails to import for internal reasons.
-        #    log.error('Cannot import PyDS9. DS9 display '
-        #              'will not be available.')
-        #    self.HAS_DS9 = False
-        #    return
-        #added for SAMP integration
+        #lazy import pyds9 because it has non-trivial startup behavior
         try:
-            self.ds9 = DS9Adapter(use_samp=True)
-            self.ds9.start()
-            self.HAS_DS9 = True
-        except Exception as e:
-            log.error(f"Cannot start DS9: {e}")
-            self.HAS_DS9 = False
-            return
+           import ds9samp
+        except (ImportError, ValueError):
+            #PyDS9 sometimes fails to import for internal reasons.
+           log.error('Cannot import PyDS9. DS9 display '
+                     'will not be available.')
+           self.HAS_DS9 = False
+           return
         else:
             self.HAS_DS9 = True
+        #added for SAMP integration
+        # try:
+        #     self.ds9 = DS9Adapter(use_samp=True)
+        #     self.ds9.start()
+        #     self.HAS_DS9 = True
+        # except Exception as e:
+        #     log.error(f"Cannot start DS9: {e}")
+        #     self.HAS_DS9 = False
+        #     return
+        # else:
+        #     self.HAS_DS9 = True
 
-        #try:
-        #    self.ds9 = pyds9.DS9()
-        #except (TypeError, ValueError):
-        #    raise ValueError('DS9 is not accessible.') from None
+        try:
+           self.ds9 = ds9samp.start()
+        except (TypeError, ValueError):
+           raise ValueError('DS9 is not accessible.') from None
 
         # reset files and regions instead
         self.files = []

@@ -691,25 +691,25 @@ class QADViewer(Viewer):
             log.error("QAD not found; Viewer will not display data.")
             self.embedded = False
             return
-        #try:
-        #    import pyds9
-        #    assert pyds9
-        #except ImportError:
-        #    log.warning('DS9 not found. Images will not display.')
-        #    HAS_DS9 = False
-        #else:
-        #    HAS_DS9 = True
+        try:
+           import ds9samp
+           assert ds9samp
+        except ImportError:
+           log.warning('DS9 not found. Images will not display.')
+           HAS_DS9 = False
+        else:
+           HAS_DS9 = True
 
         #added for SAMP integration#####################
-        try:
-            from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9Adapter
-            #try to instantiate to test availability
-            _ = DS9Adapter()
-        except Exception:
-            log.warning('DS9 backend not available (SAMP or pyds9). Images will not display.')
-            HAS_DS9 = False
-        else:
-            HAS_DS9 = True
+        # try:
+        #     from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9Adapter
+        #     #try to instantiate to test availability
+        #     _ = DS9Adapter()
+        # except Exception:
+        #     log.warning('DS9 backend not available (SAMP or pyds9). Images will not display.')
+        #     HAS_DS9 = False
+        # else:
+        #     HAS_DS9 = True
         #####################
 
         # read settings if available

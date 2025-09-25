@@ -3,14 +3,7 @@
 Adapter module that exposes a DS9-compatible API (class DS9) but uses
 a SAMP backend (ds9samp / astropy.samp) when available, otherwise falls
 back to using the real pyds9.DS9 implementation.
-
-Drop this file next to qad_imview.py (same package) and import it by:
-    import ds9_adapter as pyds9
-so existing code that calls pyds9.DS9() will use this adapter.
 """
-
-import os
-import time
 
 # Try to import preferred SAMP helpers first.
 try:
@@ -30,7 +23,7 @@ class DS9Adapter:
         """
         Try SAMP-based DS9 first, otherwise instantiate pyds9.DS9.
         The adapter will expose .set(cmd, *args), .get(cmd), .get_arr2np(),
-        .send_array(array, mask=False), .retrieve_array(), and .close()/quit() where possible.
+        .send_array(array, mask=False), and .close()/quit() where possible.
         """
         self._backend = None
         self._client = None
@@ -134,17 +127,6 @@ class DS9Adapter:
             return tf.name
         else:
             raise RuntimeError("No DS9 backend active in send_array()")
-
-    def retrieve_array(self):
-        """Alias for retrieve_array (ds9samp) or fallback."""
-        if self._backend == "ds9samp":
-            return self._client.retrieve_array()
-        elif self._backend == "pyds9":
-            if hasattr(self._client, "get_arr2np"):
-                return self._client.get_arr2np()
-            raise AttributeError("pyds9 backend does not support retrieve_array()")
-        else:
-            raise RuntimeError("No DS9 backend active in retrieve_array()")
 
     def notify(self, mtype, params):
         """
