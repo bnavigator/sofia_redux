@@ -644,7 +644,7 @@ class QADViewer(Viewer):
     """
     Redux Viewer interface to DS9 and the Eye of SOFIA.
 
-    Uses pyds9 to control DS9 for image and cube display,
+    Uses ds9samp adapter to control DS9 for image and cube display,
     and the Eye viewer for spectra.
 
     Attributes
@@ -682,7 +682,7 @@ class QADViewer(Viewer):
         """
         self.parent = parent
 
-        # import at last minute to avoid pyds9
+        # import at last minute to avoid ds9samp
         # startup behavior until necessary
         try:
             from .qad.qad_imview import QADImView
@@ -692,25 +692,14 @@ class QADViewer(Viewer):
             self.embedded = False
             return
         try:
-           import ds9samp
-           assert ds9samp
+            from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9
+            assert DS9
         except ImportError:
-           log.warning('DS9 not found. Images will not display.')
-           HAS_DS9 = False
+            log.warning('DS9 SAMP not found. Images will not display.')
+            HAS_DS9 = False
         else:
-           HAS_DS9 = True
+            HAS_DS9 = True
 
-        #added for SAMP integration#####################
-        # try:
-        #     from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9Adapter
-        #     #try to instantiate to test availability
-        #     _ = DS9Adapter()
-        # except Exception:
-        #     log.warning('DS9 backend not available (SAMP or pyds9). Images will not display.')
-        #     HAS_DS9 = False
-        # else:
-        #     HAS_DS9 = True
-        #####################
 
         # read settings if available
         cfg_dir = os.path.join(os.path.expanduser('~'), '.qad')

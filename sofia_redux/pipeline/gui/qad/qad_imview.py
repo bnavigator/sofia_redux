@@ -13,7 +13,6 @@ from astropy import log, modeling, stats, table, wcs
 import numpy as np
 from scipy.stats import gmean
 
-from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9Adapter #added
 from sofia_redux.pipeline.gui.matplotlib_viewer import MatplotlibPlot
 from sofia_redux.toolkit.utilities.fits import set_log_level
 
@@ -71,7 +70,7 @@ class QADImView(object):
 
     Attributes
     ----------
-    ds9 : pyds9.DS9
+    ds9 : ds9samp_adapter.DS9
         DS9 instance to display images to.
     specviewer : EyeViewer
         Eye instance to display spectra to.
@@ -167,7 +166,7 @@ class QADImView(object):
 
     def _run_internal(self, cmd, buf=None, via='set'):
         """
-        Format commands to send to PyDS9.
+        Format commands to send to ds9samp.
 
         Parameters
         ----------
@@ -201,7 +200,7 @@ class QADImView(object):
                 try:
                     retval = self.ds9.get(cmd)
                 except TypeError as err:
-                    log.error('Error in pyds9')
+                    log.error('Error in ds9samp communication')
                     log.debug(err)
         else:
             log.error('Unknown ds9 interaction command: ' + str(via))
@@ -850,8 +849,9 @@ class QADImView(object):
                     imgdata[j] = s2n
 
                 try:
-                    frame_to_load = int(self.run('frame', via='get')) + 1
-                except ValueError:
+                    frame_result = self.run('frame', via='get')
+                    frame_to_load = int(frame_result) + 1
+                except (ValueError, TypeError):
                     frame_to_load = 1
                 if exten != '':
                     extenstr = f'[{exten}]'
@@ -870,7 +870,7 @@ class QADImView(object):
                         self.run('frame new')
 
                         # display FILENAME keyword in addition to filename
-                        self.run('view keyvalue "{}"'.format("'FILENAME'"))
+                        self.run("view keyvalue 'FILENAME'")
                         self.run('view keyword yes')
 
                         if exten != '' and str(exten).upper() != 'S/N':
@@ -906,11 +906,11 @@ class QADImView(object):
                             continue
                         else:
                             status = 0
-                            log.error(f'Error in XPA command: {ds9_cmd}')
+                            log.error(f'Error in samp command: {ds9_cmd}')
                             log.error(msg)
                     else:
                         status = 0
-                        log.error(f'Error in XPA command: {ds9_cmd}')
+                        log.error(f'Error in samp command: {ds9_cmd}')
                         log.error(msg)
                 if status == 1 and self.disp_parameters['overplots']:
                     # overlay photometric and/or spectroscopic apertures
@@ -1124,7 +1124,7 @@ class QADImView(object):
             srcposy = hdr['SRCPOSY'] + 1
             s1 = 'point({:f} {:f}) # ' \
                  'point=x ' \
-                 'color=blue tag={{srcpos}} '\
+                 'color=blue tag=srcpos '\
                  'text=SRCPOS'.format(srcposx, srcposy)
             self.run('regions', s1)
         except (KeyError, ValueError):
@@ -1136,14 +1136,14 @@ class QADImView(object):
             photskap = [float(x) for x in hdr['PHOTSKAP'].split(',')]
             s1 = 'point({:f} {:f}) # ' \
                  'point=x ' \
-                 'color=cyan tag={{srcpos}}'.format(stcentx, stcenty)
+                 'color=cyan tag=srcpos'.format(stcentx, stcenty)
             self.run('regions', s1)
             s2 = 'circle({:f} {:f} {:f}) # ' \
-                 'color=cyan tag={{srcpos}}'.format(
+                 'color=cyan tag=srcpos'.format(
                      stcentx, stcenty, photaper)
             self.run('regions', s2)
             s3 = 'annulus({:f} {:f} {:f} {:f}) # ' \
-                 'color=cyan tag={{srcpos}} text=STCENT'.format(
+                 'color=cyan tag=srcpos text=STCENT'.format(
                      stcentx, stcenty, photskap[0], photskap[1])
             self.run('regions', s3)
         except (KeyError, ValueError):
@@ -1209,7 +1209,7 @@ class QADImView(object):
             else:
                 psfrad = None
             line_template = 'wcs; linear; line({:f} {:f} {:f} {:f}) # ' \
-                            'color={:s} tag={{aperture}} '\
+                            'color={:s} tag=aperture '\
                             'width={:d}'
             for j in range(len(appos)):
                 pos = float(appos[j])
@@ -1553,15 +1553,15 @@ class QADImView(object):
             # set region
             b0 = 'point({:f} {:f}) # ' \
                  'point=x ' \
-                 'color=green tag={{imexam}}'.format(xcent, ycent)
+                 'color=green tag=imexam'.format(xcent, ycent)
             self.run('regions', b0)
             b1 = 'circle({:f} {:f} {:f}) # ' \
-                'color=green tag={{imexam}}'.format(xcent, ycent, psfr)
+                'color=green tag=imexam'.format(xcent, ycent, psfr)
             self.run('regions', b1)
             if do_bg:
                 b2 = 'annulus({:f} {:f} {:f} {:f}) # ' \
                     'color=red ' \
-                     'tag={{imexam}}'.format(xcent, ycent,
+                     'tag=imexam'.format(xcent, ycent,
                                              skyrad[0], skyrad[1])
                 self.run('regions', b2)
 
@@ -2032,33 +2032,22 @@ class QADImView(object):
         """Start up DS9."""
         log.debug('Starting DS9.')
 
-        #lazy import pyds9 because it has non-trivial startup behavior
+        # lazy import ds9samp because it has non-trivial startup behavior
         try:
-           import ds9samp
+            from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9
         except (ImportError, ValueError):
-            #PyDS9 sometimes fails to import for internal reasons.
-           log.error('Cannot import PyDS9. DS9 display '
-                     'will not be available.')
-           self.HAS_DS9 = False
-           return
+            # ds9samp sometimes fails to import for internal reasons.
+            log.error('Cannot import DS9 Samp Adapter. DS9 display '
+                      'will not be available.')
+            self.HAS_DS9 = False
+            return
         else:
             self.HAS_DS9 = True
-        #added for SAMP integration
-        # try:
-        #     self.ds9 = DS9Adapter(use_samp=True)
-        #     self.ds9.start()
-        #     self.HAS_DS9 = True
-        # except Exception as e:
-        #     log.error(f"Cannot start DS9: {e}")
-        #     self.HAS_DS9 = False
-        #     return
-        # else:
-        #     self.HAS_DS9 = True
 
         try:
-           self.ds9 = ds9samp.start()
+            self.ds9=DS9()
         except (TypeError, ValueError):
-           raise ValueError('DS9 is not accessible.') from None
+            raise ValueError('DS9 is not accessible via SAMP.') from None
 
         # reset files and regions instead
         self.files = []
@@ -2068,7 +2057,6 @@ class QADImView(object):
         """Quit DS9."""
         self.break_loop = True
         try:
-            #self._run_internal('quit')
-            self.ds9.quit() #added
-        except Exception:
-            pass
+            self._run_internal('quit')
+        except Exception as e:
+            log.error(f'Error occured while quitting {e}')
