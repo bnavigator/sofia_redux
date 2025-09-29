@@ -1,5 +1,4 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""DS9 SAMP adapter to replace pyds9 XPA integration."""
+"""DS9 SAMP adapter using ds9samp library."""
 
 from astropy import log
 import os
@@ -82,13 +81,13 @@ class DS9:
                 self._ds9.set(f'regions command {{{buf}}}')
                 return 1
             except Exception as e:
-                print(f"Region setting failed: {e}")
+                log.error(f"Region setting failed: {e}")
                 return 0
         else:
             try:
                 return self._ds9.set(f"{cmd} {buf}")
             except Exception as e:
-                print(f"Command failed: {e}")
+                log.error(f"Command failed: {e}")
                 return 0
 
 
@@ -107,10 +106,6 @@ class DS9:
         str
             Command result.
         """
-        # Translate commands that differ between pyds9 and ds9samp
-        if cmd == 'frame':
-            cmd = 'frame frameno'
-        
         return self._ds9.get(cmd)
 
     def get_arr2np(self):

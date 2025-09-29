@@ -1114,7 +1114,6 @@ class QADImView(object):
         # retrieve header for photometry keywords
         # from current frame only
         hdr_str = self.run('fits header', via='get')
-
         # read it in to a fits header
         phdr = fits.Header()
         hdr = phdr.fromstring(hdr_str, sep='\n')
