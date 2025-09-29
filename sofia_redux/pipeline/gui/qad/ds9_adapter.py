@@ -35,6 +35,7 @@ class DS9:
 
         # Start ds9samp connection
         self._ds9 = ds9samp.start(client=target)
+        self._ds9.timeout = 30
 
         # Ensure DS9 is running with SAMP
         if not self._is_ds9_running():
@@ -118,9 +119,7 @@ class DS9:
     def quit(self):
         """Quit DS9."""
         try:
-            self._ds9.set('quit')
+            import ds9samp
+            ds9samp.end(self._ds9)   
         except Exception:
             pass
-        finally:
-            import ds9samp
-            ds9samp.end(self._ds9)
