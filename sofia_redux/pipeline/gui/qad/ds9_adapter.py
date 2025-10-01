@@ -199,7 +199,39 @@ class DS9:
         str
             Command result.
         """
-        return self._ds9.get(cmd)
+        try:
+            return self._ds9.get(cmd)
+        except OSError as e:
+            # WORKAROUND: ds9samp bug on Windows with file paths
+            # How the error occurs, or how I think it does.
+            # 1. _load_from_tempfile creates temp file at C:\Users\...\tmp768q6vhp.fits
+            # 2. Converts to C:/Users/.../tmp768q6vhp.fits (forward slashes)
+            # 3. Sends command: fits C:/Users/.../tmp768q6vhp.fits
+            # 4. DS9 loads it successfully
+            # 5. Then overlay() is called line 919
+            # 6. overlay() tries to get the FITS header with self.run('fits header', via='get')
+            # 7. This is where it fails - ds9samp tries to read DS9's response from /C:/Users/.../ds9209319329165.fits.txt
+
+            if os.name == 'nt' and 'Invalid argument' in str(e):
+                import re
+                error_msg = str(e)
+                # Extract the malformed path from error message
+                
+                match = re.search(r"['\"]([/\\].+?)['\"]", error_msg)
+                if match:
+                    bad_path = match.group(1)
+                    # Fix by removing slash before drive letter
+                    if len(bad_path) > 3 and bad_path[0] == '/' and bad_path[2] == ':':
+                        fixed_path = bad_path[1:]
+                        log.debug(f"Windows path bug detected. "
+                                 f"Reading from corrected path: {fixed_path}")
+                        try:
+                            with open(fixed_path, 'r', encoding='ascii') as f:
+                                return f.read()
+                        except Exception as read_error:
+                            log.error(f"Failed to read corrected path: {read_error}")
+            # If workaround didn't work or failed, raise original error
+            raise
 
     def get_arr2np(self):
         """ds9samp function wrapper to fetch numpy array data."""
