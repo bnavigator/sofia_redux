@@ -4,6 +4,7 @@
 import contextlib
 import io
 import os
+from pathlib import Path
 import re
 import tempfile
 import warnings
@@ -976,12 +977,14 @@ class QADImView(object):
 
     def _load_from_tempfile(self, cmd, ffile, data):
         """Write a tempfile and load it into DS9."""
-        with tempfile.NamedTemporaryFile(delete=False) as \
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.fits') as \
                 new_file:
             new_name = new_file.name
         try:
             data.writeto(new_name, overwrite=True)
-            ds9_cmd = "{} {}".format(cmd, new_name)
+            # Convert to POSIX-style path (forward slashes) for DS9/SAMP
+            new_name_posix = Path(new_name).as_posix()
+            ds9_cmd = "{} {}".format(cmd, new_name_posix)
             log.debug("Running DS9 command: {}".format(ds9_cmd))
             status = self.run(ds9_cmd)
             os.remove(new_name)
@@ -992,7 +995,19 @@ class QADImView(object):
         return status
 
     def _load_from_memory(self, cmd, ffile, data):
-        """Use BytesIO to stream HDU data to DS9."""
+        """Use BytesIO to stream HDU data to DS9.
+
+        SAMP protocol does not support binary data streaming which caused the warning.
+        Now it will just show the debug message that it is using the tempfile.
+        """
+        # Check if using SAMP-based DS9 (from ds9_adapter)
+        if hasattr(self.ds9, '_ds9'):
+            
+            msg = "SAMP does not support loading from memory; using tempfile"
+            log.debug(msg)
+            raise ValueError(msg)
+
+        # Legacy pyds9/XPA (could be deleted because pyds9 is no longer maintained)
         status = 0
         with contextlib.closing(io.BytesIO()) as new_file:
             new_file.name = ffile

@@ -54,13 +54,23 @@ class DS9:
     def _start_ds9(self):
         """Start DS9 with SAMP support in the background."""
         try:
-            # Start DS9 with SAMP enabled in background
-            self._ds9_process = subprocess.Popen(
-                ['ds9', '-samp'],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                preexec_fn=os.setsid if os.name != 'nt' else None
-            )
+            if os.name == 'nt':
+                # Windows: use CREATE_NEW_PROCESS_GROUP flag
+                import subprocess as sp
+                self._ds9_process = subprocess.Popen(
+                    ['ds9', '-samp'],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=sp.CREATE_NEW_PROCESS_GROUP
+                )
+            else:
+                # Unix/macOS: use process group with setsid
+                self._ds9_process = subprocess.Popen(
+                    ['ds9', '-samp'],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    preexec_fn=os.setsid
+                )
             log.info(f"Started DS9 process with PID: {self._ds9_process.pid}")
         except FileNotFoundError:
             raise FileNotFoundError(
@@ -175,19 +185,27 @@ class DS9:
         """Quit DS9."""
         try:
             import ds9samp
-            ds9samp.end(self._ds9)   
+            ds9samp.end(self._ds9)
         except Exception:
             pass
-        
+
         if self._ds9_process:
             try:
-                if os.name != 'nt':
-                    # On Unix-like systems, kill the process group
-                    os.killpg(os.getpgid(self._ds9_process.pid), subprocess.signal.SIGTERM)
+                if os.name == 'nt':
+                    # On Windows, send CTRL_BREAK_EVENT to process group
+                    import signal as sig
+                    self._ds9_process.send_signal(sig.CTRL_BREAK_EVENT)
+                    # Wait briefly, then terminate if still running
+                    try:
+                        self._ds9_process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        self._ds9_process.terminate()
+                        self._ds9_process.wait(timeout=3)
                 else:
-                    # On Windows, terminate the process
-                    self._ds9_process.terminate()
-                self._ds9_process.wait(timeout=5)
+                    # On Unix-like systems, kill the process group
+                    import signal as sig
+                    os.killpg(os.getpgid(self._ds9_process.pid), sig.SIGTERM)
+                    self._ds9_process.wait(timeout=5)
                 log.info("DS9 process terminated successfully")
             except Exception as e:
                 log.warning(f"Could not cleanly terminate DS9 process: {e}")
