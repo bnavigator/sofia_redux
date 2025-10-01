@@ -982,9 +982,12 @@ class QADImView(object):
             new_name = new_file.name
         try:
             data.writeto(new_name, overwrite=True)
-            # Convert to POSIX-style path (forward slashes) for DS9/SAMP
-            new_name_posix = Path(new_name).as_posix()
-            ds9_cmd = "{} {}".format(cmd, new_name_posix)
+            # Use absolute native path - SAMP handles path conversion internally
+            # which caused to add an extra "/" that made it impossible
+            # for Aaron to open mre than one file
+            
+            new_name_abs = os.path.abspath(new_name)
+            ds9_cmd = "{} {}".format(cmd, new_name_abs)
             log.debug("Running DS9 command: {}".format(ds9_cmd))
             status = self.run(ds9_cmd)
             os.remove(new_name)

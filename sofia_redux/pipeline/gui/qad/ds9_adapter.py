@@ -51,14 +51,41 @@ class DS9:
         if not self._is_ds9_running():
             raise ValueError("Failed to establish SAMP connection with DS9")
 
+    def _find_ds9_executable(self):
+        """Find DS9 executable. Check common installation locations for Windows"""
+        import shutil
+
+        # First try PATH
+        ds9_path = shutil.which('ds9')
+        if ds9_path:
+            return ds9_path
+
+        # check common installation locations
+        if os.name == 'nt':
+            common_paths = [
+                r'C:\Program Files\SAOImageDS9\ds9.exe',
+                r'C:\Program Files (x86)\SAOImageDS9\ds9.exe',
+                r'C:\SAOImageDS9\ds9.exe',
+            ]
+            for path in common_paths:
+                if os.path.exists(path):
+                    log.info(f"Found DS9 at: {path}")
+                    return path
+
+        # If no installation is found tell user to open it manually
+        return 'ds9'
+
     def _start_ds9(self):
         """Start DS9 with SAMP support in the background."""
+        # Try to find DS9 executable
+        ds9_cmd = self._find_ds9_executable()
+
         try:
             if os.name == 'nt':
                 # Windows: use CREATE_NEW_PROCESS_GROUP flag
                 import subprocess as sp
                 self._ds9_process = subprocess.Popen(
-                    ['ds9', '-samp'],
+                    [ds9_cmd, '-samp'],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     creationflags=sp.CREATE_NEW_PROCESS_GROUP
@@ -66,7 +93,7 @@ class DS9:
             else:
                 # Unix/macOS: use process group with setsid
                 self._ds9_process = subprocess.Popen(
-                    ['ds9', '-samp'],
+                    [ds9_cmd, '-samp'],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     preexec_fn=os.setsid
@@ -74,7 +101,7 @@ class DS9:
             log.info(f"Started DS9 process with PID: {self._ds9_process.pid}")
         except FileNotFoundError:
             raise FileNotFoundError(
-                "DS9 executable not found. Please ensure DS9 is installed and in your PATH."
+                "DS9 executable not found. Please ensure DS9 is installed and in your PATH or open it manually before starting the reduction."
             )
         except Exception as e:
             raise RuntimeError(f"Failed to start DS9: {e}")
