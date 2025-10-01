@@ -983,17 +983,21 @@ class QADImView(object):
             new_name = new_file.name
         try:
             data.writeto(new_name, overwrite=True)
-            # Use absolute native path - SAMP handles path conversion internally
-            # which caused to add an extra "/" that made it impossible
-            # for Aaron to open mre than one file
 
+            # Get absolute path
             new_name_abs = os.path.abspath(new_name)
+
+            # For SAMP, convert Windows backslashes to forward slashes
+            # preventing that they are interpreted as escape characters
+            if hasattr(self.ds9, '_ds9'):
+                new_name_abs = new_name_abs.replace('\\', '/')
+                log.debug("Path for SAMP: {}".format(new_name_abs))
+
             ds9_cmd = "{} {}".format(cmd, new_name_abs)
             log.debug("Running DS9 command: {}".format(ds9_cmd))
             status = self.run(ds9_cmd)
 
-            # SAMP is asynchronous - give DS9 time to load the file
-            # before deleting the tempfile
+            # wait before deleting the tempfile
             if hasattr(self.ds9, '_ds9'):
                 # Using SAMP, need to wait for DS9 to load the file
                 time.sleep(0.5)
