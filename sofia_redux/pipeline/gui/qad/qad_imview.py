@@ -977,6 +977,7 @@ class QADImView(object):
 
     def _load_from_tempfile(self, cmd, ffile, data):
         """Write a tempfile and load it into DS9."""
+        import time
         with tempfile.NamedTemporaryFile(delete=False, suffix='.fits') as \
                 new_file:
             new_name = new_file.name
@@ -985,11 +986,18 @@ class QADImView(object):
             # Use absolute native path - SAMP handles path conversion internally
             # which caused to add an extra "/" that made it impossible
             # for Aaron to open mre than one file
-            
+
             new_name_abs = os.path.abspath(new_name)
             ds9_cmd = "{} {}".format(cmd, new_name_abs)
             log.debug("Running DS9 command: {}".format(ds9_cmd))
             status = self.run(ds9_cmd)
+
+            # SAMP is asynchronous - give DS9 time to load the file
+            # before deleting the tempfile
+            if hasattr(self.ds9, '_ds9'):
+                # Using SAMP, need to wait for DS9 to load the file
+                time.sleep(0.5)
+
             os.remove(new_name)
         except (TypeError, OSError, ValueError):
             log.warning("Cannot load image {} "
