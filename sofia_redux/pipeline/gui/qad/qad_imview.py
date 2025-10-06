@@ -4,7 +4,6 @@
 import contextlib
 import io
 import os
-from pathlib import Path
 import re
 import tempfile
 import warnings
@@ -1012,17 +1011,19 @@ class QADImView(object):
     def _load_from_memory(self, cmd, ffile, data):
         """Use BytesIO to stream HDU data to DS9.
 
-        SAMP protocol does not support binary data streaming which caused the warning.
-        Now it will just show the debug message that it is using the tempfile.
+        SAMP protocol does not support binary data streaming which
+        caused the warning. Now it will just show the debug message
+        that it is using the tempfile.
         """
         # Check if using SAMP-based DS9 (from ds9_adapter)
         if hasattr(self.ds9, '_ds9'):
-            
+
             msg = "SAMP does not support loading from memory; using tempfile"
             log.debug(msg)
             raise ValueError(msg)
 
-        # Legacy pyds9/XPA (could be deleted because pyds9 is no longer maintained)
+        # Legacy pyds9/XPA
+        # (could be deleted because pyds9 is no longer maintained)
         status = 0
         with contextlib.closing(io.BytesIO()) as new_file:
             new_file.name = ffile

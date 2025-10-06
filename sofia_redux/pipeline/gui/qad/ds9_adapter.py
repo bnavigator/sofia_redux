@@ -31,17 +31,20 @@ class DS9:
         try:
             import ds9samp
         except ImportError as e:
-            raise ImportError("ds9samp is required for DS9 SAMP integration") from e
+            raise ImportError(
+                "ds9samp is required for DS9 SAMP integration") from e
 
         self._ds9_process = None
-        
+
         if not self._is_ds9_running():
             if start_ds9:
                 log.info("DS9 not found. Starting DS9 with SAMP support...")
                 self._start_ds9()
                 self._wait_for_ds9_startup()
             else:
-                raise ValueError("DS9 is not running or not SAMP-enabled. Please start DS9 with 'ds9 -samp' or set start_ds9=True")
+                raise ValueError(
+                    "DS9 is not running or not SAMP-enabled. Please "
+                    "start DS9 with 'ds9 -samp' or set start_ds9=True")
 
         # Start ds9samp connection
         self._ds9 = ds9samp.start(client=target)
@@ -52,7 +55,11 @@ class DS9:
             raise ValueError("Failed to establish SAMP connection with DS9")
 
     def _find_ds9_executable(self):
-        """Find DS9 executable. Check common installation locations for Windows"""
+        """
+        Find DS9 executable.
+
+        Check common installation locations for Windows.
+        """
         import shutil
 
         # First try PATH
@@ -101,7 +108,9 @@ class DS9:
             log.info(f"Started DS9 process with PID: {self._ds9_process.pid}")
         except FileNotFoundError:
             raise FileNotFoundError(
-                "DS9 executable not found. Please ensure DS9 is installed and in your PATH or open it manually before starting the reduction."
+                "DS9 executable not found. Please ensure DS9 is installed "
+                "and in your PATH or open it manually before starting the "
+                "reduction."
             )
         except Exception as e:
             raise RuntimeError(f"Failed to start DS9: {e}")
@@ -109,7 +118,7 @@ class DS9:
     def _wait_for_ds9_startup(self, timeout=30, check_interval=0.5):
         """
         Wait for DS9 to start and become SAMP-enabled.
-        
+
         Parameters
         ----------
         timeout : float
@@ -118,18 +127,19 @@ class DS9:
             Time between checks in seconds.
         """
         start_time = time.time()
-        
+
         while time.time() - start_time < timeout:
             if self._is_ds9_running():
-                log.info("DS9 started successfully and SAMP connection is ready")
+                log.info(
+                    "DS9 started successfully and SAMP connection is ready")
                 return
-            
+
             # Check if DS9 process is still running
             if self._ds9_process and self._ds9_process.poll() is not None:
                 raise RuntimeError("DS9 process terminated unexpectedly")
-            
+
             time.sleep(check_interval)
-        
+
         raise TimeoutError(f"DS9 failed to start within {timeout} seconds")
 
     def _is_ds9_running(self):
@@ -204,24 +214,28 @@ class DS9:
         except OSError as e:
             # WORKAROUND: ds9samp bug on Windows with file paths
             # How the error occurs, or how I think it does.
-            # 1. _load_from_tempfile creates temp file at C:\Users\...\tmp768q6vhp.fits
+            # 1. _load_from_tempfile creates temp file at
+            #    C:\Users\...\tmp768q6vhp.fits
             # 2. Converts to C:/Users/.../tmp768q6vhp.fits (forward slashes)
             # 3. Sends command: fits C:/Users/.../tmp768q6vhp.fits
             # 4. DS9 loads it successfully
             # 5. Then overlay() is called line 919
-            # 6. overlay() tries to get the FITS header with self.run('fits header', via='get')
-            # 7. This is where it fails - ds9samp tries to read DS9's response from /C:/Users/.../ds9209319329165.fits.txt
+            # 6. overlay() tries to get the FITS header with
+            #    self.run('fits header', via='get')
+            # 7. This is where it fails - ds9samp tries to read DS9's
+            #    response from /C:/Users/.../ds9209319329165.fits.txt
 
             if os.name == 'nt' and 'Invalid argument' in str(e):
                 import re
                 error_msg = str(e)
                 # Extract the malformed path from error message
-                
+
                 match = re.search(r"['\"]([/\\].+?)['\"]", error_msg)
                 if match:
                     bad_path = match.group(1)
                     # Fix by removing slash before drive letter
-                    if len(bad_path) > 3 and bad_path[0] == '/' and bad_path[2] == ':':
+                    if (len(bad_path) > 3 and bad_path[0] == '/'
+                            and bad_path[2] == ':'):
                         fixed_path = bad_path[1:]
                         log.debug(f"Windows path bug detected. "
                                  f"Reading from corrected path: {fixed_path}")
@@ -229,7 +243,9 @@ class DS9:
                             with open(fixed_path, 'r', encoding='ascii') as f:
                                 return f.read()
                         except Exception as read_error:
-                            log.error(f"Failed to read corrected path: {read_error}")
+                            log.error(
+                                f"Failed to read corrected path: "
+                                f"{read_error}")
             # If workaround didn't work or failed, raise original error
             raise
 
