@@ -30,9 +30,13 @@ class DS9:
         """
         try:
             import ds9samp
-        except ImportError as e:
+        except ImportError:
+            log.warning(
+                "ds9samp is not installed. Please install it with: "
+                "pip install ds9samp")
             raise ImportError(
-                "ds9samp is required for DS9 SAMP integration") from e
+                "ds9samp is required for DS9 SAMP integration. "
+                "Install with: pip install ds9samp") from None
 
         self._ds9_process = None
 
@@ -49,10 +53,6 @@ class DS9:
         # Start ds9samp connection
         self._ds9 = ds9samp.start(client=target)
         self._ds9.timeout = 30
-
-        # Final check to ensure connection is established
-        if not self._is_ds9_running():
-            raise ValueError("Failed to establish SAMP connection with DS9")
 
     def _find_ds9_executable(self):
         """
@@ -148,15 +148,11 @@ class DS9:
             import ds9samp
             # try to create a temporary connection to check if DS9 is SAMP-ready
             test_ds9 = ds9samp.start()
-            try:
-                result = test_ds9.get("version", timeout=1)
-                ds9samp.end(test_ds9)
-                return result is not None and result.strip() != ""
-            except Exception:
-                # Fallback: if version query fails but DS9 is running
-                ds9samp.end(test_ds9)
-                return True
-        except Exception:
+            result = test_ds9.get("version", timeout=1)
+            ds9samp.end(test_ds9)
+            return result is not None and result.strip() != ""
+        except Exception as e:
+            log.debug(f"DS9 SAMP check failed: {e}")
             return False
 
     def set(self, cmd, buf=None):
@@ -180,7 +176,8 @@ class DS9:
         try:
             self._ds9.set(cmd)
             return 1
-        except Exception:
+        except Exception as e:
+            log.warning(f"DS9 set command '{cmd}' failed: {e}")
             return 0
 
     def _set_with_buffer(self, cmd, buf):
@@ -258,16 +255,16 @@ class DS9:
         """ds9samp function wrapper to fetch numpy array data."""
         try:
             return self._ds9.retrieve_array()
-        except Exception:
-            log.warning('Could not fetch array data from DS9 using SAMP')
+        except Exception as e:
+            log.warning(f'Could not fetch array data from DS9 using SAMP: {e}')
 
     def quit(self):
         """Quit DS9."""
         try:
             import ds9samp
             ds9samp.end(self._ds9)
-        except Exception:
-            pass
+        except Exception as e:
+            log.debug(f"Failed to end DS9 SAMP connection: {e}")
 
         if self._ds9_process:
             try:
