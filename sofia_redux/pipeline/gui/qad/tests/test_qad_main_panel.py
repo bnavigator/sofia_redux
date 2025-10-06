@@ -77,10 +77,14 @@ class TestQADMain(object):
         return ffile
 
     def mock_ds9(self, mocker):
-        """Mock the pyds9 DS9 class."""
-        mock_pyds9 = types.ModuleType('pyds9')
-        mock_pyds9.DS9 = MockDS9
-        mocker.patch.dict('sys.modules', {'pyds9': mock_pyds9})
+        """Mock the DS9 adapter class."""
+        # Mock the ds9_adapter module to use MockDS9
+        mock_ds9_adapter = types.ModuleType(
+            'sofia_redux.pipeline.gui.qad.ds9_adapter')
+        mock_ds9_adapter.DS9 = MockDS9
+        mocker.patch.dict('sys.modules',
+                          {'sofia_redux.pipeline.gui.qad.ds9_adapter':
+                           mock_ds9_adapter})
 
     def select_files(self, mainwindow, fname=None):
         """

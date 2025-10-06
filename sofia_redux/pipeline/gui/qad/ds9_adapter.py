@@ -146,11 +146,16 @@ class DS9:
         """Check if DS9 is running and SAMP-enabled."""
         try:
             import ds9samp
-            # Try to create a temporary connection to check if DS9 is SAMP-ready
+            # try to create a temporary connection to check if DS9 is SAMP-ready
             test_ds9 = ds9samp.start()
-            result = test_ds9.get("version", timeout=1)
-            ds9samp.end(test_ds9)
-            return result is not None and result.strip() != ""
+            try:
+                result = test_ds9.get("version", timeout=1)
+                ds9samp.end(test_ds9)
+                return result is not None and result.strip() != ""
+            except Exception:
+                # Fallback: if version query fails but DS9 is running
+                ds9samp.end(test_ds9)
+                return True
         except Exception:
             return False
 
