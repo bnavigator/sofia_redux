@@ -163,13 +163,13 @@ class DS9:
         ----------
         cmd : str
             DS9 command.
-        buf : str, bytes, or file-like, optional
-            Additional buffer data (not supported in SAMP, logged as warning).
+        buf : str, optional
+            Additional string buffer (e.g., for regions commands).
 
         Returns
         -------
-        None
-            ds9samp.set does not return a value.
+        int
+            1 on success, 0 on failure.
         """
         if buf is not None:
             return self._set_with_buffer(cmd, buf)
@@ -181,10 +181,23 @@ class DS9:
             return 0
 
     def _set_with_buffer(self, cmd, buf):
-        """Handle two-parameter calls"""
-        if cmd == 'regions' and buf is not None:
+        """
+        Handle set commands with buffer data.
+
+        Parameters
+        ----------
+        cmd : str
+            DS9 command.
+        buf : str
+            Buffer string to send.
+
+        Returns
+        -------
+        int
+            1 on success, 0 on failure.
+        """
+        if cmd == 'regions':
             try:
-                # DS9 accepts regions directly without "command" keyword
                 self._ds9.set(f'regions command {{{buf}}}')
                 return 1
             except Exception as e:
@@ -192,7 +205,8 @@ class DS9:
                 return 0
         else:
             try:
-                return self._ds9.set(f"{cmd} {buf}")
+                self._ds9.set(f"{cmd} {buf}")
+                return 1
             except Exception as e:
                 log.error(f"Command failed: {e}")
                 return 0
@@ -214,42 +228,42 @@ class DS9:
         try:
             return self._ds9.get(cmd)
         except OSError as e:
-            # WORKAROUND: ds9samp bug on Windows with file paths
-            # How the error occurs, or how I think it does.
-            # 1. _load_from_tempfile creates temp file at
-            #    C:\Users\...\tmp768q6vhp.fits
-            # 2. Converts to C:/Users/.../tmp768q6vhp.fits (forward slashes)
-            # 3. Sends command: fits C:/Users/.../tmp768q6vhp.fits
-            # 4. DS9 loads it successfully
-            # 5. Then overlay() is called line 919
-            # 6. overlay() tries to get the FITS header with
-            #    self.run('fits header', via='get')
-            # 7. This is where it fails - ds9samp tries to read DS9's
-            #    response from /C:/Users/.../ds9209319329165.fits.txt
-
-            if os.name == 'nt' and 'Invalid argument' in str(e):
-                import re
-                error_msg = str(e)
-                # Extract the malformed path from error message
-
-                match = re.search(r"['\"]([/\\].+?)['\"]", error_msg)
-                if match:
-                    bad_path = match.group(1)
-                    # Fix by removing slash before drive letter
-                    if (len(bad_path) > 3 and bad_path[0] == '/'
-                            and bad_path[2] == ':'):
-                        fixed_path = bad_path[1:]
-                        log.debug(f"Windows path bug detected. "
-                                 f"Reading from corrected path: {fixed_path}")
-                        try:
-                            with open(fixed_path, 'r', encoding='ascii') as f:
-                                return f.read()
-                        except Exception as read_error:
-                            log.error(
-                                f"Failed to read corrected path: "
-                                f"{read_error}")
+            # WORKAROUND for ds9samp bug on Windows with fits commands
+            # Only apply workaround for specific fits-related commands
+            if (os.name == 'nt' and 'Invalid argument' in str(e)
+                    and 'fits' in cmd.lower()):
+                result = self._windows_path_workaround(e)
+                if result is not None:
+                    return result
             # If workaround didn't work or failed, raise original error
             raise
+
+    def _windows_path_workaround(self, error):
+        """
+        Workaround for ds9samp bug on Windows: fixes /C:/path to C:/path.
+
+        Parameters
+        ----------
+        error : OSError
+            The OSError caught from ds9samp.
+
+        Returns
+        -------
+        str or None
+            File contents if workaround succeeded, None otherwise.
+        """
+        import re
+        match = re.search(r"['\"](/[A-Za-z]:.+?)['\"]", str(error))
+        if match:
+            bad_path = match.group(1)
+            fixed_path = bad_path[1:]  # Remove leading slash
+            log.debug(f"Fixed Windows path: {bad_path} -> {fixed_path}")
+            try:
+                with open(fixed_path, 'r', encoding='ascii') as f:
+                    return f.read()
+            except Exception as read_error:
+                log.error(f"Failed to read corrected path: {read_error}")
+        return None
 
     def get_arr2np(self):
         """ds9samp function wrapper to fetch numpy array data."""
@@ -268,27 +282,13 @@ class DS9:
 
         if self._ds9_process:
             try:
-                if os.name == 'nt':
-                    # On Windows, send CTRL_BREAK_EVENT to process group
-                    import signal as sig
-                    self._ds9_process.send_signal(sig.CTRL_BREAK_EVENT)
-                    # Wait briefly, then terminate if still running
-                    try:
-                        self._ds9_process.wait(timeout=2)
-                    except subprocess.TimeoutExpired:
-                        self._ds9_process.terminate()
-                        self._ds9_process.wait(timeout=3)
-                else:
-                    # On Unix-like systems, kill the process group
-                    import signal as sig
-                    os.killpg(os.getpgid(self._ds9_process.pid), sig.SIGTERM)
-                    self._ds9_process.wait(timeout=5)
+                self._ds9_process.terminate()
+                self._ds9_process.wait(timeout=5)
                 log.info("DS9 process terminated successfully")
+            except subprocess.TimeoutExpired:
+                log.warning("DS9 did not terminate gracefully, forcing kill")
+                self._ds9_process.kill()
             except Exception as e:
-                log.warning(f"Could not cleanly terminate DS9 process: {e}")
-                try:
-                    self._ds9_process.kill()
-                except Exception:
-                    pass
+                log.warning(f"Could not terminate DS9 process: {e}")
             finally:
                 self._ds9_process = None

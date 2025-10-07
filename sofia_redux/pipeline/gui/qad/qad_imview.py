@@ -1015,31 +1015,10 @@ class QADImView(object):
         caused the warning. Now it will just show the debug message
         that it is using the tempfile.
         """
-        # Check if using SAMP-based DS9 (from ds9_adapter)
-        if hasattr(self.ds9, '_ds9'):
-
-            msg = "SAMP does not support loading from memory; using tempfile"
-            log.debug(msg)
-            raise ValueError(msg)
-
-        # Legacy pyds9/XPA
-        # (could be deleted because pyds9 is no longer maintained)
-        status = 0
-        with contextlib.closing(io.BytesIO()) as new_file:
-            new_file.name = ffile
-            try:
-                data.writeto(new_file, overwrite=True)
-                new_fits = new_file.getvalue()
-
-                log.debug("Running DS9 command: {}".format(cmd))
-                status = self.run(cmd, buf=[new_fits,
-                                            len(new_fits)])
-            except (TypeError, ValueError):
-                msg = "Cannot load image {} " \
-                      "from memory".format(ffile)
-                log.warning(msg)
-                raise ValueError(msg)
-        return status
+        # SAMP does not support loading from memory
+        msg = "SAMP does not support loading from memory; using tempfile"
+        log.debug(msg)
+        raise ValueError(msg)
 
     def _make_s2n(self, ffile, hdul):
         """Retrieve or make an S/N image."""
