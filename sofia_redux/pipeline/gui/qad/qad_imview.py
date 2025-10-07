@@ -10,6 +10,7 @@ import warnings
 
 from astropy.io import fits
 from astropy import log, modeling, stats, table, wcs
+from astropy.samp.errors import SAMPHubError
 import numpy as np
 from scipy.stats import gmean
 
@@ -2045,7 +2046,7 @@ class QADImView(object):
 
         try:
             self.ds9=DS9()
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, SAMPHubError):
             raise ValueError('DS9 is not accessible via SAMP.') from None
 
         # reset files and regions instead
