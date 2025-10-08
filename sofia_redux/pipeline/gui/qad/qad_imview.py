@@ -976,8 +976,17 @@ class QADImView(object):
     def _load_from_tempfile(self, cmd, ffile, data):
         """Write a tempfile and load it into DS9."""
         import time
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.fits') as \
-                new_file:
+        # Use original filename as prefix for temp file
+        # for a useful display in DS9
+        base_name = os.path.basename(ffile)
+        # Remove .fits extension to avoid double .fits
+        if base_name.lower().endswith('.fits'):
+            prefix = base_name[:-5] + '_'
+        else:
+            prefix = base_name + '_'
+
+        with tempfile.NamedTemporaryFile(delete=False, prefix=prefix,
+                                          suffix='.fits') as new_file:
             new_name = new_file.name
         try:
             data.writeto(new_name, overwrite=True)
@@ -2041,19 +2050,11 @@ class QADImView(object):
         """Start up DS9."""
         log.debug('Starting DS9.')
 
-        # lazy import ds9samp because it has non-trivial startup behavior
-        try:
-            from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9
-        except (ImportError, ValueError):
-            # ds9samp sometimes fails to import for internal reasons.
-            log.error('Cannot import DS9 Samp Adapter. DS9 display '
-                      'will not be available.')
-            self.HAS_DS9 = False
-            return
+        from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9
 
         try:
             self.ds9 = DS9()
-        except (TypeError, ValueError, SAMPHubError):
+        except (ImportError, TypeError, ValueError, SAMPHubError):
             log.error('DS9 is not accessible via SAMP. DS9 display '
                       'will not be available.')
             self.HAS_DS9 = False
