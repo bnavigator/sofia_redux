@@ -691,14 +691,6 @@ class QADViewer(Viewer):
             log.error("QAD not found; Viewer will not display data.")
             self.embedded = False
             return
-        try:
-            from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9
-            assert DS9
-        except ImportError:
-            log.warning('DS9 SAMP not found. Images will not display.')
-            HAS_DS9 = False
-        else:
-            HAS_DS9 = True
 
 
         # read settings if available
@@ -726,8 +718,6 @@ class QADViewer(Viewer):
         # disable EyeViewer -- it is run separately for the
         # Redux interface
         self.imviewer.HAS_EYE = False
-        # set initial value for ds9 check -- it will check itself as well
-        self.imviewer.HAS_DS9 = HAS_DS9
 
         self.settings = QADViewerSettings(self.imviewer, parent=parent)
         self.settings.cfg_dir = cfg_dir

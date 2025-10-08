@@ -1,8 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """DS9 Image Viewer for QAD."""
 
-import contextlib
-import io
 import os
 import re
 import tempfile
@@ -124,6 +122,7 @@ class QADImView(object):
         self.break_loop = False
 
         # flag for viewer availability
+        # HAS_DS9 starts as True. startup() will set to False if connection fails
         self.HAS_DS9 = True
         self.HAS_EYE = HAS_EYE
         if not self.HAS_EYE:  # pragma: no cover
@@ -2051,13 +2050,17 @@ class QADImView(object):
                       'will not be available.')
             self.HAS_DS9 = False
             return
-        else:
-            self.HAS_DS9 = True
 
         try:
-            self.ds9=DS9()
+            self.ds9 = DS9()
         except (TypeError, ValueError, SAMPHubError):
-            raise ValueError('DS9 is not accessible via SAMP.') from None
+            log.error('DS9 is not accessible via SAMP. DS9 display '
+                      'will not be available.')
+            self.HAS_DS9 = False
+            return
+
+        # DS9 successfully started and connected
+        self.HAS_DS9 = True
 
         # reset files and regions instead
         self.files = []

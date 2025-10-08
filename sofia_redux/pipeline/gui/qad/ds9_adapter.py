@@ -39,19 +39,40 @@ class DS9:
                 "Install with: pip install ds9samp") from None
 
         self._ds9_process = None
+        self._target = target
+        self._ensure_ds9_available(start_ds9)
+        self._connect_to_ds9()
 
-        if not self._is_ds9_running():
-            if start_ds9:
-                log.info("DS9 not found. Starting DS9 with SAMP support...")
-                self._start_ds9()
-                self._wait_for_ds9_startup()
-            else:
-                raise ValueError(
-                    "DS9 is not running or not SAMP-enabled. Please "
-                    "start DS9 with 'ds9 -samp' or set start_ds9=True")
+    def _ensure_ds9_available(self, start_ds9):
+        """
+        Ensure DS9 is running and available.
 
-        # Start ds9samp connection
-        self._ds9 = ds9samp.start(client=target)
+        Parameters
+        ----------
+        start_ds9 : bool
+            If True, start DS9 if not running.
+
+        Raises
+        ------
+        ValueError
+            If DS9 is not running and start_ds9 is False.
+        """
+        if self._is_ds9_running():
+            return
+
+        if not start_ds9:
+            raise ValueError(
+                "DS9 is not running or not SAMP-enabled. Please "
+                "start DS9 with 'ds9 -samp' or set start_ds9=True")
+
+        log.info("DS9 not found. Starting DS9 with SAMP support...")
+        self._start_ds9()
+        self._wait_for_ds9_startup()
+
+    def _connect_to_ds9(self):
+        """Establish SAMP connection to DS9."""
+        import ds9samp
+        self._ds9 = ds9samp.start(client=self._target)
         self._ds9.timeout = 30
 
     def _find_ds9_executable(self):
@@ -147,9 +168,8 @@ class DS9:
         try:
             import ds9samp
             # try to create a temporary connection to check if DS9 is SAMP-ready
-            test_ds9 = ds9samp.start()
-            result = test_ds9.get("version", timeout=1)
-            ds9samp.end(test_ds9)
+            with ds9samp.ds9samp() as test_ds9:
+                result = test_ds9.get("version", timeout=1)
             return result is not None and result.strip() != ""
         except Exception as e:
             log.debug(f"DS9 SAMP check failed: {e}")

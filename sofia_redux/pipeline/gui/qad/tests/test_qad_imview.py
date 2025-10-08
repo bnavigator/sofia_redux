@@ -156,6 +156,9 @@ class TestQADImView(object):
         imviewer.disp_parameters = imviewer.default_parameters('display')
         imviewer.phot_parameters = imviewer.default_parameters('photometry')
         imviewer.plot_parameters = imviewer.default_parameters('plot')
+        # Set HAS_DS9 to True and initialize ds9 with MockDS9 for tests
+        imviewer.HAS_DS9 = True
+        imviewer.ds9 = MockDS9()
         return imviewer
 
     def test_init(self, mocker, capsys):
@@ -1173,11 +1176,10 @@ class TestQADImView(object):
         ffile = self.make_file(tmpdir)
         data = fits.open(ffile)
 
-        # load from memory raises error
-        with pytest.raises(ValueError):
+        # load from memory raises error (SAMP does not support it)
+        with pytest.raises(ValueError) as exc_info:
             imviewer._load_from_memory('test cmd', 'test_file.fits', data)
-        capt = capsys.readouterr()
-        assert 'Cannot load image' in capt.err
+        assert 'SAMP does not support loading from memory' in str(exc_info.value)
 
         # load from tempfile just issues message
         status = imviewer._load_from_tempfile('test cmd',
