@@ -28,16 +28,6 @@ class DS9:
         **kwargs
             Additional arguments (ignored for compatibility).
         """
-        try:
-            import ds9samp
-        except ImportError:
-            log.warning(
-                "ds9samp is not installed. Please install it with: "
-                "pip install ds9samp")
-            raise ImportError(
-                "ds9samp is required for DS9 SAMP integration. "
-                "Install with: pip install ds9samp") from None
-
         self._ds9_process = None
         self._target = target
         self._ensure_ds9_available(start_ds9)
@@ -71,7 +61,15 @@ class DS9:
 
     def _connect_to_ds9(self):
         """Establish SAMP connection to DS9."""
-        import ds9samp
+        try:
+            import ds9samp
+        except ImportError:
+            log.warning(
+                "ds9samp is not installed. Please install it with: "
+                "pip install ds9samp")
+            raise ImportError(
+                "ds9samp is required for DS9 SAMP integration. "
+                "Install with: pip install ds9samp") from None
         self._ds9 = ds9samp.start(client=self._target)
         self._ds9.timeout = 30
 

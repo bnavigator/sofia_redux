@@ -156,9 +156,8 @@ class TestQADImView(object):
         imviewer.disp_parameters = imviewer.default_parameters('display')
         imviewer.phot_parameters = imviewer.default_parameters('photometry')
         imviewer.plot_parameters = imviewer.default_parameters('plot')
-        # Set HAS_DS9 to True and initialize ds9 with MockDS9 for tests
-        imviewer.HAS_DS9 = True
-        imviewer.ds9 = MockDS9()
+        # HAS_DS9 is already True by default; ds9 starts as None
+        # so startup() will be called when first needed
         return imviewer
 
     def test_init(self, mocker, capsys):
@@ -621,9 +620,12 @@ class TestQADImView(object):
 
         # now cause a value error on init (inaccessible DS9)
         MockDS9.raise_error_init = True
-        with pytest.raises(ValueError) as err:
-            imviewer.startup()
-        assert 'not accessible' in str(err.value)
+        capsys.readouterr()
+        imviewer.startup()
+        # startup should handle the error gracefully
+        assert imviewer.HAS_DS9 is False
+        capt = capsys.readouterr()
+        assert 'not accessible' in capt.err
         MockDS9.raise_error_init = False
 
         # now cause an import error; verify it's not passed on
@@ -1179,7 +1181,8 @@ class TestQADImView(object):
         # load from memory raises error (SAMP does not support it)
         with pytest.raises(ValueError) as exc_info:
             imviewer._load_from_memory('test cmd', 'test_file.fits', data)
-        assert 'SAMP does not support loading from memory' in str(exc_info.value)
+        assert 'SAMP does not support loading from memory' in \
+            str(exc_info.value)
 
         # load from tempfile just issues message
         status = imviewer._load_from_tempfile('test cmd',

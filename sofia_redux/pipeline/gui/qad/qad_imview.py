@@ -122,7 +122,7 @@ class QADImView(object):
         self.break_loop = False
 
         # flag for viewer availability
-        # HAS_DS9 starts as True. startup() will set to False if connection fails
+        # HAS_DS9 starts as True. startup() sets to False if it fails
         self.HAS_DS9 = True
         self.HAS_EYE = HAS_EYE
         if not self.HAS_EYE:  # pragma: no cover
