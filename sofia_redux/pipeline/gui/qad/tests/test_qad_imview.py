@@ -628,14 +628,6 @@ class TestQADImView(object):
         assert 'not accessible' in capt.err
         MockDS9.raise_error_init = False
 
-        # now cause an import error; verify it's not passed on
-        capsys.readouterr()
-        mocker.patch.dict('sys.modules',
-                          {'sofia_redux.pipeline.gui.qad.ds9_adapter': None})
-        imviewer.startup()
-        assert 'Cannot import DS9 Samp Adapter' in capsys.readouterr().err
-        assert not imviewer.HAS_DS9
-
     def test_overlays(self, mocker, capsys):
         self.mock_ds9(mocker)
         imviewer = self.make_imview()

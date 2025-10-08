@@ -985,31 +985,34 @@ class QADImView(object):
         else:
             prefix = base_name + '_'
 
-        with tempfile.NamedTemporaryFile(delete=False, prefix=prefix,
-                                          suffix='.fits') as new_file:
-            new_name = new_file.name
         try:
-            data.writeto(new_name, overwrite=True)
+            with tempfile.NamedTemporaryFile(delete=False, prefix=prefix,
+                                              suffix='.fits') as new_file:
+                new_name = new_file.name
+                # Close the file handle
+                new_file.close()
 
-            # Get absolute path
-            new_name_abs = os.path.abspath(new_name)
+                data.writeto(new_name, overwrite=True)
 
-            # For SAMP, convert Windows backslashes to forward slashes
-            # preventing that they are interpreted as escape characters
-            if hasattr(self.ds9, '_ds9'):
-                new_name_abs = new_name_abs.replace('\\', '/')
-                log.debug("Path for SAMP: {}".format(new_name_abs))
+                # Get absolute path
+                new_name_abs = os.path.abspath(new_name)
 
-            ds9_cmd = "{} {}".format(cmd, new_name_abs)
-            log.debug("Running DS9 command: {}".format(ds9_cmd))
-            status = self.run(ds9_cmd)
+                # For SAMP, convert Windows backslashes to forward slashes
+                # preventing that they are interpreted as escape characters
+                if hasattr(self.ds9, '_ds9'):
+                    new_name_abs = new_name_abs.replace('\\', '/')
+                    log.debug("Path for SAMP: {}".format(new_name_abs))
 
-            # wait before deleting the tempfile
-            if hasattr(self.ds9, '_ds9'):
-                # Using SAMP, need to wait for DS9 to load the file
-                time.sleep(0.5)
+                ds9_cmd = "{} {}".format(cmd, new_name_abs)
+                log.debug("Running DS9 command: {}".format(ds9_cmd))
+                status = self.run(ds9_cmd)
 
-            os.remove(new_name)
+                # wait before deleting the tempfile
+                if hasattr(self.ds9, '_ds9'):
+                    # Using SAMP, need to wait for DS9 to load the file
+                    time.sleep(0.1)
+
+                os.remove(new_name)
         except (TypeError, OSError, ValueError):
             log.warning("Cannot load image {} "
                         "from tempfile".format(ffile))
