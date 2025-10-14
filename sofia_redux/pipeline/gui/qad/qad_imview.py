@@ -291,7 +291,7 @@ class QADImView(object):
                         'lock_image': 'wcs',
                         'lock_slice': 'image',
                         'scale': 'zscale',
-                        'cmap': 'none',
+                        'cmap': 'sls',
                         'zoom_fit': True,
                         'tile': True,
                         's2n_range': None,
@@ -975,7 +975,6 @@ class QADImView(object):
 
     def _load_from_tempfile(self, cmd, ffile, data):
         """Write a tempfile and load it into DS9."""
-        import time
         # Use original filename as prefix for temp file
         # for a useful display in DS9
         base_name = os.path.basename(ffile)
@@ -986,16 +985,13 @@ class QADImView(object):
             prefix = base_name + '_'
 
         try:
-            with tempfile.NamedTemporaryFile(delete=False, prefix=prefix,
+            with tempfile.NamedTemporaryFile(delete=True, prefix=prefix,
                                               suffix='.fits') as new_file:
-                new_name = new_file.name
-                # Close the file handle
-                new_file.close()
-
-                data.writeto(new_name, overwrite=True)
+                # Write directly to the open file object
+                data.writeto(new_file, overwrite=True)
 
                 # Get absolute path
-                new_name_abs = os.path.abspath(new_name)
+                new_name_abs = os.path.abspath(new_file.name)
 
                 # For SAMP, convert Windows backslashes to forward slashes
                 # preventing that they are interpreted as escape characters
@@ -1007,12 +1003,11 @@ class QADImView(object):
                 log.debug("Running DS9 command: {}".format(ds9_cmd))
                 status = self.run(ds9_cmd)
 
-                # wait before deleting the tempfile
-                if hasattr(self.ds9, '_ds9'):
-                    # Using SAMP, need to wait for DS9 to load the file
-                    time.sleep(0.1)
+                # Apply zoom to fit if enabled
+                if self.disp_parameters.get('zoom_fit', True):
+                    self.run('zoom to fit')
 
-                os.remove(new_name)
+                # File will be automatically deleted when context exits
         except (TypeError, OSError, ValueError):
             log.warning("Cannot load image {} "
                         "from tempfile".format(ffile))
