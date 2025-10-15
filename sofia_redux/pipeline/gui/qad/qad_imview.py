@@ -117,6 +117,7 @@ class QADImView(object):
         self.phot_parameters = self.default_parameters('photometry')
         self.plot_parameters = self.default_parameters('plot')
         self.cs = None
+        self._temp_dir = None  # Temporary directory for FITS files
 
         # useful for testing: flag to always break imexam loop
         self.break_loop = False
@@ -975,8 +976,12 @@ class QADImView(object):
 
     def _load_from_tempfile(self, cmd, ffile, data):
         """Write a tempfile and load it into DS9."""
-        # Use original filename as prefix for temp file
-        # for a useful display in DS9
+        # Create temp directory
+        if self._temp_dir is None:
+            self._temp_dir = tempfile.mkdtemp(prefix='ds9_')
+            log.debug(f"Created temp directory: {self._temp_dir}")
+
+        # Use original filename as base for temp file
         base_name = os.path.basename(ffile)
         # Remove .fits extension to avoid double .fits
         if base_name.lower().endswith('.fits'):
@@ -985,34 +990,50 @@ class QADImView(object):
             prefix = base_name + '_'
 
         try:
-            with tempfile.NamedTemporaryFile(delete=True, prefix=prefix,
-                                              suffix='.fits') as new_file:
-                # Write directly to the open file object
-                data.writeto(new_file, overwrite=True)
+            # Create temp file in temp directory
+            fd, temp_path = tempfile.mkstemp(prefix=prefix, suffix='.fits',
+                                             dir=self._temp_dir)
+            os.close(fd)  # Close file descriptor
 
-                # Get absolute path
-                new_name_abs = os.path.abspath(new_file.name)
+            # Write FITS data to temp file
+            data.writeto(temp_path, overwrite=True)
 
-                # For SAMP, convert Windows backslashes to forward slashes
-                # preventing that they are interpreted as escape characters
-                if hasattr(self.ds9, '_ds9'):
-                    new_name_abs = new_name_abs.replace('\\', '/')
-                    log.debug("Path for SAMP: {}".format(new_name_abs))
+            # Get absolute path
+            new_name_abs = os.path.abspath(temp_path)
 
-                ds9_cmd = "{} {}".format(cmd, new_name_abs)
-                log.debug("Running DS9 command: {}".format(ds9_cmd))
-                status = self.run(ds9_cmd)
+            # For SAMP, convert Windows backslashes to forward slashes
+            # preventing that they are interpreted as escape characters
+            if hasattr(self.ds9, '_ds9'):
+                new_name_abs = new_name_abs.replace('\\', '/')
+                log.debug("Path for SAMP: {}".format(new_name_abs))
 
-                # Apply zoom to fit if enabled
-                if self.disp_parameters.get('zoom_fit', True):
-                    self.run('zoom to fit')
+            ds9_cmd = "{} {}".format(cmd, new_name_abs)
+            log.debug("Running DS9 command: {}".format(ds9_cmd))
+            status = self.run(ds9_cmd)
 
-                # File will be automatically deleted when context exits
+            # Apply zoom to fit if enabled
+            if self.disp_parameters.get('zoom_fit', True):
+                self.run('zoom to fit')
+
+            # File and temp dir will be deleted with cleanup
         except (TypeError, OSError, ValueError):
             log.warning("Cannot load image {} "
                         "from tempfile".format(ffile))
             status = 0
         return status
+
+    def _cleanup_temp_dir(self):
+        """Clean up temporary directory and all files in it."""
+        if self._temp_dir is not None and os.path.exists(self._temp_dir):
+            try:
+                import shutil
+                shutil.rmtree(self._temp_dir)
+                log.debug(f"Removed temp directory: {self._temp_dir}")
+            except Exception as e:
+                log.debug(f"Could not remove temp directory "
+                          f"{self._temp_dir}: {e}")
+            finally:
+                self._temp_dir = None
 
     def _load_from_memory(self, cmd, ffile, data):
         """Use BytesIO to stream HDU data to DS9.
@@ -2072,3 +2093,5 @@ class QADImView(object):
             self._run_internal('quit')
         except Exception as e:
             log.error(f'Error occured while quitting {e}')
+        # Clean up temporary directory
+        self._cleanup_temp_dir()
