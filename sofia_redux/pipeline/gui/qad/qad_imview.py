@@ -998,16 +998,14 @@ class QADImView(object):
             # Write FITS data to temp file
             data.writeto(temp_path, overwrite=True)
 
-            # Get absolute path
-            new_name_abs = os.path.abspath(temp_path)
-
             # For SAMP, convert Windows backslashes to forward slashes
             # preventing that they are interpreted as escape characters
+            ds9_path = temp_path
             if hasattr(self.ds9, '_ds9'):
-                new_name_abs = new_name_abs.replace('\\', '/')
-                log.debug("Path for SAMP: {}".format(new_name_abs))
+                ds9_path = temp_path.replace('\\', '/')
+                log.debug("Path for SAMP: {}".format(ds9_path))
 
-            ds9_cmd = "{} {}".format(cmd, new_name_abs)
+            ds9_cmd = "{} {}".format(cmd, ds9_path)
             log.debug("Running DS9 command: {}".format(ds9_cmd))
             status = self.run(ds9_cmd)
 
