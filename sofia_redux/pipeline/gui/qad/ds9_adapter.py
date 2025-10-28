@@ -55,7 +55,7 @@ class DS9:
                 "DS9 is not running or not SAMP-enabled. Please "
                 "start DS9 with 'ds9 -samp' or set start_ds9=True")
 
-        log.info("DS9 not found. Starting DS9 with SAMP support...")
+        log.info("Starting DS9 with SAMP support...")
         self._start_ds9()
         self._wait_for_ds9_startup()
 
