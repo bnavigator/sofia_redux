@@ -64,7 +64,7 @@ all = [
     "pytest-qt>=3.3.0"
 ]
 display = [
-    "pyds9>=1.8.1",
+    "ds9samp>=0.1.0",
     "regions>=0.5"
 ]
 

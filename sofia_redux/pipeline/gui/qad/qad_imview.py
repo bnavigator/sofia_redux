@@ -1,8 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """DS9 Image Viewer for QAD."""
 
-import contextlib
-import io
 import os
 import re
 import tempfile
@@ -10,6 +8,7 @@ import warnings
 
 from astropy.io import fits
 from astropy import log, modeling, stats, table, wcs
+from astropy.samp.errors import SAMPHubError
 import numpy as np
 from scipy.stats import gmean
 
@@ -70,7 +69,7 @@ class QADImView(object):
 
     Attributes
     ----------
-    ds9 : pyds9.DS9
+    ds9 : ds9samp_adapter.DS9
         DS9 instance to display images to.
     specviewer : EyeViewer
         Eye instance to display spectra to.
@@ -118,11 +117,13 @@ class QADImView(object):
         self.phot_parameters = self.default_parameters('photometry')
         self.plot_parameters = self.default_parameters('plot')
         self.cs = None
+        self._temp_dir = None  # Temporary directory for FITS files
 
         # useful for testing: flag to always break imexam loop
         self.break_loop = False
 
         # flag for viewer availability
+        # HAS_DS9 starts as True. startup() sets to False if it fails
         self.HAS_DS9 = True
         self.HAS_EYE = HAS_EYE
         if not self.HAS_EYE:  # pragma: no cover
@@ -166,7 +167,7 @@ class QADImView(object):
 
     def _run_internal(self, cmd, buf=None, via='set'):
         """
-        Format commands to send to PyDS9.
+        Format commands to send to ds9samp.
 
         Parameters
         ----------
@@ -200,7 +201,7 @@ class QADImView(object):
                 try:
                     retval = self.ds9.get(cmd)
                 except TypeError as err:
-                    log.error('Error in pyds9')
+                    log.error('Error in ds9samp communication')
                     log.debug(err)
         else:
             log.error('Unknown ds9 interaction command: ' + str(via))
@@ -291,7 +292,7 @@ class QADImView(object):
                         'lock_image': 'wcs',
                         'lock_slice': 'image',
                         'scale': 'zscale',
-                        'cmap': 'none',
+                        'cmap': 'sls',
                         'zoom_fit': True,
                         'tile': True,
                         's2n_range': None,
@@ -849,8 +850,9 @@ class QADImView(object):
                     imgdata[j] = s2n
 
                 try:
-                    frame_to_load = int(self.run('frame', via='get')) + 1
-                except ValueError:
+                    frame_result = self.run('frame', via='get')
+                    frame_to_load = int(frame_result) + 1
+                except (ValueError, TypeError):
                     frame_to_load = 1
                 if exten != '':
                     extenstr = f'[{exten}]'
@@ -869,7 +871,7 @@ class QADImView(object):
                         self.run('frame new')
 
                         # display FILENAME keyword in addition to filename
-                        self.run('view keyvalue "{}"'.format("'FILENAME'"))
+                        self.run("view keyvalue 'FILENAME'")
                         self.run('view keyword yes')
 
                         if exten != '' and str(exten).upper() != 'S/N':
@@ -905,11 +907,11 @@ class QADImView(object):
                             continue
                         else:
                             status = 0
-                            log.error(f'Error in XPA command: {ds9_cmd}')
+                            log.error(f'Error in samp command: {ds9_cmd}')
                             log.error(msg)
                     else:
                         status = 0
-                        log.error(f'Error in XPA command: {ds9_cmd}')
+                        log.error(f'Error in samp command: {ds9_cmd}')
                         log.error(msg)
                 if status == 1 and self.disp_parameters['overplots']:
                     # overlay photometric and/or spectroscopic apertures
@@ -974,39 +976,74 @@ class QADImView(object):
 
     def _load_from_tempfile(self, cmd, ffile, data):
         """Write a tempfile and load it into DS9."""
-        with tempfile.NamedTemporaryFile(delete=False) as \
-                new_file:
-            new_name = new_file.name
+        # Create temp directory
+        if self._temp_dir is None:
+            self._temp_dir = tempfile.mkdtemp(prefix='ds9_')
+            log.debug(f"Created temp directory: {self._temp_dir}")
+
+        # Use original filename as base for temp file
+        base_name = os.path.basename(ffile)
+        # Remove .fits extension to avoid double .fits
+        if base_name.lower().endswith('.fits'):
+            prefix = base_name[:-5] + '_'
+        else:
+            prefix = base_name + '_'
+
         try:
-            data.writeto(new_name, overwrite=True)
-            ds9_cmd = "{} {}".format(cmd, new_name)
+            # Create temp file in temp directory
+            fd, temp_path = tempfile.mkstemp(prefix=prefix, suffix='.fits',
+                                             dir=self._temp_dir)
+            os.close(fd)  # Close file descriptor
+
+            # Write FITS data to temp file
+            data.writeto(temp_path, overwrite=True)
+
+            # For SAMP, convert Windows backslashes to forward slashes
+            # preventing that they are interpreted as escape characters
+            ds9_path = temp_path
+            if hasattr(self.ds9, '_ds9'):
+                ds9_path = temp_path.replace('\\', '/')
+                log.debug("Path for SAMP: {}".format(ds9_path))
+
+            ds9_cmd = "{} {}".format(cmd, ds9_path)
             log.debug("Running DS9 command: {}".format(ds9_cmd))
             status = self.run(ds9_cmd)
-            os.remove(new_name)
+
+            # Apply zoom to fit if enabled
+            if self.disp_parameters.get('zoom_fit', True):
+                self.run('zoom to fit')
+
+            # File and temp dir will be deleted with cleanup
         except (TypeError, OSError, ValueError):
             log.warning("Cannot load image {} "
                         "from tempfile".format(ffile))
             status = 0
         return status
 
-    def _load_from_memory(self, cmd, ffile, data):
-        """Use BytesIO to stream HDU data to DS9."""
-        status = 0
-        with contextlib.closing(io.BytesIO()) as new_file:
-            new_file.name = ffile
+    def _cleanup_temp_dir(self):
+        """Clean up temporary directory and all files in it."""
+        if self._temp_dir is not None and os.path.exists(self._temp_dir):
             try:
-                data.writeto(new_file, overwrite=True)
-                new_fits = new_file.getvalue()
+                import shutil
+                shutil.rmtree(self._temp_dir)
+                log.debug(f"Removed temp directory: {self._temp_dir}")
+            except Exception as e:
+                log.debug(f"Could not remove temp directory "
+                          f"{self._temp_dir}: {e}")
+            finally:
+                self._temp_dir = None
 
-                log.debug("Running DS9 command: {}".format(cmd))
-                status = self.run(cmd, buf=[new_fits,
-                                            len(new_fits)])
-            except (TypeError, ValueError):
-                msg = "Cannot load image {} " \
-                      "from memory".format(ffile)
-                log.warning(msg)
-                raise ValueError(msg)
-        return status
+    def _load_from_memory(self, cmd, ffile, data):
+        """Use BytesIO to stream HDU data to DS9.
+
+        SAMP protocol does not support binary data streaming which
+        caused the warning. Now it will just show the debug message
+        that it is using the tempfile.
+        """
+        # SAMP does not support loading from memory
+        msg = "SAMP does not support loading from memory; using tempfile"
+        log.debug(msg)
+        raise ValueError(msg)
 
     def _make_s2n(self, ffile, hdul):
         """Retrieve or make an S/N image."""
@@ -1113,7 +1150,6 @@ class QADImView(object):
         # retrieve header for photometry keywords
         # from current frame only
         hdr_str = self.run('fits header', via='get')
-
         # read it in to a fits header
         phdr = fits.Header()
         hdr = phdr.fromstring(hdr_str, sep='\n')
@@ -1123,7 +1159,7 @@ class QADImView(object):
             srcposy = hdr['SRCPOSY'] + 1
             s1 = 'point({:f} {:f}) # ' \
                  'point=x ' \
-                 'color=blue tag={{srcpos}} '\
+                 'color=blue tag=srcpos '\
                  'text=SRCPOS'.format(srcposx, srcposy)
             self.run('regions', s1)
         except (KeyError, ValueError):
@@ -1135,14 +1171,14 @@ class QADImView(object):
             photskap = [float(x) for x in hdr['PHOTSKAP'].split(',')]
             s1 = 'point({:f} {:f}) # ' \
                  'point=x ' \
-                 'color=cyan tag={{srcpos}}'.format(stcentx, stcenty)
+                 'color=cyan tag=srcpos'.format(stcentx, stcenty)
             self.run('regions', s1)
             s2 = 'circle({:f} {:f} {:f}) # ' \
-                 'color=cyan tag={{srcpos}}'.format(
+                 'color=cyan tag=srcpos'.format(
                      stcentx, stcenty, photaper)
             self.run('regions', s2)
             s3 = 'annulus({:f} {:f} {:f} {:f}) # ' \
-                 'color=cyan tag={{srcpos}} text=STCENT'.format(
+                 'color=cyan tag=srcpos text=STCENT'.format(
                      stcentx, stcenty, photskap[0], photskap[1])
             self.run('regions', s3)
         except (KeyError, ValueError):
@@ -1208,7 +1244,7 @@ class QADImView(object):
             else:
                 psfrad = None
             line_template = 'wcs; linear; line({:f} {:f} {:f} {:f}) # ' \
-                            'color={:s} tag={{aperture}} '\
+                            'color={:s} tag=aperture '\
                             'width={:d}'
             for j in range(len(appos)):
                 pos = float(appos[j])
@@ -1552,15 +1588,15 @@ class QADImView(object):
             # set region
             b0 = 'point({:f} {:f}) # ' \
                  'point=x ' \
-                 'color=green tag={{imexam}}'.format(xcent, ycent)
+                 'color=green tag=imexam'.format(xcent, ycent)
             self.run('regions', b0)
             b1 = 'circle({:f} {:f} {:f}) # ' \
-                'color=green tag={{imexam}}'.format(xcent, ycent, psfr)
+                'color=green tag=imexam'.format(xcent, ycent, psfr)
             self.run('regions', b1)
             if do_bg:
                 b2 = 'annulus({:f} {:f} {:f} {:f}) # ' \
                     'color=red ' \
-                     'tag={{imexam}}'.format(xcent, ycent,
+                     'tag=imexam'.format(xcent, ycent,
                                              skyrad[0], skyrad[1])
                 self.run('regions', b2)
 
@@ -2031,22 +2067,18 @@ class QADImView(object):
         """Start up DS9."""
         log.debug('Starting DS9.')
 
-        # lazy import pyds9 because it has non-trivial startup behavior
+        from sofia_redux.pipeline.gui.qad.ds9_adapter import DS9
+
         try:
-            import pyds9
-        except (ImportError, ValueError):
-            # PyDS9 sometimes fails to import for internal reasons.
-            log.error('Cannot import PyDS9. DS9 display '
+            self.ds9 = DS9()
+        except (ImportError, TypeError, ValueError, SAMPHubError):
+            log.error('DS9 is not accessible via SAMP. DS9 display '
                       'will not be available.')
             self.HAS_DS9 = False
             return
-        else:
-            self.HAS_DS9 = True
 
-        try:
-            self.ds9 = pyds9.DS9()
-        except (TypeError, ValueError):
-            raise ValueError('DS9 is not accessible.') from None
+        # DS9 successfully started and connected
+        self.HAS_DS9 = True
 
         # reset files and regions instead
         self.files = []
@@ -2057,5 +2089,7 @@ class QADImView(object):
         self.break_loop = True
         try:
             self._run_internal('quit')
-        except Exception:
-            pass
+        except Exception as e:
+            log.error(f'Error occured while quitting {e}')
+        # Clean up temporary directory
+        self._cleanup_temp_dir()

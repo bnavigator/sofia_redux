@@ -123,10 +123,14 @@ class TestQADImView(object):
         delattr(self, 'log_level')
 
     def mock_ds9(self, mocker):
-        """Mock the pyds9 DS9 class."""
-        mock_pyds9 = types.ModuleType('pyds9')
-        mock_pyds9.DS9 = MockDS9
-        mocker.patch.dict('sys.modules', {'pyds9': mock_pyds9})
+        """Mock the DS9 adapter class."""
+        # Mock the ds9_adapter module to use MockDS9
+        mock_ds9_adapter = types.ModuleType(
+            'sofia_redux.pipeline.gui.qad.ds9_adapter')
+        mock_ds9_adapter.DS9 = MockDS9
+        mocker.patch.dict('sys.modules',
+                          {'sofia_redux.pipeline.gui.qad.ds9_adapter':
+                           mock_ds9_adapter})
 
         # also mock the plotter
         mocker.patch('sofia_redux.pipeline.gui.qad.qad_imview.MatplotlibPlot',
@@ -152,6 +156,8 @@ class TestQADImView(object):
         imviewer.disp_parameters = imviewer.default_parameters('display')
         imviewer.phot_parameters = imviewer.default_parameters('photometry')
         imviewer.plot_parameters = imviewer.default_parameters('plot')
+        # HAS_DS9 is already True by default; ds9 starts as None
+        # so startup() will be called when first needed
         return imviewer
 
     def test_init(self, mocker, capsys):
@@ -201,14 +207,14 @@ class TestQADImView(object):
         assert result == ''
         assert 'No loaded data' in capsys.readouterr().out
 
-        # also check for type error from pyds9
+        # also check for type error from ds9
         def mock_err(*args, **kwargs):
             raise TypeError('test error')
         mocker.patch.object(MockDS9, 'get', mock_err)
         imviewer.ds9 = MockDS9()
         imviewer._run_internal('test command', via='get')
         capt = capsys.readouterr()
-        assert 'error in pyds9' in capt.err.lower()
+        assert 'error in ds9samp' in capt.err.lower()
 
     def test_defaults(self, mocker):
         """Test for default type options in default_parameters."""
@@ -614,17 +620,13 @@ class TestQADImView(object):
 
         # now cause a value error on init (inaccessible DS9)
         MockDS9.raise_error_init = True
-        with pytest.raises(ValueError) as err:
-            imviewer.startup()
-        assert 'not accessible' in str(err.value)
-        MockDS9.raise_error_init = False
-
-        # now cause an import error; verify it's not passed on
         capsys.readouterr()
-        mocker.patch.dict('sys.modules', {'pyds9': None})
         imviewer.startup()
-        assert 'Cannot import PyDS9' in capsys.readouterr().err
-        assert not imviewer.HAS_DS9
+        # startup should handle the error gracefully
+        assert imviewer.HAS_DS9 is False
+        capt = capsys.readouterr()
+        assert 'not accessible' in capt.err
+        MockDS9.raise_error_init = False
 
     def test_overlays(self, mocker, capsys):
         self.mock_ds9(mocker)
@@ -1168,11 +1170,11 @@ class TestQADImView(object):
         ffile = self.make_file(tmpdir)
         data = fits.open(ffile)
 
-        # load from memory raises error
-        with pytest.raises(ValueError):
+        # load from memory raises error (SAMP does not support it)
+        with pytest.raises(ValueError) as exc_info:
             imviewer._load_from_memory('test cmd', 'test_file.fits', data)
-        capt = capsys.readouterr()
-        assert 'Cannot load image' in capt.err
+        assert 'SAMP does not support loading from memory' in \
+            str(exc_info.value)
 
         # load from tempfile just issues message
         status = imviewer._load_from_tempfile('test cmd',
@@ -1241,14 +1243,14 @@ class TestQADImView(object):
         with pytest.raises(ValueError):
             imviewer.load(ffile)
         capt = capsys.readouterr()
-        assert 'Error in XPA command' in capt.err
+        assert 'Error in samp command' in capt.err
 
         # raise error without extension
         imviewer.disp_parameters['extension'] = 'first'
         with pytest.raises(ValueError):
             imviewer.load(ffile)
         capt = capsys.readouterr()
-        assert 'Error in XPA command' in capt.err
+        assert 'Error in samp command' in capt.err
 
         # reset
         MockDS9.verbose = False

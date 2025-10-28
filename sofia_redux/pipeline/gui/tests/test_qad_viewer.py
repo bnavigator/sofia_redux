@@ -152,9 +152,13 @@ class TestQADViewer(object):
         return ffile
 
     def mock_ds9(self, mocker):
-        mock_pyds9 = types.ModuleType('pyds9')
-        mock_pyds9.DS9 = MockDS9
-        mocker.patch.dict('sys.modules', {'pyds9': mock_pyds9})
+        # Mock the ds9_adapter module to use MockDS9
+        mock_ds9_adapter = types.ModuleType(
+            'sofia_redux.pipeline.gui.qad.ds9_adapter')
+        mock_ds9_adapter.DS9 = MockDS9
+        mocker.patch.dict('sys.modules',
+                          {'sofia_redux.pipeline.gui.qad.ds9_adapter':
+                           mock_ds9_adapter})
 
     def test_start(self, qtbot, mocker):
         self.mock_ds9(mocker)
