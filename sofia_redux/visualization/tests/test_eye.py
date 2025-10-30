@@ -478,6 +478,7 @@ class TestEye(object):
                            PyQt5.QtCore.Qt.Key_C)
         assert len(loaded_eye.view.figure.gallery.arts['fit']) == 0
 
+    @pytest.mark.xfail("Cursor wiggle from bot not recognized")
     def test_cursor_location(self, loaded_eye, qtbot, mocker):
         mocker.patch.object(cursor_location.CursorLocation, 'show')
         window_mock = mocker.patch.object(cursor_location.CursorLocation,
