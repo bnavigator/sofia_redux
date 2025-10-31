@@ -152,6 +152,7 @@ addopts = "-p no:warnings"
 timeout = 1000
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "big: marks tests as requiring many resources (deselect with '-m \"not big\"')",
 ]
 
 [tool.coverage.run]

@@ -1880,6 +1880,7 @@ class TestIntegration(object):
         assert integ.perform('test') is False
         assert integ.comments == expected
 
+    @pytest.mark.big
     def test_get_fits_data(self, populated_integration):
         integ = populated_integration
         integ.setup_filters()
