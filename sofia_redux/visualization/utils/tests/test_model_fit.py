@@ -37,7 +37,7 @@ class TestModelFit(object):
 
     def test_init_param(self, mocker):
         load_mock = mocker.patch.object(model_fit.ModelFit, 'load_parameters')
-        model_fit.ModelFit(dict())
+        model_fit.ModelFit(dict(myid='fake'))
         load_mock.assert_called_once()
 
     def test_get_id(self):
