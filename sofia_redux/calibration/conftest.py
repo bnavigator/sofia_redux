@@ -7,7 +7,6 @@
 
 import os
 
-# For Astropy 3.0 and later, we can use the standalone pytest plugin
 try:
     from pytest_astropy_header.display import PYTEST_HEADER_MODULES, TESTED_VERSIONS
     ASTROPY_HEADER = True
