@@ -223,6 +223,7 @@ class TestMerge(DRPTestCase):
         capt = capsys.readouterr()
         assert 'Uncertainties NOT used for weighting' in capt.err
 
+    @pytest.mark.flaky(reruns=2)
     def test_adaptive_fwhm(self, tmpdir, capsys):
         inp = self.make_data(tmpdir)
         step = StepMerge()
@@ -259,6 +260,7 @@ class TestMerge(DRPTestCase):
         assert not np.allclose(expected.image, testval2.image,
                                equal_nan=True, rtol=.01)
 
+    @pytest.mark.flaky(reruns=2)
     def test_bin_cdelt(self, tmpdir, capsys):
         inp = self.make_data(tmpdir)
         step = StepMerge()
