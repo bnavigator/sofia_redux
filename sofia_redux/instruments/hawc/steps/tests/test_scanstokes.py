@@ -24,6 +24,7 @@ class TestScanStokes(DRPTestCase):
             inp.append(DataFits(ffile))
         return inp
 
+    @pytest.mark.slow
     def test_siso(self, tmpdir):
         inp = self.make_data(tmpdir)
 
@@ -88,6 +89,7 @@ class TestScanStokes(DRPTestCase):
         capt = capsys.readouterr()
         assert 'Unexpected number of HWP angles' in capt.err
 
+    @pytest.mark.slow
     def test_angles(self, tmpdir, capsys):
         inp = self.make_data(tmpdir, angle=[5.0, 60.0, 27.0, 80.0])
         with tmpdir.as_cwd():
@@ -128,6 +130,7 @@ class TestScanStokes(DRPTestCase):
         out = step(df)
         assert out.getheadval('HWPSTART') == hwpinit
 
+    @pytest.mark.slow
     def test_shift(self, tmpdir, capsys, mocker):
         inp = self.make_data(tmpdir, angle=[5.0, 60.0, 27.0, 80.0])
         with tmpdir.as_cwd():

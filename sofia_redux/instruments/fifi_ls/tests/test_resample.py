@@ -655,6 +655,7 @@ class TestResample:
         capt = capsys.readouterr()
         assert "Resampling using equatorial coordinates" in capt.out
 
+    @pytest.mark.slow
     def test_output_pixel_size(self, capsys, mocker, test_files):
         files = test_files('wsh')
 
