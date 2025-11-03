@@ -24,6 +24,7 @@ def test_options():
 
 
 @pytest.mark.timeout(0)
+@pytest.mark.slow
 class TestScanMap(DRPTestCase):
 
     def test_mimo(self, tmpdir, test_options):

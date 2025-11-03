@@ -960,6 +960,7 @@ class TestIntegration(object):
         freq, spec = integ.get_spectra()
         assert np.all(np.argmax(spec, axis=0) == idx)
 
+    @pytest.mark.slow
     def test_write_products(self, tmpdir, capsys, reduced_hawc_scan):
         integ = reduced_hawc_scan.integrations[0]
         integ.configuration.work_path = str(tmpdir)
@@ -1879,6 +1880,7 @@ class TestIntegration(object):
         assert integ.perform('test') is False
         assert integ.comments == expected
 
+    @pytest.mark.big
     def test_get_fits_data(self, populated_integration):
         integ = populated_integration
         integ.setup_filters()

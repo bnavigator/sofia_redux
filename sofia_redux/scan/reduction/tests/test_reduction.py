@@ -881,6 +881,7 @@ class TestReduction(object):
         capt = capsys.readouterr().out
         assert 'Reduction will process 2 scans using 2 parallel scans' in capt
 
+    @pytest.mark.slow
     def test_reduce(self, capsys, scan_file, tmpdir):
         reduction = Reduction('example')
 

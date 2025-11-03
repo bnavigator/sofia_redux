@@ -679,6 +679,7 @@ class TestExesReduction(object):
                               tmpdir.join('tmp2.png'), 0) is not None
 
     @pytest.mark.parametrize('mode', ['low', 'high_med'])
+    @pytest.mark.slow
     def test_all_steps(self, tmpdir, mode):
         # exercises nominal behavior for a standard reduction
         red = EXESReduction()
