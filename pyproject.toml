@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=77.0.3",
-            "setuptools_scm[toml]>=3.4.3",
+            "setuptools_scm>=8",
             "wheel"]
 build-backend = 'setuptools.build_meta'
 
@@ -138,7 +138,7 @@ eospec = "sofia_redux.visualization.controller:main"
 
 
 [tool.setuptools_scm]
-write_to = "sofia_redux/version.py"
+version_file = "sofia_redux/version.py"
 
 [tool.pytest.ini_options]
 minversion = "7"

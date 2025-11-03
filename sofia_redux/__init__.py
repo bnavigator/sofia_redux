@@ -1,9 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-# Packages may add whatever they like to this file, but
-# should keep this content at the top.
-# ----------------------------------------------------------------------------
-from ._astropy_init import *   # noqa
-# ----------------------------------------------------------------------------
+# version.py is written at install time by setuptools_scm
+try:
+    from .version import version as __version__
+except ImportError:
+    __version__ = ''
 
 __all__ = []
