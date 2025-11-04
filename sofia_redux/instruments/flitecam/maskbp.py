@@ -4,7 +4,7 @@ from astropy import log
 from astropy.stats import sigma_clipped_stats
 import bottleneck as bn
 import numpy as np
-from scipy.ndimage import filters
+from scipy import ndimage
 
 __all__ = ['fixpix', 'maskbp']
 
@@ -74,7 +74,7 @@ def fixpix(data, max_iter=5):
     log.debug(f'Median value: {medimg:.2f}')
 
     # local noise in image with 5x5 box filter
-    sigma = filters.generic_filter(data, bn.nanstd, size=5,
+    sigma = ndimage.generic_filter(data, bn.nanstd, size=5,
                                    mode='constant', cval=np.nan)
 
     # stats for noise value
@@ -93,8 +93,8 @@ def fixpix(data, max_iter=5):
         new_badpix = False
 
         # 5x5 box filter: max is hot pix, min is cold pix
-        hot = filters.maximum_filter(corrected_image, size=5, mode='mirror')
-        cold = filters.minimum_filter(corrected_image, size=5, mode='mirror')
+        hot = ndimage.maximum_filter(corrected_image, size=5, mode='mirror')
+        cold = ndimage.minimum_filter(corrected_image, size=5, mode='mirror')
 
         # check surrounding area for each hot pixel to determine
         # if it's source-like or bad pixel-like

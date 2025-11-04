@@ -4,15 +4,14 @@ import itertools
 import math
 import warnings
 
-from astropy import log
 import numba as nb
 import numpy as np
+from astropy import log
 from scipy import interpolate
-from scipy.ndimage import interpolation
-from scipy.spatial.qhull import Delaunay
+from scipy.ndimage import shift
+from scipy.spatial import Delaunay
 
-from sofia_redux.toolkit.utilities.func import nantrim, to_array_shape, stack
-
+from sofia_redux.toolkit.utilities.func import nantrim, stack, to_array_shape
 
 __all__ = ['line_shift', 'interpolate_nans', 'spline', 'sincinterp',
            'interp_1d_point', 'interp_1d_point_with_error',
@@ -49,8 +48,8 @@ def line_shift(y, offset, order=3, missing=np.nan):
     intype = type(y[0])
     if order == 0:
         offset = int(offset)
-        result = interpolation.shift(np.float64(y), offset,
-                                     order=0, cval=missing)
+        result = shift(np.float64(y), offset,
+                       order=0, cval=missing)
         if not (np.isnan(result).any() and np.issubdtype(intype, np.integer)):
             result = intype(result)
         return result

@@ -463,7 +463,7 @@ class StepFocus(StepMOParent):
                 image[nanpix] = 0.
                 # Added to make sure there's no NANs
                 image[np.where(image != image)] = 0.
-                image = ndimage.filters.uniform_filter(image, size=boxaverage)
+                image = ndimage.uniform_filter(image, size=boxaverage)
             else:
                 image[nanpix] = np.nan
 

@@ -1,10 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-from astropy import units
-from astropy.coordinates import SkyCoord, EarthLocation
 import numpy as np
 import pytest
-from scipy.sparse.csr import csr_matrix
+from astropy import units
+from astropy.coordinates import EarthLocation, SkyCoord
+from scipy.sparse import csr_matrix
 
 from sofia_redux.scan.coordinate_systems.coordinate_2d import Coordinate2D
 from sofia_redux.scan.flags.flagged_data_group import FlaggedDataGroup
