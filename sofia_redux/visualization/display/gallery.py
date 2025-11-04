@@ -236,8 +236,8 @@ class Gallery(object):
         ----------
         pane_ : Pane
             Pane object holding the line artist to update.
-        updates : list of dict
-            Updates to apply.  The dicts must contain 'model_id',
+        updates : list of DT
+            Updates to apply.  The Drawings must contain 'model_id',
             'order', and 'type' keys.  The 'type' should
             be one of 'step', 'line', or 'scatter'.  The dict may
             also contain a 'marker' key.
@@ -247,7 +247,7 @@ class Gallery(object):
             for update in updates:
                 if line.matches(update) and line.match_axes(update.axes):
                     details = update.get_updates()
-                    marker = details.get('marker')
+                    marker = details.get('marker', 'None')
                     if isinstance(line.get_artist(), Line2D):
                         props = {'drawstyle': 'default',
                                  'linestyle': line.get_linestyle(),
@@ -720,7 +720,7 @@ class Gallery(object):
                 else:
                     try:
                         draw.get_artist().remove()
-                    except ValueError:
+                    except (ValueError, NotImplementedError):
                         continue
             self.arts[k] = new_draws
 

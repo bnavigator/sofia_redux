@@ -69,10 +69,6 @@ class Eye(object):
             self.log_level = 'CRITICAL'
         self._setup_log_terminal()
 
-        # set up log file if desired
-        if hasattr(args, 'system_logs') and args.system_logs:
-            self._setup_log_file()
-
         self.models = dict()
         self.model_index = 0
         if view_ is None:
@@ -82,6 +78,11 @@ class Eye(object):
             self.signals = view_.signals
             self.view = view_
         self.setup_eye()
+
+        # set up log file if desired, must be after setup_eye,
+        # because that cleans the handlers
+        if hasattr(args, 'system_logs') and args.system_logs:
+            self._setup_log_file()
 
         if args:
             log.debug('Applying command line arguments')

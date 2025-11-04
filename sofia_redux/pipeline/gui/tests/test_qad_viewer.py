@@ -179,11 +179,11 @@ class TestQADViewer(object):
         capt = capsys.readouterr()
         assert 'quit' in capt.out
 
-        # raise error; verify nothing happens
+        # raise error on second quit
         MockDS9.raise_error_set = True
         view.close()
         capt = capsys.readouterr()
-        assert capt.err == ''
+        assert 'Error occured while quitting test error' in capt.err
 
     def test_no_op(self, qtbot, mocker):
         self.mock_ds9(mocker)

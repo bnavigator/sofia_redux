@@ -351,14 +351,13 @@ class Figure(object):
         for pane_number, pane_ in enumerate(self.panes):
             if self.highlight_pane:
                 if (self.current_pane is not None
-                        and pane_number in self.current_pane):
-                    visible = True
-                elif self._current_pane is None and pane_number == 0:
+                    and self.current_pane != []
+                ):
+                    visible = (pane_number in self.current_pane)
+                else:
                     # catch for case where border is added before
                     # current pane is set, on initialization
-                    visible = True
-                else:
-                    visible = False
+                    visible = (pane_number == 0)
             else:
                 visible = False
             borders[f'pane_{pane_number}'] = {'kind': 'border',

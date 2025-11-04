@@ -38,7 +38,7 @@ class TestBlitManager(object):
         draw_mock = mocker.patch.object(mb.FigureCanvasQTAgg,
                                         'draw')
         blank_blitter.safe_draw()
-        assert draw_mock.called_once()
+        draw_mock.assert_called_once()
 
     def test_update_background(self, blank_blitter, mocker):
         new_bg = 'background'
@@ -51,7 +51,7 @@ class TestBlitManager(object):
 
         blank_blitter.update_background()
 
-        assert draw_mock.called_once()
+        draw_mock.assert_called_once()
         assert blank_blitter._background == new_bg
 
     def test_update_animated(self, blank_blitter, mocker):
@@ -59,7 +59,7 @@ class TestBlitManager(object):
 
         blank_blitter.update_animated()
 
-        assert mock.called_once()
+        mock.assert_called_once()
 
     def test_update_all(self, blank_blitter, mocker):
         background = mocker.patch.object(blitting.BlitManager,
@@ -69,7 +69,7 @@ class TestBlitManager(object):
         blank_blitter.update_all()
 
         for mock in [background, draw]:
-            assert mock.called_once()
+            mock.assert_called_once()
 
     def test_blit(self, blank_blitter, mocker):
         attrs = {'restore_region.return_value': None}
@@ -80,9 +80,9 @@ class TestBlitManager(object):
 
         blank_blitter.blit()
 
-        assert canvas.restore_region.called_once()
-        assert canvas.flush_events.called_once()
-        assert draw.called_once()
+        canvas.restore_region.assert_called_once()
+        canvas.flush_events.assert_called_once()
+        draw.assert_called_once()
 
     def test_draw_animated(self, blank_blitter, mocker, caplog):
         arts = [ml.Line2D([], []), ml.Line2D([], [])]
