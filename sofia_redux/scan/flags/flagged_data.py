@@ -1,19 +1,24 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
+import inspect
 from abc import ABC
+from copy import deepcopy
+
+import numpy as np
 from astropy import units
 from astropy.coordinates import (
-    BaseCoordinateFrame, SkyCoord, SkyOffsetFrame, EarthLocation)
+    BaseCoordinateFrame,
+    EarthLocation,
+    SkyCoord,
+    SkyOffsetFrame,
+)
 from astropy.coordinates import concatenate as astro_concat
-from copy import deepcopy
-import inspect
-import numpy as np
-from scipy.sparse.csr import csr_matrix
+from scipy.sparse import csr_matrix
 
+from sofia_redux.scan.coordinate_systems.coordinate import Coordinate
+from sofia_redux.scan.flags import flag_numba_functions
 from sofia_redux.scan.flags.flags import Flags
 from sofia_redux.scan.utilities.utils import skycoord_insert_blanks
-from sofia_redux.scan.flags import flag_numba_functions
-from sofia_redux.scan.coordinate_systems.coordinate import Coordinate
 
 __all__ = ['FlaggedData']
 

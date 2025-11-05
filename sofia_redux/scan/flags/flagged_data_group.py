@@ -1,13 +1,12 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-from astropy.coordinates import (
-    BaseCoordinateFrame, SkyCoord, SkyOffsetFrame)
 import numpy as np
-from scipy.sparse.csr import csr_matrix
+from astropy.coordinates import BaseCoordinateFrame, SkyCoord, SkyOffsetFrame
+from scipy.sparse import csr_matrix
 
-from sofia_redux.scan.flags.flagged_data import FlaggedData
-from sofia_redux.scan.flags import flag_numba_functions
 from sofia_redux.scan.coordinate_systems.coordinate import Coordinate
+from sofia_redux.scan.flags import flag_numba_functions
+from sofia_redux.scan.flags.flagged_data import FlaggedData
 
 __all__ = ['FlaggedDataGroup']
 

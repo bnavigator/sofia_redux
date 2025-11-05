@@ -1,13 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-from astropy import log
 import numpy as np
-from scipy.ndimage import interpolation, affine_transform
+from astropy import log
+from scipy.ndimage import affine_transform
+from scipy.ndimage import shift as ndimage_shift
 
 from sofia_redux.toolkit.image.fill import image_naninterp
 from sofia_redux.toolkit.image.resize import resize
 from sofia_redux.toolkit.interpolate.interpolate import line_shift
-
 
 __all__ = ['shift', 'rotate', 'frebin', 'image_shift', 'rotate90',
            'unrotate90', 'register_image', 'upsampled_dft']
@@ -147,8 +147,8 @@ def shift(data, offset, order=1, missing=np.nan, nan_interpolation=0.0,
     nans = np.isnan(data)
     cval = np.nan if missing is None else missing
     if not nans.any():
-        return interpolation.shift(data, offset, order=order,
-                                   cval=cval, mode=mode)
+        return ndimage_shift(data, offset, order=order,
+                             cval=cval, mode=mode)
 
     if nan_interpolation is None:
         shifted = image_naninterp(data)
@@ -158,11 +158,11 @@ def shift(data, offset, order=1, missing=np.nan, nan_interpolation=0.0,
         shifted = data.copy()
         shifted[nans] = nan_interpolation
 
-    shifted = interpolation.shift(shifted, offset, order=order,
-                                  cval=cval, mode=mode)
+    shifted = ndimage_shift(shifted, offset, order=order,
+                            cval=cval, mode=mode)
 
     if missing is not None:
-        nanmask = interpolation.shift(
+        nanmask = ndimage_shift(
             nans.astype(float), offset, order=order, cval=1, mode=mode)
         shifted[np.abs(nanmask) > missing_limit] = missing
 

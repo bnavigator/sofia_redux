@@ -3,12 +3,11 @@
 
 import re
 
+import numpy as np
 from astropy import log
 from astropy.stats import sigma_clipped_stats
 from astropy.wcs import WCS
-import numpy as np
-from scipy.ndimage import median_filter
-from scipy.ndimage.filters import generic_filter
+from scipy.ndimage import generic_filter, median_filter
 
 from sofia_redux.instruments.hawc.stepparent import StepParent
 
