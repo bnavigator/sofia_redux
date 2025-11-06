@@ -9,6 +9,8 @@ from astropy import log
 
 import sofia_redux.pipeline
 from sofia_redux.pipeline.gui import widgets
+from sofia_redux import __version__ as sofia_redux_version
+from sofia_redux.pipeline import __version__ as pipeline_version
 
 try:
     # dill allows pickling of more complex
@@ -274,7 +276,8 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             version label will be displayed.
         """
         if msg is None:
-            msg = "Redux v{}".format(sofia_redux.pipeline.__version__)
+            msg = (f"Redux {sofia_redux_version}"
+                   f" with pipeline v{pipeline_version}")
         self.pipelineVersionLabel.setText(msg)
         self.pipelineVersionLabel.repaint()
 
