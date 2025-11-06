@@ -18,9 +18,9 @@ from sofia_redux.visualization.display import pane, drawing
 try:
     matplotlib.use('QT5Agg')
     matplotlib.rcParams['axes.formatter.useoffset'] = False
-    from PyQt5 import QtCore, QtGui, QtWidgets
+    from PyQt6 import QtCore, QtGui, QtWidgets
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtCore, QtGui = None, None
 
     # duck type parents to allow class definition
@@ -32,9 +32,9 @@ except ImportError:
         class Ui_Dialog:
             pass
 else:
-    from PyQt5.QtWidgets import QTableWidgetItem
+    from PyQt6.QtWidgets import QTableWidgetItem
     from sofia_redux.visualization.display.ui import fit_result_window as frw
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 __all__ = ['FittingResults']
 
@@ -79,8 +79,8 @@ class FittingResults(QtWidgets.QDialog, frw.Ui_Dialog):
     """
 
     def __init__(self, parent: Any):
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for the Eye.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for the Eye.')
 
         super(self.__class__, self).__init__(parent)
         self.setupUi(self)
@@ -139,7 +139,7 @@ class FittingResults(QtWidgets.QDialog, frw.Ui_Dialog):
             details = model.parameters_as_string()
             filename = details['filename']
             vhead = QTableWidgetItem(os.path.basename(filename))
-            vhead.setTextAlignment(QtCore.Qt.AlignLeft)
+            vhead.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
             vhead.setToolTip(filename)
             self.table_widget.setVerticalHeaderItem(row_index, vhead)
 
@@ -149,7 +149,7 @@ class FittingResults(QtWidgets.QDialog, frw.Ui_Dialog):
                 except KeyError:
                     text = 'NA'
                 item = QTableWidgetItem(text)
-                item.setTextAlignment(QtCore.Qt.AlignHCenter)
+                item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
                 self.table_widget.setItem(row_index, col_index + 1, item)
 
         # resize rows and columns to contents

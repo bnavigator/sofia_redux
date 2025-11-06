@@ -5,14 +5,17 @@ import numpy as np
 from astropy.modeling import models
 from matplotlib import figure as mpf
 import matplotlib.backends.backend_qt5agg as mb
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 from sofia_redux.visualization.display import (pane, blitting, gallery,
                                                figure, view, drawing)
-from sofia_redux.visualization.display.ui import mplwidget
 from sofia_redux.visualization.utils import model_fit
 from sofia_redux.visualization import signals
 
+# cannot run headless: skip if the mplwidget import fails
+mplwidget = pytest.importorskip(
+    'sofia_redux.visualization.display.ui.mplwidget',
+    reason='Cannot import mplwidget: requires a display.')
 
 @pytest.fixture(scope='function')
 def fig():

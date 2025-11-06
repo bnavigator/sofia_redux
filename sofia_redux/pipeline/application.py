@@ -1,18 +1,19 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Run Redux reduction objects from a GUI interface."""
 
+from pathlib import Path
 import sys
 
 from sofia_redux.pipeline.interface import Interface
 from sofia_redux.pipeline.gui.main import ReduxMainWindow
 
 try:
-    from PyQt5 import QtWidgets, QtCore, QtGui
+    from PyQt6 import QtWidgets, QtCore, QtGui
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtWidgets, QtCore, QtGui = None, None, None
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 __all__ = ['Application', 'main']
 
@@ -41,8 +42,8 @@ class Application(Interface):
         configuration : `Configuration`, optional
             Configuration items to be used for all reductions
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
         super().__init__(configuration)
         self.app = None
 
@@ -52,10 +53,11 @@ class Application(Interface):
         # Start application
         self.app = QtWidgets.QApplication(sys.argv)
 
+        redux_icon_file = Path(__file__).parent / "gui/icons/redux_icon.png"
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/redux_icon.png"),
-                       QtGui.QIcon.Normal,
-                       QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(str(redux_icon_file)),
+                       QtGui.QIcon.Mode.Normal,
+                       QtGui.QIcon.State.Off)
         self.app.setWindowIcon(icon)
         self.app.setApplicationName('Redux')
 
@@ -69,7 +71,7 @@ class Application(Interface):
         mw = ReduxMainWindow(self)
         mw.show()
         mw.raise_()
-        sys.exit(self.app.exec_())
+        sys.exit(self.app.exec())
 
 
 def main():

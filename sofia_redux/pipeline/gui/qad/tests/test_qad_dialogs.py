@@ -11,15 +11,15 @@ from sofia_redux.pipeline.gui.qad.qad_dialogs \
 from sofia_redux.pipeline.gui.tests.test_qad_viewer import MockDS9
 
 try:
-    from PyQt5 import QtWidgets
+    from PyQt6 import QtWidgets
 except ImportError:
     QtWidgets = None
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 
-@pytest.mark.skipif(not HAS_PYQT5, reason="PyQt5 not available")
+@pytest.mark.skipif(not HAS_PYQT6, reason="PyQt6 not available")
 class TestQADDialogs(object):
     """Test the QAD Settings dialogs."""
     @pytest.fixture(autouse=True, scope='function')
@@ -43,7 +43,7 @@ class TestQADDialogs(object):
         # mock show and exec
         mocker.patch.object(QtWidgets.QDialog, 'show',
                             return_value=None)
-        mocker.patch.object(QtWidgets.QDialog, 'exec_',
+        mocker.patch.object(QtWidgets.QDialog, 'exec',
                             return_value=None)
 
         disp_dialog = DispSettingsDialog()
@@ -78,7 +78,7 @@ class TestQADDialogs(object):
         # mock show and exec
         mocker.patch.object(QtWidgets.QDialog, 'show',
                             return_value=None)
-        mocker.patch.object(QtWidgets.QDialog, 'exec_',
+        mocker.patch.object(QtWidgets.QDialog, 'exec',
                             return_value=None)
 
         imviewer = QADImView()
@@ -184,7 +184,7 @@ class TestQADDialogs(object):
         # mock show and exec
         mocker.patch.object(QtWidgets.QDialog, 'show',
                             return_value=None)
-        mocker.patch.object(QtWidgets.QDialog, 'exec_',
+        mocker.patch.object(QtWidgets.QDialog, 'exec',
                             return_value=None)
 
         imviewer = QADImView()

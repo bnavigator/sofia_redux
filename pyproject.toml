@@ -56,17 +56,20 @@ test = [
     "pytest-rerunfailures",
     "ruff"
 ]
+test-display = [
+    "pytest-qt",
+]
 docs = [
     "sphinx-astropy>=1.2",
     "imageio>=2.9.0",
 ]
-all = [
-    "PyQt5>=5.9.2",
-    "pytest-qt>=3.3.0"
-]
 display = [
+    "PyQt6",
     "ds9samp>=0.1.0",
     "regions>=0.5"
+]
+all = [
+    "sofia_redux[display,docs]",
 ]
 
 [project.urls]
@@ -96,7 +99,8 @@ eospec = "sofia_redux.visualization.controller:main"
     "designer/*",
     "designer/*/*",
     "designer/*/*/*",
-    "designer/*/*/*/*"
+    "designer/*/*/*/*",
+    "icons/redux*.png"
 ]
 "sofia_redux.pipeline.gui.qad" = ["designer/*"]
 "sofia_redux.scan" = [
@@ -149,12 +153,11 @@ norecursedirs = [
 ]
 astropy_header = "true"
 text_file_format = "rst"
-addopts = "-p no:warnings"
-timeout = 1000
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "big: marks tests as requiring many resources (deselect with '-m \"not big\"')",
+addopts = [
+    "-p no:warnings",
+    "--strict-markers"
 ]
+timeout = 1000
 
 [tool.coverage.run]
 source = ["sofia_redux",]

@@ -16,15 +16,15 @@ from sofia_redux.pipeline.gui.qad.qad_dialogs \
 from sofia_redux.pipeline.gui.tests.test_qad_viewer import MockDS9
 
 try:
-    from PyQt5 import QtWidgets, QtCore
+    from PyQt6 import QtWidgets, QtCore
 except ImportError:
     QtWidgets, QtCore = None, None
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 
-@pytest.mark.skipif("not HAS_PYQT5")
+@pytest.mark.skipif("not HAS_PYQT6")
 class TestQADMain(object):
     """Test the QADMainWindow class"""
 
@@ -105,7 +105,8 @@ class TestQADMain(object):
             idx1 = model.index(fname, 0)
             idx2 = model.index(fname, model.columnCount() - 1)
             itemsel = QtCore.QItemSelection(idx1, idx2)
-            selection.select(itemsel, QtCore.QItemSelectionModel.Select)
+            selection.select(
+                itemsel, QtCore.QItemSelectionModel.SelectionFlag.Select)
         else:
             # or else select them all
             for fname in os.listdir(mw.rootpath):
@@ -113,8 +114,8 @@ class TestQADMain(object):
                 idx1 = model.index(fname, 0)
                 idx2 = model.index(fname, model.columnCount() - 1)
                 itemsel = QtCore.QItemSelection(idx1, idx2)
-                selection.select(itemsel,
-                                 QtCore.QItemSelectionModel.Select)
+                selection.select(
+                    itemsel, QtCore.QItemSelectionModel.SelectionFlag.Select)
 
         selected = []
         idx = mw.treeView.selectionModel().selectedRows()
@@ -129,7 +130,7 @@ class TestQADMain(object):
         # mock the show and exec function
         mocker.patch.object(QtWidgets.QDialog, 'show',
                             return_value=None)
-        mocker.patch.object(QtWidgets.QDialog, 'exec_',
+        mocker.patch.object(QtWidgets.QDialog, 'exec',
                             return_value=None)
 
         # mock the imviewer class
@@ -358,7 +359,7 @@ class TestQADMain(object):
                             return_value=True)
 
         # press enter
-        qtbot.keyPress(mw, QtCore.Qt.Key_Return)
+        qtbot.keyPress(mw, QtCore.Qt.Key.Key_Return)
 
         # verify file is displayed
         assert self.newfile1 in mw.imviewer.files
@@ -374,7 +375,7 @@ class TestQADMain(object):
         mod_dict[test_key] = 'test'
 
         # mock the exec and getValue functions
-        mocker.patch.object(DispSettingsDialog, 'exec_',
+        mocker.patch.object(DispSettingsDialog, 'exec',
                             return_value=1)
         mocker.patch.object(DispSettingsDialog, 'getValue',
                             return_value=mod_dict)
@@ -398,7 +399,7 @@ class TestQADMain(object):
         test_key = 'model'
         mod_dict[test_key] = 'test'
 
-        mocker.patch.object(PhotSettingsDialog, 'exec_',
+        mocker.patch.object(PhotSettingsDialog, 'exec',
                             return_value=1)
         mocker.patch.object(PhotSettingsDialog, 'getValue',
                             return_value=mod_dict)
@@ -419,7 +420,7 @@ class TestQADMain(object):
         test_key = 'color'
         mod_dict[test_key] = 'test'
 
-        mocker.patch.object(PlotSettingsDialog, 'exec_',
+        mocker.patch.object(PlotSettingsDialog, 'exec',
                             return_value=1)
         mocker.patch.object(PlotSettingsDialog, 'getValue',
                             return_value=mod_dict)
@@ -563,7 +564,7 @@ class TestQADMain(object):
         self.mock_ds9(mocker)
 
         # mock warning dialog
-        warn_mock = mocker.patch('PyQt5.QtWidgets.QMessageBox.warning')
+        warn_mock = mocker.patch('PyQt6.QtWidgets.QMessageBox.warning')
         mw = self.make_window(qtbot, tmpdir)
 
         # select the first file and display it

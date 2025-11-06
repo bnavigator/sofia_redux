@@ -3,6 +3,7 @@
 
 import os
 import signal
+from pathlib import Path
 
 from astropy import log
 
@@ -19,10 +20,10 @@ except ImportError:
     import pickle
 
 try:
-    from PyQt5 import QtWidgets, QtCore, QtGui
+    from PyQt6 import QtWidgets, QtCore, QtGui
     from sofia_redux.pipeline.gui.ui import ui_main
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtCore, QtGui = None, None
 
     # duck type parents to allow class definition
@@ -34,7 +35,7 @@ except ImportError:
         class Ui_MainWindow:
             pass
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 __all__ = ['ReduxMainWindow']
 
@@ -66,8 +67,8 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             and runs appropriate reduction objects for input data, as well
             as controlling any associated viewers.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         # parent initialization
         QtWidgets.QMainWindow.__init__(self)
@@ -81,6 +82,31 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
 
         # set up UI from Designer generated file
         self.setupUi(self)
+
+        # Render the logo
+        self.logTextEdit.setHtml(
+            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" />"
+            "<style type=\"text/css\">\n"
+            "  p, li { white-space: pre-wrap; }\n"
+            "</style></head>"
+            "<body style=\" font-family:\'Menlo\'; font-size:12pt;"
+            "               font-weight:400; font-style:normal;\">\n"
+            "<p align=\"center\" style=\"margin-top:20px; margin-bottom:20px;"
+            "                            margin-left:0px; margin-right:0px;"
+            "                            -qt-block-indent:0; text-indent:0px;\""
+            ">"
+            "<span style=\" font-family:\'.SF NS Text\'; font-size:13pt;\">"
+            "==   Redux ready.   =="
+            "</span></p>\n"
+            "<p align=\"center\" style=\"margin-top:0px; margin-bottom:0px;"
+            "                            margin-left:36px; margin-right:36px; "
+            "                            -qt-block-indent:0; text-indent:0px;\""
+            ">"
+            f"<img src=\"{Path(__file__).parent / 'icons/redux_large.png'}\" "
+            "      width=\"480\" height=\"480\" />"
+            "</p></body></html>"
+        )
 
         # establish signal handler to catch ctrl-C
         signal.signal(signal.SIGINT, self.cleanup)
@@ -190,7 +216,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         """
         response = QtWidgets.QMessageBox.question(
             self, 'Quit', 'Quit Redux?')
-        if response == QtWidgets.QMessageBox.Yes:
+        if response == QtWidgets.QMessageBox.StandardButton.Yes:
             self.cleanup()
         else:  # pragma: no cover
             try:
@@ -224,14 +250,14 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         """
         # move cursor to the end
         cursor = self.logTextEdit.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
+        cursor.movePosition(QtGui.QTextCursor.MoveOperation.End)
         self.logTextEdit.setTextCursor(cursor)
 
         # insert the message as HTML
         self.logTextEdit.insertHtml("<pre>{}<br></pre>".format(msg))
 
         # move the cursor to the end again
-        cursor.movePosition(QtGui.QTextCursor.End)
+        cursor.movePosition(QtGui.QTextCursor.MoveOperation.End)
         self.logTextEdit.setTextCursor(cursor)
 
         # repaint to refresh view
@@ -351,10 +377,10 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         if enable:
             self.pipeStepListWidget.clearSelection()
             self.pipeStepListWidget.setSelectionMode(
-                QtWidgets.QAbstractItemView.NoSelection)
+                QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         else:
             self.pipeStepListWidget.setSelectionMode(
-                QtWidgets.QAbstractItemView.SingleSelection)
+                QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
 
     def enableReduction(self, enable=True):
         """
@@ -635,7 +661,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         # turn off the whole controls box and menus
         # while steps are running
         self.enableControls(False)
-        self.controlsBox.setCursor(QtCore.Qt.BusyCursor)
+        self.controlsBox.setCursor(QtCore.Qt.CursorShape.BusyCursor)
         self.highlightStep(self.interface.reduction.step_index)
 
         # make a runnable object for threading and connect it
@@ -811,7 +837,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
                                       saved_dir)
         loader.signals.finished.connect(self.openFinish)
         self.threadpool.start(loader)
-        self.setCursor(QtCore.Qt.BusyCursor)
+        self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
         self.enableReduction(False)
 
     def openFinish(self, result):
@@ -883,7 +909,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
 
         # register viewers for the reduction;
         # if they are embedded, add them to a splitter widget
-        parent = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        parent = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
         self.interface.register_viewers(parent)
         if self.interface.has_embedded_viewers():
             self.dataTabWidget.insertTab(0, parent, 'Data View')
@@ -901,10 +927,10 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         header = self.fileTableView.horizontalHeader()
         for column in range(self.fileTableView.model().columnCount()):
             header.setSectionResizeMode(
-                column, QtWidgets.QHeaderView.ResizeToContents)
+                column, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
             width = header.sectionSize(column)
             header.setSectionResizeMode(
-                column, QtWidgets.QHeaderView.Interactive)
+                column, QtWidgets.QHeaderView.ResizeMode.Interactive)
             header.resizeSection(column, width)
 
         # add row numbers
@@ -967,7 +993,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
 
         response = QtWidgets.QMessageBox.question(
             self, 'Close Reduction', 'Close current reduction?')
-        if response == QtWidgets.QMessageBox.Yes:
+        if response == QtWidgets.QMessageBox.StandardButton.Yes:
             self.resetPipeline()
             self.enableReduction(False)
             self.setStatus('Reduction closed.')
@@ -980,8 +1006,8 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
     def onRemoveFiles(self):
         """Remove files from the current reduction."""
         dialog = widgets.RemoveFilesDialog(self, self.loaded_files)
-        retval = dialog.exec_()
-        if retval == QtWidgets.QDialog.Accepted:
+        retval = dialog.exec()
+        if retval == QtWidgets.QDialog.DialogCode.Accepted:
             remove_files = dialog.getValue()
             self.onOpenReduction(remove_files=remove_files)
 
@@ -1073,7 +1099,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         # confirm before destroying existing config
         response = QtWidgets.QMessageBox.question(
             self, 'Reset Configuration', 'Reset configuration settings?')
-        if response != QtWidgets.QMessageBox.Yes:
+        if response != QtWidgets.QMessageBox.StandardButton.Yes:
             return
 
         self.onLoadConfiguration(default=True)
@@ -1086,7 +1112,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         # confirm before destroying existing parameters
         response = QtWidgets.QMessageBox.question(
             self, 'Reset Parameters', 'Reset all parameters?')
-        if response != QtWidgets.QMessageBox.Yes:
+        if response != QtWidgets.QMessageBox.StandardButton.Yes:
             return
 
         self.interface.load_parameters()
@@ -1133,8 +1159,8 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
         dialog = widgets.EditParam(self, name,
                                    param, default,
                                    self.base_directory)
-        retval = dialog.exec_()
-        if retval == QtWidgets.QDialog.Accepted:
+        retval = dialog.exec()
+        if retval == QtWidgets.QDialog.DialogCode.Accepted:
             # change params
             param = dialog.getValue()
             self.interface.reduction.set_parameter_set(param, index)
@@ -1308,7 +1334,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             self.interface.configuration.update_display = False
 
         # if there is a current reduction, register its viewers
-        parent = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        parent = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
         self.interface.register_viewers(parent)
 
         # create or close a Data View tab

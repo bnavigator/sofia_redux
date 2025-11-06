@@ -15,13 +15,13 @@ from sofia_redux.pipeline.parameters import Parameters, FALSY
 from sofia_redux.pipeline.gui import textview
 
 try:
-    from PyQt5 import QtWidgets, QtCore, QtGui
+    from PyQt6 import QtWidgets, QtCore, QtGui
     from sofia_redux.pipeline.gui.ui import ui_pipe_step
     from sofia_redux.pipeline.gui.ui import ui_edit_param
     from sofia_redux.pipeline.gui.ui import ui_remove_files
     from sofia_redux.pipeline.gui.ui import ui_progress
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtGui = None
 
     # duck type parents to allow class definition
@@ -37,8 +37,9 @@ except ImportError:
             pass
 
         class Qt:
-            class DisplayRole:
-                pass
+            class ItemDataRole:
+                class DisplayRole:
+                    pass
 
         class QObject:
             pass
@@ -72,7 +73,7 @@ except ImportError:
             pass
 
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 __all__ = ['PipeStep', 'ProgressFrame', 'EditParam',
            'DataTableModel', 'CustomSignals', 'TextEditLogger',
@@ -99,8 +100,8 @@ class PipeStep(QtWidgets.QWidget, ui_pipe_step.Ui_Form):
         index : int, optional
             Reduction step index.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         # parent initialization
         super().__init__(parent)
@@ -170,8 +171,8 @@ class ProgressFrame(QtWidgets.QWidget, ui_progress.Ui_ProgressFrame):
         parent : QWidget, optional
             Parent widget.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         # parent initialization
         super().__init__(parent)
@@ -226,8 +227,8 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
             Base directory for pick_file and pick_directory
             widgets.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         # parent initialization
         super().__init__(parent)
@@ -236,10 +237,10 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
 
         # hook up the reset and restore buttons
         reset = self.buttonBox.button(
-            QtWidgets.QDialogButtonBox.Reset)
+            QtWidgets.QDialogButtonBox.StandardButton.Reset)
         reset.clicked.connect(self.reset)
         restore = self.buttonBox.button(
-            QtWidgets.QDialogButtonBox.RestoreDefaults)
+            QtWidgets.QDialogButtonBox.StandardButton.RestoreDefaults)
         restore.clicked.connect(self.restore)
 
         # store the initial parameters and base directory
@@ -273,8 +274,8 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
         # expanding box
         comboBox = QtWidgets.QComboBox(self.groupBox)
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Fixed)
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Fixed)
         comboBox.setSizePolicy(sizePolicy)
         comboBox.setObjectName(key)
         if param["description"] is not None:
@@ -307,8 +308,8 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
         textBox.setObjectName(key)
 
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding,
-            QtWidgets.QSizePolicy.Fixed)
+            QtWidgets.QSizePolicy.Policy.MinimumExpanding,
+            QtWidgets.QSizePolicy.Policy.Fixed)
         textBox.setSizePolicy(sizePolicy)
         textBox.setMinimumWidth(200)
 
@@ -381,7 +382,7 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
         # center the check box vertically
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(checkBox)
-        vbox.setAlignment(QtCore.Qt.AlignHCenter)
+        vbox.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         self.groupBox.layout().addRow(param['name'], vbox)
 
@@ -401,10 +402,10 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
             Type of file item to select.
         """
         pickButton = QtWidgets.QPushButton(self.groupBox)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/Tango/16x16/document-open.png"),
-                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        pickButton.setIcon(icon)
+        open_icon =self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton
+        )
+        pickButton.setIcon(open_icon)
         pickButton.setText(param['name'])
 
         # start a file dialog if clicked
@@ -513,7 +514,7 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
     def setFormLayout(self):
         """Assign a form layout to the current groupBox."""
         layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.ExpandingFieldsGrow)
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.groupBox.setLayout(layout)
 
     def setWidgets(self):
@@ -571,8 +572,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
         parent : QWidget, optional
             Parent widget.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__(parent)
         self._data = data
@@ -610,7 +611,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         """
         return len(self._keys)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Retrieve table data by index.
 
@@ -628,11 +629,12 @@ class DataTableModel(QtCore.QAbstractTableModel):
             index value is returned.  If not, None is returned.
         """
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return str(self._data[self._keys[index.column()]][index.row()])
         return None
 
-    def headerData(self, col, orientation, role=QtCore.Qt.DisplayRole):
+    def headerData(self, col, orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Retrieve column data.
 
@@ -650,11 +652,11 @@ class DataTableModel(QtCore.QAbstractTableModel):
         str or None
             Column name if orientation and role are valid; otherwise None.
         """
-        if orientation == QtCore.Qt.Horizontal and \
-                role == QtCore.Qt.DisplayRole:
+        if orientation == QtCore.Qt.Orientation.Horizontal and \
+                role == QtCore.Qt.ItemDataRole.DisplayRole:
             return self._keys[col]
-        elif orientation == QtCore.Qt.Vertical and \
-                role == QtCore.Qt.DisplayRole:
+        elif orientation == QtCore.Qt.Orientation.Vertical and \
+                role == QtCore.Qt.ItemDataRole.DisplayRole:
             return col + 1
         return None
 
@@ -678,8 +680,8 @@ class TextEditLogger(logging.Handler):
     """
     def __init__(self):
         """Initialize the logger."""
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__()
         self.signals = CustomSignals()
@@ -731,8 +733,8 @@ class RemoveFilesDialog(QtWidgets.QDialog,
         loaded_files : `list` of str, optional
             List of file paths that are currently loaded.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         # parent initialization
         QtWidgets.QDialog.__init__(self, parent)
@@ -769,8 +771,8 @@ class ConfigView(textview.TextView):
     """View and edit current configuration values."""
     def __init__(self, parent=None):
         """Build the widget."""
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__(parent=parent)
 
@@ -795,8 +797,8 @@ class ParamView(textview.TextView):
     """View and filter current parameter values."""
     def __init__(self, parent=None):
         """Build the widget."""
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__(parent=parent)
 
@@ -928,8 +930,8 @@ class StepRunnable(QtCore.QRunnable):
         nsteps : int
             Number of steps to run.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__()
         self.step = step_function
@@ -978,8 +980,8 @@ class LoadRunnable(QtCore.QRunnable):
         object.
     """
     def __init__(self, load_function, data, param, dirname):
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__()
         self.load = load_function
@@ -1018,8 +1020,8 @@ class GeneralRunnable(QtCore.QRunnable):
         Function to run.
     """
     def __init__(self, run_function, *args, **kwargs):
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__()
         self.run_function = run_function

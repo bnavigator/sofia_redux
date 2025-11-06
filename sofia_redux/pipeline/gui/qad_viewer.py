@@ -10,10 +10,10 @@ from sofia_redux.pipeline.viewer import Viewer
 from sofia_redux.pipeline.gui.widgets import GeneralRunnable
 
 try:
-    from PyQt5 import QtWidgets, QtCore
+    from PyQt6 import QtWidgets, QtCore
     from sofia_redux.pipeline.gui.ui import ui_qad_settings
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtCore = None
 
     # duck type parents to allow class definition
@@ -25,7 +25,7 @@ except ImportError:
         class Ui_Form:
             pass
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 __all__ = ['QADViewerSettings', 'QADViewer']
 
@@ -48,8 +48,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         parent : `QWidget`, optional
             Parent widget.  May be any Qt Widget.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         # parent initialization
         super().__init__()
@@ -70,6 +70,20 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         self.setDispValue(self.dispInitial)
         self.setPhotValue(self.photInitial)
         self.setPlotValue(self.plotInitial)
+
+        # set icons
+        imexam_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView)
+        self.imexamButton.setIcon(imexam_icon)
+        self.imexamButton.setIconSize(QtCore.QSize(32, 32))
+        save_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
+        self.saveButton.setIcon(save_icon)
+        self.saveButton.setIconSize(QtCore.QSize(32, 32))
+        header_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView)
+        self.headerButton.setIcon(header_icon)
+        self.headerButton.setIconSize(QtCore.QSize(32, 32))
 
         # connect signals to slots
         self.disableDS9Box.stateChanged.connect(self.getDispValue)
@@ -413,7 +427,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # extension combo box
         if 'extension' in fromdict:
             ext = str(fromdict['extension']).lower()
-            idx = self.extensionBox.findText(ext, QtCore.Qt.MatchFixedString)
+            idx = self.extensionBox.findText(
+                ext, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.extensionBox.setCurrentIndex(idx)
             else:
@@ -425,19 +440,22 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # lock type combo boxes
         if 'lock_image' in fromdict:
             lock = fromdict['lock_image'].lower()
-            idx = self.lockImageBox.findText(lock, QtCore.Qt.MatchFixedString)
+            idx = self.lockImageBox.findText(
+                lock, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.lockImageBox.setCurrentIndex(idx)
         if 'lock_slice' in fromdict:
             lock = fromdict['lock_slice'].lower()
-            idx = self.lockSliceBox.findText(lock, QtCore.Qt.MatchFixedString)
+            idx = self.lockSliceBox.findText(
+                lock, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.lockSliceBox.setCurrentIndex(idx)
 
         # scale combo box
         if 'scale' in fromdict:
             scale = fromdict['scale'].lower()
-            idx = self.scaleBox.findText(scale, QtCore.Qt.MatchFixedString)
+            idx = self.scaleBox.findText(
+                scale, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.scaleBox.setCurrentIndex(idx)
 
@@ -492,7 +510,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # model list
         if 'model' in fromdict:
             mname = fromdict['model'].lower()
-            idx = self.modelTypeBox.findText(mname, QtCore.Qt.MatchFixedString)
+            idx = self.modelTypeBox.findText(
+                mname, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.modelTypeBox.setCurrentIndex(idx)
 
@@ -506,7 +525,7 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         if 'window_units' in fromdict:
             units = fromdict['window_units'].lower()
             idx = self.windowUnitsBox.findText(
-                units, QtCore.Qt.MatchFixedString)
+                units, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.windowUnitsBox.setCurrentIndex(idx)
 
@@ -519,7 +538,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # fwhm units list
         if 'fwhm_units' in fromdict:
             units = fromdict['fwhm_units'].lower()
-            idx = self.fwhmUnitsBox.findText(units, QtCore.Qt.MatchFixedString)
+            idx = self.fwhmUnitsBox.findText(
+                units, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.fwhmUnitsBox.setCurrentIndex(idx)
 
@@ -532,8 +552,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # aperture units list
         if 'aperture_units' in fromdict:
             units = fromdict['aperture_units'].lower()
-            idx = self.apradUnitsBox.findText(units,
-                                              QtCore.Qt.MatchFixedString)
+            idx = self.apradUnitsBox.findText(
+                units, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.apradUnitsBox.setCurrentIndex(idx)
 
@@ -576,7 +596,7 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         if 'window_units' in fromdict:
             units = fromdict['window_units'].lower()
             idx = self.plotWindowUnitsBox.findText(
-                units, QtCore.Qt.MatchFixedString)
+                units, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.plotWindowUnitsBox.setCurrentIndex(idx)
 
@@ -589,7 +609,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # share axes list
         if 'share_axes' in fromdict:
             ax = fromdict['share_axes'].lower()
-            idx = self.shareAxesBox.findText(ax, QtCore.Qt.MatchFixedString)
+            idx = self.shareAxesBox.findText(
+                ax, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.shareAxesBox.setCurrentIndex(idx)
 
@@ -615,7 +636,8 @@ class QADViewerSettings(QtWidgets.QWidget, ui_qad_settings.Ui_Form):
         # summary stat list
         if 'summary_stat' in fromdict:
             ax = fromdict['summary_stat'].lower()
-            idx = self.summaryStatBox.findText(ax, QtCore.Qt.MatchFixedString)
+            idx = self.summaryStatBox.findText(
+                ax, QtCore.Qt.MatchFlag.MatchFixedString)
             if idx != -1:
                 self.summaryStatBox.setCurrentIndex(idx)
 
@@ -660,8 +682,8 @@ class QADViewer(Viewer):
     """
     def __init__(self):
         """Initialize the QAD Viewer."""
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for Redux GUI.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for Redux GUI.')
 
         super().__init__()
         self.name = "QADViewer"

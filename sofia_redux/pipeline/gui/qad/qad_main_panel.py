@@ -16,10 +16,10 @@ from sofia_redux.pipeline.gui.qad import qad_imview
 from sofia_redux.pipeline.gui.widgets import GeneralRunnable
 
 try:
-    from PyQt5 import QtWidgets, QtCore, QtGui
+    from PyQt6 import QtWidgets, QtCore, QtGui
     from sofia_redux.pipeline.gui.qad.ui import ui_qad_main
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtCore, QtGui = None, None
 
     # duck type parents to allow class definition
@@ -31,7 +31,7 @@ except ImportError:
         class Ui_MainWindow:
             pass
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 __all__ = ['QADMainWindow']
 
@@ -55,14 +55,37 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
     """
     def __init__(self):
         """Build the QAD GUI window."""
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required for QAD.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required for QAD.')
 
         # parent initialization
         QtWidgets.QMainWindow.__init__(self)
 
         # set up UI from Designer generated file
         self.setupUi(self)
+
+        # set up icons
+        open_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton)
+        self.actionOpenDirectory.setIcon(open_icon)
+        up_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_FileDialogToParent)
+        self.actionGoPrevious.setIcon(up_icon)
+        next_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_ArrowForward)
+        self.actionGoNext.setIcon(next_icon)
+        home_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_DirHomeIcon)
+        self.actionGoHome.setIcon(home_icon)
+        save_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
+        self.actionSaveSettings.setIcon(save_icon)
+        imexam_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView)
+        self.actionImExam.setIcon(imexam_icon)
+        header_icon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView)
+        self.actionDisplayHeader.setIcon(header_icon)
 
         # Establish signal handler to catch ctrl-C
         signal.signal(signal.SIGINT, self.cleanup)
@@ -88,9 +111,9 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
         self.treeView.doubleClicked.connect(self.onRow)
 
         # set directory model in tree view widget
-        self.model = QtWidgets.QFileSystemModel(self)
+        self.model = QtGui.QFileSystemModel(self)
         self.treeView.setModel(self.model)
-        self.treeView.sortByColumn(0, 0)
+        self.treeView.sortByColumn(0, QtCore.Qt.SortOrder.AscendingOrder)
 
         # for file browser tree:
         # default root is current working directory
@@ -161,7 +184,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
         """
         if type(event) == QtGui.QKeyEvent:
             if (self.treeView.hasFocus()
-                    and event.key() == QtCore.Qt.Key_Return):
+                    and event.key() == QtCore.Qt.Key.Key_Return):
                 self.onRow()
 
     # event handlers
@@ -235,7 +258,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
         current = self.imviewer.disp_parameters
         default = self.imviewer.default_parameters('display')
         dialog = qad_dialogs.DispSettingsDialog(self, current, default)
-        retval = dialog.exec_()
+        retval = dialog.exec()
         if retval == 1:
             self.imviewer.disp_parameters = dialog.getValue()
 
@@ -311,7 +334,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
         current = self.imviewer.phot_parameters
         default = self.imviewer.default_parameters('photometry')
         dialog = qad_dialogs.PhotSettingsDialog(self, current, default)
-        retval = dialog.exec_()
+        retval = dialog.exec()
         if retval == 1:
             self.imviewer.phot_parameters = dialog.getValue()
 
@@ -323,7 +346,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
         current = self.imviewer.plot_parameters
         default = self.imviewer.default_parameters('plot')
         dialog = qad_dialogs.PlotSettingsDialog(self, current, default)
-        retval = dialog.exec_()
+        retval = dialog.exec()
         if retval == 1:
             self.imviewer.plot_parameters = dialog.getValue()
 
@@ -462,7 +485,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
 
     def resetModel(self):
         """Reset the TreeView model."""
-        self.model = QtWidgets.QFileSystemModel(self)
+        self.model = QtGui.QFileSystemModel(self)
         self.treeView.setModel(self.model)
         self.setFilter()
         self.setRoot()
@@ -479,7 +502,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
 
         # resize to contents
         self.treeView.header().setSectionResizeMode(
-            0, QtWidgets.QHeaderView.ResizeToContents)
+            0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         self.treeView.resizeColumnToContents(0)
 
         # enable/disable next button

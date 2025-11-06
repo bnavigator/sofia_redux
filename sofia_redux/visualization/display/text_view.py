@@ -2,10 +2,10 @@
 """Text viewer widget for use with the Eye of SOFIA."""
 
 try:
-    from PyQt5 import QtWidgets, QtGui, QtCore
+    from PyQt6 import QtWidgets, QtGui, QtCore
     from sofia_redux.visualization.display.ui import textview as tv
 except ImportError:
-    HAS_PYQT5 = False
+    HAS_PYQT6 = False
     QtGui = None
 
     # duck type parents to allow class definition
@@ -17,7 +17,7 @@ except ImportError:
         class Ui_TextWindow:
             pass
 else:
-    HAS_PYQT5 = True
+    HAS_PYQT6 = True
 
 
 class TextView(QtWidgets.QDialog, tv.Ui_TextWindow):
@@ -36,8 +36,8 @@ class TextView(QtWidgets.QDialog, tv.Ui_TextWindow):
         parent : `QWidget`
             Parent widget.
         """
-        if not HAS_PYQT5:  # pragma: no cover
-            raise ImportError('PyQt5 package is required.')
+        if not HAS_PYQT6:  # pragma: no cover
+            raise ImportError('PyQt6 package is required.')
 
         # parent initialization
         QtWidgets.QDialog.__init__(self, parent)
@@ -46,10 +46,10 @@ class TextView(QtWidgets.QDialog, tv.Ui_TextWindow):
         self.setupUi(self)
 
         # make sure there's a close button
-        self.setWindowFlags(QtCore.Qt.Window
-                            | QtCore.Qt.WindowMaximizeButtonHint
-                            | QtCore.Qt.WindowMinimizeButtonHint
-                            | QtCore.Qt.WindowCloseButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowType.Window
+                            | QtCore.Qt.WindowType.WindowMaximizeButtonHint
+                            | QtCore.Qt.WindowType.WindowMinimizeButtonHint
+                            | QtCore.Qt.WindowType.WindowCloseButtonHint)
 
         # connect buttons
         self.findButton.clicked.connect(self.find)
@@ -100,14 +100,14 @@ class TextView(QtWidgets.QDialog, tv.Ui_TextWindow):
         cursor = self.textEdit.textCursor()
         if find_text == '':
             # set cursor back to beginning of document
-            cursor.movePosition(QtGui.QTextCursor.Start)
+            cursor.movePosition(QtGui.QTextCursor.MoveOperation.Start)
             self.textEdit.setTextCursor(cursor)
         else:
             # find next instance
             found = self.textEdit.find(find_text)
             if not found:
                 # wrap back to beginning and try one more find
-                cursor.movePosition(QtGui.QTextCursor.Start)
+                cursor.movePosition(QtGui.QTextCursor.MoveOperation.Start)
                 self.textEdit.setTextCursor(cursor)
                 self.textEdit.find(find_text)
         self.textEdit.repaint()
