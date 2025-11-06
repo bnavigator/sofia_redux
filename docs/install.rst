@@ -46,19 +46,18 @@ DS9
 ^^^
 
 Some optional visualization tools in the SOFIA Redux interface also
-use the `pyds9` and `regions` packages to interface with the external
+use the `ds9samp` and `regions` packages to interface with the external
 SAOImage DS9 tool. To use these tools, install
 `DS9 <https://sites.google.com/cfa.harvard.edu/saoimageds9>`__, then
 install pyds9 and regions directly via pip::
 
-  pip install pyds9 regions
+  pip install ds9samp regions
 
 or using the [display] extra::
 
   pip install 'sofia-redux[display]'
 
-Please note that pyds9 requires gcc to compile, and is not available
-on the Windows platform.  On MacOS, you will need to make a `ds9`
+On MacOS, you will need to make a `ds9`
 executable available in your PATH environment variable; see the
 `DS9 FAQs <http://ds9.si.edu/doc/faq.html#MacOSX>`__ for more information.
 

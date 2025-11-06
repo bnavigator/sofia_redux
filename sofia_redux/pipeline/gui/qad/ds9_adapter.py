@@ -1,9 +1,12 @@
 """DS9 SAMP adapter using ds9samp library."""
 
-from astropy import log
 import os
 import subprocess
 import time
+import re
+import shutil
+
+from astropy import log
 
 __all__ = ['DS9']
 
@@ -79,8 +82,6 @@ class DS9:
 
         Check common installation locations for Windows.
         """
-        import shutil
-
         # First try PATH
         ds9_path = shutil.which('ds9')
         if ds9_path:
@@ -98,7 +99,7 @@ class DS9:
                     log.info(f"Found DS9 at: {path}")
                     return path
 
-        # If no installation is found tell user to open it manually
+        # If no installation is found, just try the plain command
         return 'ds9'
 
     def _start_ds9(self):
@@ -270,7 +271,6 @@ class DS9:
         str or None
             File contents if workaround succeeded, None otherwise.
         """
-        import re
         match = re.search(r"['\"](/[A-Za-z]:.+?)['\"]", str(error))
         if match:
             bad_path = match.group(1)
