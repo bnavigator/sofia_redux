@@ -2,16 +2,16 @@
 =====================
 - First release candidate from the SOFIA Data Center
 - Update dependency versions for current support windows
-  * Support Python 3.11 to 3.13
-  * Update API usage for Astropy, NumPy, SciPy, Matplotlib, Pandas, ...
-  * Switch from pyds9 to ds9samp for interaction with DS9
-  * Use PyQt6 for the GUI
+  - Support Python 3.11 to 3.13
+  - Update API usage for Astropy, NumPy, SciPy, Matplotlib, Pandas, ...
+  - Switch from pyds9 to ds9samp for interaction with DS9
+  - Use PyQt6 for the GUI
 - Update CI/CD setup for Uni Stuttgart internal GitHub Enterprise
   with local runners
 - Include FIFI-LS pipeline updates developed at DSI and SDC
-  * Telluric scaling
-  * ATRAN spectra interpolation
-  * New discard logic for pointing errors
+  - Telluric scaling
+  - ATRAN spectra interpolation
+  - New discard logic for pointing errors
 
 1.3.3  (2023-08-06)
 ===================
