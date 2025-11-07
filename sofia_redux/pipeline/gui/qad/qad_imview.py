@@ -2056,9 +2056,11 @@ class QADImView(object):
     def quit(self):
         """Quit DS9."""
         self.break_loop = True
-        try:
-            self._run_internal('quit')
-        except Exception as e:
-            log.error(f'Error occured while quitting {e}')
+        if self.ds9 is not None:
+            try:
+                self.ds9.quit()
+                self.ds9 = None
+            except Exception as e:
+                log.error(f'Error occured while quitting DS9: {e}')
         # Clean up temporary directory
         self._cleanup_temp_dir()

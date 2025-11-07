@@ -233,7 +233,6 @@ class DS9:
     def quit(self):
         """Quit DS9."""
         try:
-            import ds9samp
             ds9samp.end(self._ds9)
         except Exception as e:
             log.debug(f"Failed to end DS9 SAMP connection: {e}")
