@@ -162,7 +162,7 @@ class QADImView(object):
             else:
                 return True
 
-    def _run_internal(self, cmd, buf=None, via='set'):
+    def _run_internal(self, cmd, via='set'):
         """
         Format commands to send to ds9samp.
 
@@ -170,9 +170,6 @@ class QADImView(object):
         ----------
         cmd : str
             Command to send.
-        buf : list, str, or file-like; optional
-            Additional buffers to send.  May be a string or a file handler,
-            or a list of those.
         via : {'get', 'set'}, optional
             Command method.
 
@@ -184,10 +181,7 @@ class QADImView(object):
         log.debug('  Command: {}'.format(str(cmd)))
         retval = None
         if str(via).lower().strip() == 'set':
-            if type(buf) is list:
-                retval = self.ds9.set(cmd, *buf)
-            else:
-                retval = self.ds9.set(cmd, buf)
+                retval = self.ds9.set(cmd)
         elif str(via).lower().strip() == 'get':
             # workaround for DS9 seg fault with empty frame
             # and wcs requests
@@ -628,17 +622,14 @@ class QADImView(object):
                 # break loop if required
                 break
 
-    def run(self, cmd, buf=None, via='set', allframes=False):
+    def run(self, cmd, via='set', allframes=False):
         """
-        Send an XPA command to DS9.
+        Send a SAMP command to DS9.
 
         Parameters
         ----------
         cmd : str
             Command to send.
-        buf : list, str, or file-like; optional
-            Additional buffers to send.  May be a string or a file handler,
-            or a list of those.
         via : {'get', 'set'}, optional
             Command method.
         allframes : bool
@@ -675,11 +666,11 @@ class QADImView(object):
             for frm in framenums:
                 fcmd = 'frame ' + frm
                 self._run_internal(fcmd)
-                retval = self._run_internal(cmd, buf, via)
+                retval = self._run_internal(cmd, via)
                 retvalarr.append(retval)
             return retvalarr
         else:
-            retval = self._run_internal(cmd, buf, via)
+            retval = self._run_internal(cmd, via)
             return retval
 
     def get_extension_param(self):
@@ -1158,7 +1149,7 @@ class QADImView(object):
                  'point=x ' \
                  'color=blue tag=srcpos '\
                  'text=SRCPOS'.format(srcposx, srcposy)
-            self.run('regions', s1)
+            self.run(f'regions {s1}')
         except (KeyError, ValueError):
             pass
         try:
@@ -1169,15 +1160,15 @@ class QADImView(object):
             s1 = 'point({:f} {:f}) # ' \
                  'point=x ' \
                  'color=cyan tag=srcpos'.format(stcentx, stcenty)
-            self.run('regions', s1)
+            self.run(f'regions {s1}')
             s2 = 'circle({:f} {:f} {:f}) # ' \
                  'color=cyan tag=srcpos'.format(
                      stcentx, stcenty, photaper)
-            self.run('regions', s2)
+            self.run(f'regions {s2}')
             s3 = 'annulus({:f} {:f} {:f} {:f}) # ' \
                  'color=cyan tag=srcpos text=STCENT'.format(
                      stcentx, stcenty, photskap[0], photskap[1])
-            self.run('regions', s3)
+            self.run(f'regions {s3}')
         except (KeyError, ValueError):
             pass
         try:
@@ -1188,7 +1179,7 @@ class QADImView(object):
             s1 = 'text({:f} {:f}) # color=cyan ' \
                  'text="Flux={:.2f}, Sky={:.2f}"'.format(
                      stcentx, stcenty - 40, flux, sky)
-            self.run('regions', s1)
+            self.run(f'regions {s1}')
         except (KeyError, ValueError):
             pass
 
@@ -1288,7 +1279,7 @@ class QADImView(object):
 
         for reg in regions:
             try:
-                self.run('regions', reg)
+                self.run(f'regions {reg}')
             except ValueError:
                 # A bad WCS in the ds9 image will cause the
                 # region set to fail -- in this case, don't continue
