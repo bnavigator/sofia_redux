@@ -2061,6 +2061,6 @@ class QADImView(object):
                 self.ds9.quit()
                 self.ds9 = None
             except Exception as e:
-                log.error(f'Error occured while quitting DS9: {e}')
+                log.error(f'Error occured while quitting {e}')
         # Clean up temporary directory
         self._cleanup_temp_dir()
