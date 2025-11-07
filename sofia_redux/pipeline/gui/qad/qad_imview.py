@@ -136,9 +136,6 @@ class QADImView(object):
             log.warning('Photometry tools are not available. Install '
                         'sofia_redux.calibration to enable photometry.')
 
-        # always set XPA_METHOD to local
-        os.environ["XPA_METHOD"] = "local"
-
         # signals for plot events
         self.HAS_PYQT6 = HAS_PYQT6
         if self.HAS_PYQT6:
