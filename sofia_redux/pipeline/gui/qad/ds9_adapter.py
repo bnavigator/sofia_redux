@@ -8,6 +8,11 @@ import shutil
 
 from astropy import log
 
+try:
+    import ds9samp
+except ImportError:
+    ds9samp = None
+
 __all__ = ['DS9']
 
 class DS9:
@@ -33,62 +38,35 @@ class DS9:
         """
         self._ds9_process = None
         self._target = target
-        self._ensure_ds9_available(start_ds9)
-        self._connect_to_ds9()
 
-    def _ensure_ds9_available(self, start_ds9):
-        """
-        Ensure DS9 is running and available.
-
-        Parameters
-        ----------
-        start_ds9 : bool
-            If True, start DS9 if not running.
-
-        Raises
-        ------
-        ValueError
-            If DS9 is not running and start_ds9 is False.
-        """
-        if self._is_ds9_running():
-            return
-
-        if not start_ds9:
-            raise ValueError(
-                "DS9 is not running or not SAMP-enabled. Please "
-                "start DS9 with 'ds9 -samp' or set start_ds9=True")
-
-        log.info("Starting DS9 with SAMP support...")
-        self._start_ds9()
-        self._wait_for_ds9_startup()
-
-    def _connect_to_ds9(self):
-        """Establish SAMP connection to DS9."""
-        try:
-            import ds9samp
-        except ImportError:
+        if ds9samp is None:
             log.warning(
                 "ds9samp is not installed. Please install it with: "
                 "pip install ds9samp")
-            raise ImportError(
+            raise RuntimeError(
                 "ds9samp is required for DS9 SAMP integration. "
-                "Install with: pip install ds9samp") from None
+                "Install with: pip install ds9samp")
+
+        if not self._is_ds9_running():
+            if not start_ds9:
+                raise RuntimeError(
+                    "DS9 is not running or not SAMP-enabled. Please "
+                    "start DS9 with 'ds9 -samp' or set start_ds9=True")
+
+            log.info("Starting DS9 with SAMP support...")
+            self._start_ds9()
+            self._wait_for_ds9_startup()
+
         self._ds9 = ds9samp.start(client=self._target)
         self._ds9.timeout = 30
 
-    def _find_ds9_executable(self):
-        """
-        Find DS9 executable.
 
-        Check common installation locations for Windows.
-        """
-        # First try PATH
+    def _start_ds9(self):
+        """Start DS9 with SAMP support in the background."""
         ds9_path = shutil.which('ds9')
-        if ds9_path:
-            return ds9_path
 
         # check common installation locations
-        if os.name == 'nt':
+        if ds9_path is None and os.name == 'nt':
             common_paths = [
                 r'C:\Program Files\SAOImageDS9\ds9.exe',
                 r'C:\Program Files (x86)\SAOImageDS9\ds9.exe',
@@ -97,22 +75,18 @@ class DS9:
             for path in common_paths:
                 if os.path.exists(path):
                     log.info(f"Found DS9 at: {path}")
-                    return path
+                    ds9_path = path
+                    break
 
-        # If no installation is found, just try the plain command
-        return 'ds9'
-
-    def _start_ds9(self):
-        """Start DS9 with SAMP support in the background."""
-        # Try to find DS9 executable
-        ds9_cmd = self._find_ds9_executable()
+        if ds9_path is None:
+            ds9_path = 'ds9'
 
         try:
             if os.name == 'nt':
                 # Windows: use CREATE_NEW_PROCESS_GROUP flag
                 import subprocess as sp
                 self._ds9_process = subprocess.Popen(
-                    [ds9_cmd, '-samp'],
+                    [ds9_path, '-samp'],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     creationflags=sp.CREATE_NEW_PROCESS_GROUP
@@ -120,20 +94,20 @@ class DS9:
             else:
                 # Unix/macOS: use process group with setsid
                 self._ds9_process = subprocess.Popen(
-                    [ds9_cmd, '-samp'],
+                    [ds9_path, '-samp'],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     preexec_fn=os.setsid
                 )
             log.info(f"Started DS9 process with PID: {self._ds9_process.pid}")
-        except FileNotFoundError:
-            raise FileNotFoundError(
+        except FileNotFoundError as err:
+            raise RuntimeError(
                 "DS9 executable not found. Please ensure DS9 is installed "
                 "and in your PATH or open it manually before starting the "
                 "reduction."
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed to start DS9: {e}")
+            ) from err
+        except Exception as err:
+            raise RuntimeError("Failed to start DS9") from err
 
     def _wait_for_ds9_startup(self, timeout=30, check_interval=0.5):
         """
@@ -164,8 +138,9 @@ class DS9:
 
     def _is_ds9_running(self):
         """Check if DS9 is running and SAMP-enabled."""
+        if ds9samp is None:
+            raise RuntimeError("ds9samp is not available")
         try:
-            import ds9samp
             # try to create a temporary connection to check if DS9 is SAMP-ready
             with ds9samp.ds9samp() as test_ds9:
                 result = test_ds9.get("version", timeout=1)
@@ -174,7 +149,7 @@ class DS9:
             log.debug(f"DS9 SAMP check failed: {e}")
             return False
 
-    def set(self, cmd, buf=None):
+    def set(self, cmd):
         """
         Send a set command to DS9 via SAMP.
 
@@ -182,53 +157,18 @@ class DS9:
         ----------
         cmd : str
             DS9 command.
-        buf : str, optional
-            Additional string buffer (e.g., for regions commands).
 
         Returns
         -------
         int
             1 on success, 0 on failure.
         """
-        if buf is not None:
-            return self._set_with_buffer(cmd, buf)
         try:
             self._ds9.set(cmd)
             return 1
         except Exception as e:
             log.warning(f"DS9 set command '{cmd}' failed: {e}")
             return 0
-
-    def _set_with_buffer(self, cmd, buf):
-        """
-        Handle set commands with buffer data.
-
-        Parameters
-        ----------
-        cmd : str
-            DS9 command.
-        buf : str
-            Buffer string to send.
-
-        Returns
-        -------
-        int
-            1 on success, 0 on failure.
-        """
-        if cmd == 'regions':
-            try:
-                self._ds9.set(f'regions command {{{buf}}}')
-                return 1
-            except Exception as e:
-                log.error(f"Region setting failed: {e}")
-                return 0
-        else:
-            try:
-                self._ds9.set(f"{cmd} {buf}")
-                return 1
-            except Exception as e:
-                log.error(f"Command failed: {e}")
-                return 0
 
     def get(self, cmd):
         """

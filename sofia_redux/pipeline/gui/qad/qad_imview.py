@@ -2040,7 +2040,7 @@ class QADImView(object):
 
         try:
             self.ds9 = DS9()
-        except (ImportError, TypeError, ValueError, SAMPHubError):
+        except (RuntimeError, ValueError, SAMPHubError):
             log.error('DS9 is not accessible via SAMP. DS9 display '
                       'will not be available.')
             self.HAS_DS9 = False
