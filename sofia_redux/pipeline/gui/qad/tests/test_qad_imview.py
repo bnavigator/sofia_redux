@@ -1147,15 +1147,6 @@ class TestQADImView(object):
         def err_func(*args, **kwargs):
             raise ValueError('test error')
         mocker.patch.object(imviewer, 'set_defaults', return_value=None)
-        mocker.patch.object(imviewer, '_load_from_memory', err_func)
-
-        log.setLevel('DEBUG')
-        imviewer.disp_parameters['extension'] = 'first'
-
-        imviewer.load([hdul])
-        capt = capsys.readouterr()
-        assert "Loading from memory" in capt.out
-        assert "Loading from tempfile" in capt.out
 
         hdul.close()
 
@@ -1169,12 +1160,6 @@ class TestQADImView(object):
 
         ffile = self.make_file(tmpdir)
         data = fits.open(ffile)
-
-        # load from memory raises error (SAMP does not support it)
-        with pytest.raises(ValueError) as exc_info:
-            imviewer._load_from_memory('test cmd', 'test_file.fits', data)
-        assert 'SAMP does not support loading from memory' in \
-            str(exc_info.value)
 
         # load from tempfile just issues message
         status = imviewer._load_from_tempfile('test cmd',

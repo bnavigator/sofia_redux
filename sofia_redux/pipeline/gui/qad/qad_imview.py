@@ -873,14 +873,7 @@ class QADImView(object):
                         else:
                             data = imgdata[j]
 
-                        # try to stream the data to DS9.  If that fails,
-                        # try to write it to disk, then load it
-                        try:
-                            log.debug("Loading from memory")
-                            status = self._load_from_memory(cmd, ffile, data)
-                        except ValueError:
-                            log.debug("Loading from tempfile")
-                            status = self._load_from_tempfile(cmd, ffile, data)
+                        status = self._load_from_tempfile(cmd, ffile, data)
 
                     log.info(f'Loaded frame {frame_to_load}: '
                              f'{os.path.basename(ffile)}{extenstr}')
@@ -1020,18 +1013,6 @@ class QADImView(object):
                           f"{self._temp_dir}: {e}")
             finally:
                 self._temp_dir = None
-
-    def _load_from_memory(self, cmd, ffile, data):
-        """Use BytesIO to stream HDU data to DS9.
-
-        SAMP protocol does not support binary data streaming which
-        caused the warning. Now it will just show the debug message
-        that it is using the tempfile.
-        """
-        # SAMP does not support loading from memory
-        msg = "SAMP does not support loading from memory; using tempfile"
-        log.debug(msg)
-        raise ValueError(msg)
 
     def _make_s2n(self, ffile, hdul):
         """Retrieve or make an S/N image."""
