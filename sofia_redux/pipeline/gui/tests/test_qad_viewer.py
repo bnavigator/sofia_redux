@@ -93,6 +93,13 @@ class MockDS9(object):
             pass
         return self.set_return_value
 
+    def quit(self):
+        if self.verbose:
+            log.info('DS9.quit() called')
+        if self.raise_error_set:
+            raise ValueError(self.error_message)
+        return
+
     def get_arr2np(self):
         return self.data
 
@@ -165,7 +172,8 @@ class TestQADViewer(object):
         view = self.make_window(qtbot)
         assert isinstance(view.imviewer, QADImView)
 
-    def test_close(self, qtbot, mocker, capsys):
+    @pytest.mark.parametrize('error', [False, True])
+    def test_close(self, qtbot, mocker, capsys, error):
         MockDS9.verbose = True
 
         self.mock_ds9(mocker)
@@ -173,17 +181,14 @@ class TestQADViewer(object):
         assert isinstance(view.imviewer, QADImView)
         view.imviewer.startup()
         assert isinstance(view.imviewer.ds9, MockDS9)
+        MockDS9.raise_error_set = error
 
         view.close()
-
         capt = capsys.readouterr()
-        assert 'quit' in capt.out
-
-        # raise error on second quit
-        MockDS9.raise_error_set = True
-        view.close()
-        capt = capsys.readouterr()
-        assert 'Error occured while quitting test error' in capt.err
+        if not error:
+            assert 'quit' in capt.out
+        else:
+            assert 'Error occured while quitting test error' in capt.err
 
     def test_no_op(self, qtbot, mocker):
         self.mock_ds9(mocker)
