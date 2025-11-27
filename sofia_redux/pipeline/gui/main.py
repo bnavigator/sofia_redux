@@ -7,7 +7,6 @@ from pathlib import Path
 
 from astropy import log
 
-import sofia_redux.pipeline
 from sofia_redux.pipeline.gui import widgets
 from sofia_redux import __version__ as sofia_redux_version
 from sofia_redux.pipeline import __version__ as pipeline_version
