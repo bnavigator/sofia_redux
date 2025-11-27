@@ -322,6 +322,7 @@ class QADMainWindow(QtWidgets.QMainWindow, ui_qad_main.Ui_MainWindow):
             QtWidgets.QFileDialog.getExistingDirectory(
                 self, 'Select Directory'))
         if newpath.strip() != '':
+            newpath = os.path.normpath(newpath)
             self.lastpath = []
             self.rootpath = newpath
             self.resetModel()

@@ -7,7 +7,6 @@ from pathlib import Path
 
 from astropy import log
 
-import sofia_redux.pipeline
 from sofia_redux.pipeline.gui import widgets
 from sofia_redux import __version__ as sofia_redux_version
 from sofia_redux.pipeline import __version__ as pipeline_version
@@ -787,22 +786,25 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
 
         if remove_files is None:
             # file dialog widget to choose new files for add or open
-            newpath = QtWidgets.QFileDialog.getOpenFileNames(
+            newpath_tuple = QtWidgets.QFileDialog.getOpenFileNames(
                 self, caption="Select Data File(s)",
                 directory=self.base_directory,
                 filter="FITS files (*.fits);;"
                        "Input manifests (*.txt);;"
                        "All files (*)")
-            if len(newpath[0]) == 0:
+            if len(newpath_tuple[0]) == 0:
                 # do nothing if no files were selected.
                 return
+            # The Qt dialog returns forward slash paths even on Windows
+            # normalize to backslash for os.path usage down the line
+            newpaths = [os.path.normpath(p) for p in newpath_tuple[0]]
 
             # store the path from the first file
             if add and self.interface.reduction is not None:
                 # if adding, test that the new files can be reduced
                 # with the same object
                 data_files = self.loaded_files.copy()
-                for fname in newpath[0]:
+                for fname in newpaths:
                     if fname not in data_files:
                         data_files.append(fname)
                 test_reduction = \
@@ -815,7 +817,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
                     return
             else:
                 # otherwise, just use the new files
-                data_files = newpath[0]
+                data_files = newpaths
                 self.base_directory = os.path.dirname(data_files[0])
         else:
             # if removing, filter out any selected files
@@ -1050,7 +1052,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
                 # do nothing if no files were selected.
                 return
 
-            infile = newpath[0]
+            infile = os.path.normpath(newpath[0])
             self.param_directory = os.path.dirname(infile)
             self.interface.update_configuration(infile)
             self.setStatus("Configuration updated from {}.".format(infile))
@@ -1089,7 +1091,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             # do nothing if no files were selected.
             return
 
-        infile = newpath[0]
+        infile = os.path.normpath(newpath[0])
         self.param_directory = os.path.dirname(infile)
         self.interface.load_parameters(infile)
         self.default_param = self.interface.reduction.parameters.copy()
@@ -1209,7 +1211,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             # do nothing if no files were selected.
             return
 
-        outfile = newpath[0]
+        outfile = os.path.normpath(newpath[0])
         self.save_directory = os.path.dirname(outfile)
         self.interface.save_input_manifest(outfile)
 
@@ -1238,7 +1240,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             # do nothing if no files were selected.
             return
 
-        outfile = newpath[0]
+        outfile = os.path.normpath(newpath[0])
         self.save_directory = os.path.dirname(outfile)
         self.interface.save_output_manifest(outfile)
 
@@ -1269,7 +1271,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             # do nothing if no files were selected.
             return
 
-        outfile = newpath[0]
+        outfile = os.path.normpath(newpath[0])
         self.save_directory = os.path.dirname(outfile)
         self.interface.save_configuration(outfile)
 
@@ -1323,6 +1325,7 @@ class ReduxMainWindow(QtWidgets.QMainWindow, ui_main.Ui_MainWindow):
             return
         else:
             # set new output directory for reduction and log
+            newpath = os.path.normpath(newpath)
             self.interface.set_output_directory(newpath)
             self.interface.set_log_file()
             self.save_directory = newpath
