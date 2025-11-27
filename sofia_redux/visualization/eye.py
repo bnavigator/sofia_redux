@@ -157,26 +157,27 @@ class Eye(object):
         """Initialize the Eye with command line arguments."""
         if hasattr(args, 'filenames') and args.filenames:
             log.info('Reading in files from command line')
-            self.add_data(filename=args.filenames)
+            self.add_data(filenames=args.filenames)
 
-    def add_data(self, filename: Optional[str] = None) -> None:
+    def add_data(self, filenames: Optional[str] = None) -> None:
         """
         Add data.
 
         Parameters
         ----------
-        filename : list of str, optional
+        filenames : list of str, optional
             Absolute paths of FITS files to add to the Eye.
             If not provided, prompt the user for the filename.
         """
-        if not filename:
-            filename = QtWidgets.QFileDialog.getOpenFileNames(
+        if not filenames:
+            filenames = QtWidgets.QFileDialog.getOpenFileNames(
                 self.view, caption="Select Data File(s)",
                 filter="FITS files (*.fits *.txt);;"
                        "All files (*)")[0]
-        if filename:
+        if filenames:
             added = False
-            for fname in filename:
+            for fname_i in filenames:
+                fname = os.path.normpath(fname_i)
                 log.debug(f'Adding data from {fname}')
                 added_id = self._add_model(filename=fname)
                 if added_id is not None:

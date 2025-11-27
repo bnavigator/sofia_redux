@@ -455,15 +455,16 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
         key : str
             Object name for the widget.
         """
-        newpath = QtWidgets.QFileDialog.getOpenFileNames(
+        newpaths = QtWidgets.QFileDialog.getOpenFileNames(
             self, caption="Select File(s)",
             directory=self.directory)
-        if len(newpath[0]) == 0:
+        if len(newpaths[0]) == 0:
             # do nothing if no files were selected.
             return
         else:
+            picked_files = [os.path.normpath(p) for p in newpaths[0]]
             widget = self.container.findChild(QtWidgets.QWidget, key)
-            widget.setText(', '.join(newpath[0]))
+            widget.setText(', '.join(picked_files))
             widget.repaint()
 
     def pickDirectory(self, key):
@@ -481,6 +482,7 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
         if len(newpath) == 0:
             return
         else:
+            newpath = os.path.normpath(newpath)
             widget = self.container.findChild(QtWidgets.QWidget, key)
             widget.setText(newpath)
             widget.repaint()
