@@ -13,6 +13,7 @@ import numpy as np
 from scipy.stats import gmean
 
 from sofia_redux.pipeline.gui.matplotlib_viewer import MatplotlibPlot
+from sofia_redux.pipeline.gui.qad.ds9_adapter import sanitize_path_ds9
 from sofia_redux.toolkit.utilities.fits import set_log_level
 
 try:
@@ -848,12 +849,11 @@ class QADImView(object):
                     extenstr = ''
                 try:
                     if not is_data[ffile]:
+                        ffile_path = sanitize_path_ds9(ffile)
                         if cmd == 'multiframe':
-                            ds9_cmd = "{} {}{}".format(cmd, ffile, extenstr)
+                            ds9_cmd = f"{cmd} {ffile_path}{extenstr}"
                         else:
-                            ds9_cmd = "{} new {}{}".format(cmd, ffile,
-                                                           extenstr)
-                        log.debug("Running DS9 command: {}".format(ds9_cmd))
+                            ds9_cmd = f"{cmd} new {ffile_path}{extenstr}"
                         status = self.run(ds9_cmd)
                     else:
                         self.run('frame new')
@@ -935,12 +935,14 @@ class QADImView(object):
                 if nframes == len(regfiles):
                     for reg_i, rfile in enumerate(regfiles):
                         if os.path.exists(rfile):
+                            rfile_path = sanitize_path_ds9(rfile)
                             self.run('frame {}'.format(frames[reg_i]))
-                            self.run('region load {}'.format(rfile))
+                            self.run('region load {}'.format(rfile_path))
                 else:
                     for rfile in regfiles:
                         if os.path.exists(rfile):
-                            self.run('region load all ' + rfile)
+                            rfile_path = sanitize_path_ds9(rfile)
+                            self.run('region load all ' + rfile_path)
 
             # reset the photometry table
             self.ptable = None
@@ -981,14 +983,8 @@ class QADImView(object):
 
             # For SAMP, convert Windows backslashes to forward slashes
             # preventing that they are interpreted as escape characters
-            ds9_path = temp_path
-            if hasattr(self.ds9, '_ds9'):
-                ds9_path = temp_path.replace('\\', '/')
-                log.debug("Path for SAMP: {}".format(ds9_path))
-
-            ds9_cmd = "{} {}".format(cmd, ds9_path)
-            log.debug("Running DS9 command: {}".format(ds9_cmd))
-            status = self.run(ds9_cmd)
+            ds9_path = sanitize_path_ds9(temp_path)
+            status = self.run(f"{cmd} {ds9_path}")
 
             # Apply zoom to fit if enabled
             if self.disp_parameters.get('zoom_fit', True):
