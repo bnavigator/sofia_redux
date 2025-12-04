@@ -5,6 +5,7 @@ import subprocess
 import time
 import re
 import shutil
+import pathlib
 
 from astropy import log
 
@@ -268,3 +269,19 @@ class DS9:
                 log.warning(f"Could not terminate DS9 process: {e}")
             finally:
                 self._ds9_process = None
+
+
+def sanitize_path_ds9(path):
+    """
+    Sanitize file paths in DS9 commands for cross-platform compatibility.
+
+    Parameters
+    ----------
+    cmd : str
+        DS9 command.
+    Returns
+    -------
+    str
+        Sanitized DS9 command.
+    """
+    return pathlib.PureWindowsPath(path).as_posix().replace(' ', r'\ ')
