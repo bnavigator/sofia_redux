@@ -24,7 +24,8 @@ SOFIA raw and processed data can be accessed from the
 Archived data may not match the results of data processed
 with this pipeline software.
 
-SOFIA pipelines are developed internally by the SOFIA Data Center
+SOFIA pipelines are developed internally by the
+`SOFIA Data Center <https://www.irs.uni-stuttgart.de/en/research/satellitetechnology-and-instruments/SOFIA-Data-Center/>`__
 software team, then are published publicly at the
 `SOFIA Redux GitHub project
 <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
