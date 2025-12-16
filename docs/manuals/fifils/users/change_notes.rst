@@ -13,7 +13,7 @@ pipeline version used.
 
 
 FIFI-LS Redux v2.10.0
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 02*
 
 - Telluric scaling feature added.
