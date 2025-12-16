@@ -72,7 +72,7 @@ rst_epilog += """
 
 # NASA document number and revision
 docnumber = 'SDC-MAN-0001'
-issue = '01'
+issue = '02'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']
