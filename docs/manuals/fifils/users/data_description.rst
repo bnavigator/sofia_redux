@@ -832,7 +832,7 @@ calibration which will encorporate a more robust image resampling and flux
 extraction method, along with a fully time & wavelength-resolved Mars model.
 For this reason, a comprehensive test of the relative robustnesses of the DSI
 and 2023 responses has not been carried out, however fluxes in data products may
-deviate between versions by up to 30%. Figure :numref:`fifi_exposure_map` displays
+deviate between versions by up to 30%. Figure :numref:`fifi_fadda_dsi_response_comparison` displays
 the difference between the two response versions for all FIFI-LS filter configurations.
 A more detailed investigation will be provided in future documentation of the SDC
 flux calibration.
