@@ -825,7 +825,7 @@ FIFI-LS field of view. Additionally, flightwise atmospheric calibration factors
 that are applied to the prior calibration have been removed in post-filter change
 response curves. The pre-filter change response curves remain the same as before,
 except those for the B2 filters, which have been scaled from their post-filter change
-counterparts in order to correct for 
+counterparts.
 
 In the near future, the SOFIA Data Center (SDC) will release an updated flux
 calibration which will encorporate a more robust image resampling and flux
