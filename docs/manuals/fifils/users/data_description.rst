@@ -825,7 +825,8 @@ FIFI-LS field of view. Additionally, flightwise atmospheric calibration factors
 that are applied to the prior calibration have been removed in post-filter change
 response curves. The pre-filter change response curves remain the same as before,
 except those for the B2 filters, which have been scaled from their post-filter change
-counterparts.
+counterparts. This corrects for artefacts in the response curves, and also extends
+response coverage for the [OIII] 52 micron line in the old filter configuration.
 
 In the near future, the SOFIA Data Center (SDC) will release an updated flux
 calibration which will encorporate a more robust image resampling and flux
@@ -845,7 +846,7 @@ for which the calibration dates are specified in the filenames (note: v1 refers 
 responses for data observed prior to the end of 2017, v2 is for data from 2018 onwards).
 Users may also choose to modify the lookup table *response_default.txt* within the
 above directory, pointing to the older response curves if desired. For reference,
-response curves used in reduction of data products is specified in the FITS header
+the response curve used in reduction of data products is specified in the FITS header
 keyword ``RSPNFILE``.
 
 .. figure:: images/fifi_fadda_dsi_response_comparison.png
