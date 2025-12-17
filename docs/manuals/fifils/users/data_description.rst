@@ -840,7 +840,7 @@ flux calibration.
 Manual selection of response curves is supported within the Redux GUI or the
 supplied parameter config file via the *response_file* keyword. Users may view
 the available historical response curves within
-*sofia_redux\\sofia_redux\\instruments\\fifi_ls\\data\\response_files\\*,
+*sofia_redux/sofia_redux/instruments/fifi_ls/data/response_files/*,
 for which the calibration dates are specified in the filenames (note: v1 refers to
 responses for data observed prior to the end of 2017, v2 is for data from 2018 onwards).
 Users may also choose to modify the lookup table *response_default.txt* within the
