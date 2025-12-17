@@ -804,7 +804,7 @@ time, flux calibration is expected to be good to within about 5-10%
 
 "DSI" Response Curve Update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-From v.2.10.0 onwards, the pipeline uses response curves generated at the
+From v2.10.0 onwards, the pipeline uses response curves generated at the
 Deutsches SOFIA Institut (DSI) in 2024. These response curves deviate from
 those of prior versions, and will result in differences in the absolute flux
 of data products.
