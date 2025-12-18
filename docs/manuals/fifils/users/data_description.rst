@@ -710,11 +710,13 @@ output spectrum may retain telluric artifacts after telluric correction.
 
 A set of ATRAN models appropriate for a range of altitudes, zenith
 angles, and PWV values has been generated for pipeline use. In the
-telluric correction step, the pipeline selects the model closest to the
-observed altitude, zenith angle, and PWV value and smooths the transmission
-model to the resolution of the observed spectrum, interpolates the transmission
-data to the observed wavelength at each spexel, and
-then divides the data by the transmission model. Very low transmission
+telluric correction step, the pipeline uses the parameter set of observed altitude,
+zenith angle, and PWV in order to select the six models which lie adjacent to the
+observation in parameter spaces. Then, the pipeline carries out a series of two-file
+interpolations in order to build an optimal synthetic transmission spectrum. This spectrum
+is subsequently smoothed to the spectral resolution of the input file, and then
+interpolated to the observed wavelength at each spexel. Finally, the data is divided
+by the transmission spectrum. Very low transmission
 values result in poor corrections, so any pixel for which the transmission
 is less than 60% (by default) is set to NaN. For reference, the smoothed,
 binned transmission data is attached to the FITS file as a 25 x (16 \*
