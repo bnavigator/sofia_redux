@@ -802,6 +802,60 @@ time, flux calibration is expected to be good to within about 5-10%
    plots on the right are for data taken with an updated
    filter set.
 
+"DSI" Response Curve Update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+From v2.10.0 onwards, the pipeline uses response curves generated at the
+Deutsches SOFIA Institut (DSI) in 2024. These response curves deviate from
+those of prior versions, and will result in differences in the absolute flux
+of data products.
+
+The main differences arise from changes in how the FIFI-LS-measured
+Mars flux images are sampled and compared to the Mars model fluxes. The prior
+approach attempted to fit the FIFI-LS spatial PSF to the Mars disk and then
+integrate the fitted flux distribution to derive a total flux. The benefit of
+this approach is that the loss of flux which "falls" off of the FIFI-LS field of
+view (relevant at low Mars separations) is counteracted. However, this approach
+suffers from the highly undersampled Mars disk, and therefore the 2-dimensional
+Gaussian fit is potentially unreliable.
+
+The 2024 DSI approach instead identifies the centre of Mars via the brightest pixel,
+and sums all flux within a static aperture around that pixel. This better captures
+the true measured flux, albeit without correcting for flux lost outside of the
+FIFI-LS field of view. Additionally, flightwise atmospheric calibration factors
+that are applied to the prior calibration have been removed in post-filter change
+response curves. The pre-filter change response curves remain the same as before,
+except those for the B2 filters, which have been scaled from their post-filter change
+counterparts. This corrects for artefacts in the response curves, and also extends
+response coverage for the [OIII] 52 micron line in the old filter configuration.
+
+In the near future, the SOFIA Data Center (SDC) will release an updated flux
+calibration which will encorporate a more robust image resampling and flux
+extraction method, along with a fully time & wavelength-resolved Mars model.
+For this reason, a comprehensive test of the relative robustnesses of the DSI
+and 2023 responses has not been carried out, however fluxes in data products may
+deviate between versions by up to 30%. :numref:`fifi_fadda_dsi_response_comparison` displays
+the difference between the two response versions for all FIFI-LS filter configurations.
+A more detailed investigation will be provided in future documentation of the SDC
+flux calibration.
+
+Manual selection of response curves is supported within the Redux GUI or the
+supplied parameter config file via the *response_file* keyword. Users may view
+the available historical response curves within
+*sofia_redux/sofia_redux/instruments/fifi_ls/data/response_files/*,
+for which the calibration dates are specified in the filenames (note: v1 refers to
+responses for data observed prior to the end of 2017, v2 is for data from 2018 onwards).
+Users may also choose to modify the lookup table *response_default.txt* within the
+above directory, pointing to the older response curves if desired. For reference,
+the response curve used in reduction of data products is specified in the FITS header
+keyword ``RSPNFILE``.
+
+.. figure:: images/fifi_fadda_dsi_response_comparison.png
+   :alt: Fadda DSI response comparison
+   :name: fifi_fadda_dsi_response_comparison
+   :height: 800
+
+   Comparison of Fadda et al. 2023 (orange) and DSI 2024 (blue) response curves
+   for all FIFI-LS filter configurations.
 
 Correct Wave Shift
 ~~~~~~~~~~~~~~~~~~

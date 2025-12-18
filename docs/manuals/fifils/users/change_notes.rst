@@ -12,6 +12,13 @@ data, check the PIPEVERS keyword in the FITS header to determine the
 pipeline version used.
 
 
+FIFI-LS Redux v2.10.0
+~~~~~~~~~~~~~~~~~~~~~
+*User manual: Iss. 02*
+
+- Telluric scaling feature added.
+- Final DSI data files added, including 2024 flux response curves,
+  updated flat fields, bad pixel tables and wavelength calibration sheets.
 
 FIFI-LS Redux v2.9.0
 ~~~~~~~~~~~~~~~~~~~~
