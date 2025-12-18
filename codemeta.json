@@ -4,7 +4,7 @@
         "http://schema.org"
     ],
     "@type": "SoftwareSourceCode",
-    "identifier": "https://doi.org/10.5281/zenodo.5088419",
+    "identifier": "https://doi.org/10.5281/zenodo.17980054",
     "name": "sofia-redux",
     "description": "SOFIA data reduction pipelines",
     "license": "BSD 3-Clause",
