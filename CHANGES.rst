@@ -5,6 +5,7 @@
   - Document DSI response curves for flux calibration.
 
 - Support for Python 3.14
+- Update Zenodo DOI for citations.
 
 1.4.0 (2025-12-04)
 ==================
