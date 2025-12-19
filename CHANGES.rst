@@ -1,8 +1,15 @@
-1.4.0rc0 (2025-11-06)
-=====================
-- First release candidate from the SOFIA Data Center
-- Update dependency versions for current support windows
+1.4.1 (TBD)
+===========
+- FIFI-LS User Manual Iss. 02:
 
+   - Document DSI response curves for flux calibration.
+
+- Support for Python 3.14
+
+1.4.0 (2025-12-04)
+==================
+- This is the first full release of SOFIA Redux from the SOFIA Data Center
+- Update dependency versions for current support windows
   - Support Python 3.11 to 3.13
   - Update API usage for Astropy, NumPy, SciPy, Matplotlib, Pandas, ...
   - Switch from pyds9 to ds9samp for interaction with DS9
@@ -10,11 +17,12 @@
 
 - Update CI/CD setup for Uni Stuttgart internal GitHub Enterprise
   with local runners
-- Include FIFI-LS pipeline updates developed at DSI and SDC
+- FIFI-LS pipeline v2.10.0, updates developed at DSI and SDC:
 
   - Telluric scaling
   - ATRAN spectra interpolation
-  - New discard logic for pointing errors
+  - Updated calibration files (to be documented in v1.4.1)
+  - New discard logic for pointing errors (not used yet)
 
 1.3.3  (2023-08-06)
 ===================
