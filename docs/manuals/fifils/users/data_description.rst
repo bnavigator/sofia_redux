@@ -294,12 +294,26 @@ are either known bad detector pixels, or pixels for which the ramp fits
 did not have sufficient signal-to-noise. These pixels will be ignored in
 all further reduction steps.
 
+Pointing Discard
+^^^^^^^^^^^^^^^^
+
 If the *pointing_discard* parameter is set to true, an entire set of data points
 can be set to NaN. During the exposure time of a single chop cycle, if the
 pointing error exceeds the defined threshold specified by the
 *pointing_threshold* parameter, the slopes of all ramps in that chop cycle are
 set to NaN and discarded from further analysis. This is done to mitigate the
 risk of low-quality data influencing the final product.
+
+Use Complete Ramps
+^^^^^^^^^^^^^^^^^^
+
+If the "*Use Complete Ramps*" parameter is set to true in the Redux GUI, or the ``full_ramps``
+parameter in the config file is set to True, then only r, only ramps that have the full
+number of FIFI-LS samples (28) will be used in the ramp fitting process. Any ramps with fewer
+than this number will be discarded. In combination with the standard bias subtraction,
+this method can potentially improve the quality of the final data product by systematically
+reducing the standard deviation of each ramp. If this parameter is set to False, the default
+minimum ramp length of 2 will be used.
 
 .. Data source: flight 280, folder 1, file 547-548 lw
    Full reduction set (for resample) is 471-578
@@ -735,7 +749,7 @@ result of the convolution of the theoretical telluric absorption
 spectrum with the instrumental profile. The division of the former by
 the latter does not necessarily yield the correct results, and the
 output spectrum may retain telluric artifacts after telluric correction.
-For this reason, the parameter ``NARROW`` may be set to True within the Redux
+For this reason, the parameter ``narrow`` may be set to True within the Redux
 GUI or the parameter config file. This enables the "Narrow Line Mode" for telluric
 correction whereby a single transmission value is used for the complete wavelength
 range of the input data, determined from the redshift-corrected wavelength of the
