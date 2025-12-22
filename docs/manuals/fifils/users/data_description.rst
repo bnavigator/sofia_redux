@@ -682,31 +682,22 @@ necessarily provide an accurate absorption correction spectrum. For this
 reason, telluric corrections of FIFI-LS data rely on models of the
 atmospheric absorption, as provided by codes such as ATRAN, in
 combination with the estimated line-of-sight water vapor content
-(precipitable water vapor, PWV) provided by the water vapor monitor
-(WVM) aboard SOFIA. Currently, the WVM does not generate PWV values that
-are inserted into the FITS headers of the FIFI-LS data files. It is
-expected that these values may become available in the future, and
-at that point the PWV values will be used to generate telluric
-correction spectra.
+(precipitable water vapor, PWV) calculated from ECMWF satellite data
+(see Iserlohe et al. 2021, 2022, Fischer et al. 2022 for details).
 
-Currently, correction spectra are generated using
-PWV values derived from observations of telluric lines made with FIFI-LS
-during the set-up period at the start of observing legs and after changes
-of altitude. Experience has shown that these provide better corrections
+The satellite data is scaled to match in-flight measurements of the telluric lines
+made with FIFI-LS during the set-up period at the start of observing legs and after
+changes of altitude. Experience has shown that these provide better corrections
 than simply using the expected value for the flight altitude and airmass,
 particularly in regions with deep, sharp features (e.g. near 63 microns).
 However, changes of PWV during flight legs are not monitored and this may
-cause inaccuracies if the value changes rapidly. Furthermore, accurate
-correction of spectral lines in the vicinity of narrow telluric absorption
-features is problematic even with the use of good atmospheric models and
-knowledge of the PWV. This is due to the fact that the observed spectrum is
-the result of a multiplication of the intrinsic spectrum by the telluric
-absorption spectrum, and then a convolution of the product with the
-instrumental profile, whereas the correction derived from a model is the
-result of the convolution of the theoretical telluric absorption
-spectrum with the instrumental profile. The division of the former by
-the latter does not necessarily yield the correct results, and the
-output spectrum may retain telluric artifacts after telluric correction.
+cause inaccuracies if the value changes rapidly. Currently, PWV values are inserted
+into the FIFI-LS raw data headers via the the keyword ``WVZ_OBS``. It is expected
+that in the future, the PWV values will be derived during reduction from separate
+time-resolved tables of PWV values for each FIFI-LS flight. Note that the PWV values
+contained within the header keywords ``WVZ_STA`` and ``WVZ_END`` are
+legacy values from the non-functional Water Vapor Monitor (WVM) and
+should not be used for telluric correction.
 
 A set of ATRAN models appropriate for a range of altitudes, zenith
 angles, and PWV values has been generated for pipeline use. In the
@@ -730,6 +721,25 @@ remaining reduction steps. The telluric-corrected cube and its
 associated error are stored in the FLUX and STDDEV extensions.
 The uncorrected cube and its associated error are stored in the
 UNCORRECTED\_FLUX and UNCORRECTED\_STDDEV extensions.
+
+Narrow Line Mode
+^^^^^^^^^^^^^^^^
+
+Accurate correction of spectral lines in the vicinity of narrow telluric absorption
+features is problematic even with the use of good atmospheric models and
+knowledge of the PWV. This is due to the fact that the observed spectrum is
+the result of a multiplication of the intrinsic spectrum by the telluric
+absorption spectrum, and then a convolution of the product with the
+instrumental profile, whereas the correction derived from a model is the
+result of the convolution of the theoretical telluric absorption
+spectrum with the instrumental profile. The division of the former by
+the latter does not necessarily yield the correct results, and the
+output spectrum may retain telluric artifacts after telluric correction.
+For this reason, the parameter ``NARROW`` may be set to True within the Redux
+GUI or the parameter config file. This enables the "Narrow Line Mode" for telluric
+correction whereby a single transmission value is used for the complete wavelength
+range of the input data, determined from the redshift-corrected wavelength of the
+observed spectral line.
 
 .. figure:: images/fifi_telluric_corrected.png
    :alt: Telluric correction
