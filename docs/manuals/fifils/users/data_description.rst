@@ -377,6 +377,29 @@ This pipeline step produces an output file for each input A nod file,
 containing the chop- and nod-combined flux and error values for each
 grating scan.
 
+Telluric Scaling
+^^^^^^^^^^^^^^^^
+
+If the "perform telluric scaling" option in the Redux GUI is ticked, or if
+the ``telluric_scaling`` parameter in the config file is set to True, then telluric
+scaling will be performed during nod combination. This mode should be used only for
+On-the-fly (OTF) or Total Power (TP) observations, where no chopping has been performed.
+In this mode, a background emission function can be fit to the off-source nod beam signal,
+allowing the (telluric-dominated) background signal to be scaled to the zenith angle of
+the on-nod signal. This method is applied to each spaxel of the off-nod data. Further
+description of this mode can be found in Fischer *et al*. 2025.
+
+Background Scaling
+^^^^^^^^^^^^^^^^^^
+
+If the "Scale flux with backgrounds" option in the Redux GUI is ticked, or if the
+``bg_scaling`` parameter in the config file is set to True, then background scaling
+will be performed during nod combination. This mode should be used only for On-the-fly (OTF)
+or Total Power (TP) observations, where no chopping has been performed. In this mode, the
+off-nod background flux is scaled by the ratio of the A and B nod backgrounds, prior
+to subtraction from the on-nod flux. Further description of this mode can be found in
+Fischer *et al*. 2025.
+
 .. figure:: images/fifi_nods_combined.png
    :alt: Nods combined
    :name: fifi_nods_combined
