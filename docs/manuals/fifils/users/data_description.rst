@@ -287,7 +287,10 @@ where N\ :sub:`ramp` is the number of ramps for which the telescope motion was
 nominal.  In the SCANPOS table attached to the FITS file, the telescope
 positions for each ramp are calculated from an average over the positions
 for the readouts in the ramp, and propagated forward for later use in spatial
-calibration.
+calibration. Additionally, in OTF mode, the error on the flux for each ramp is calculated
+from the ramp-to-ramp scatter around a linear fit through the entire scan.
+This is feasible because the overall signal still  remains heavily background dominated
+even when passing through a strong gradient in source emission.
 
 Some pixels in the data array may be set to not-a-number (NaN). These
 are either known bad detector pixels, or pixels for which the ramp fits
@@ -405,7 +408,7 @@ If the "Scale flux with backgrounds" option in the Redux GUI is ticked, or if th
 will be performed during nod combination. This mode should be used only for On-the-fly (OTF)
 or Total Power (TP) observations, where no chopping has been performed. Similar to the above
 described telluric scaling method, it corrects for differences in the atmospheric properties
-between A- and B-nod positions with large zentih angle offsets. The key difference is that background
+between A- and B-nod positions with large zenith angle offsets. The key difference is that background
 scaling is for the case where the transmission profile is relatively flat and devoid of telluric
 features, making a fit to the background emission spectrum unfeasible. Instead, the B-nod flux
 is scaled by the ratio of the A- and B-nod backgrounds (as defined in the subtract_chops step),
