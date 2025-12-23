@@ -16,7 +16,8 @@ FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 02*
 
-- Telluric scaling feature added.
+- New pipeline features added, including telluric scaling, background scaling, narrow line mode,
+  ramp discard, OTF noise reduction and atran file interpolation.
 - Final DSI data files added, including 2024 flux response curves,
   updated flat fields, bad pixel tables and wavelength calibration sheets.
 
