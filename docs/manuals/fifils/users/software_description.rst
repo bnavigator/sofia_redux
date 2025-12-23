@@ -8,13 +8,13 @@ large regions of diffuse emission in a few small wavelength regions, but
 it is also common to use FIFI-LS to take a set of observations of a
 compact source over a wide range of wavelengths. As such, observations
 cannot simply be split on the central wavelength, or the base positions
-of the observation. Grouping relies on a keyword, FILEGPID, which
+of the observation. Grouping relies on a keyword, ``FILEGPID``, which
 defines a set of observations that should be reduced together to produce
 one final spectral map. In addition, however, observations must always
 be separated by detector channel, dichroic setting, nodding style
 (symmetric vs. asymmetric), observation type (source vs. sky flat), and
 the observational program ID. It may also be desirable to group file by
-the observation ID (AOR-ID), but this is considered optional. This is
+the observation ID (``AOR-ID``), but this is considered optional. This is
 due to the fact that, because FIFI-LS incorporates a dichroic, different
 AORs can have the same grating setting for one of the two detectors. In
 such cases, the data sets with the same settings should be combined even
@@ -357,7 +357,7 @@ Some key parameters to note are listed below.
       coordinates.
 
    -  *Flip RA/Dec sign convention (+, -, or default)*: For most data, the
-      sign convention of the DLAM\_MAP and DBET\_MAP header keywords,
+      sign convention of the ``DLAM_MAP`` and ``DBET_MAP`` header keywords,
       which define the dither offsets, is determined automatically
       (parameter value "default"). Occasionally, for particular
       observations, these keywords may need their signs flipped,
@@ -372,7 +372,7 @@ Some key parameters to note are listed below.
    -  *Skip flat error propagation*: Deselect this option to propagate
       the systematic flat correction error in the flux error plane. This
       option is not currently recommended: the systematic error is stored
-      in the CALERR keyword instead.
+      in the ``CALERR`` keyword instead.
 
 -  **Combine Scans**
 
@@ -392,7 +392,7 @@ Some key parameters to note are listed below.
       fraction below which the telluric-corrected data will be set to NaN.
 
    -  *Use WV values*: Select to use water vapor values from the header
-      (keyword WVZ\_OBS) to select the ATRAN file to apply.  This option
+      (keyword ``WVZ_OBS``) to select the ATRAN file to apply.  This option
       will have no effect unless the ATRAN directory is set to a location
       containing ATRAN files derived for different PWV values.
 
@@ -400,7 +400,7 @@ Some key parameters to note are listed below.
 
    -  *Skip flux calibration*: Select to skip flux calibration of the
       data. The flux will remain in instrumental units (ADU/sec), with
-      PROCSTAT=LEVEL\_2.  This option is mostly used for testing.
+      ``PROCSTAT=LEVEL_2``.  This option is mostly used for testing.
 
    -  *Response file*: Use this option to select a FITS
       file containing an instrumental response spectrum to use in place
@@ -553,11 +553,11 @@ Some key parameters to note are listed below.
       will be produced.
 
    -  *Extension to map*: Extension name to display in the output image.
-      This is typically 'FLUX' in the first extension, but for some
-      cubes, 'UNCORRECTED\_FLUX' may be more appropriate.
+      This is typically ``FLUX`` in the first extension, but for some
+      cubes, ``UNCORRECTED_FLUX`` may be more appropriate.
 
    -  *Method for selecting spectral slice*: May be 'reference' or 'peak'.
-      If set to 'reference', the G\_WAVE\_B or G\_WAVE\_R keys are used
+      If set to 'reference', the ``G_WAVE_B`` or ``G_WAVE_R`` keys are used
       to identify the reference wavelength.  The nearest wavelength slice
       to the reference wavelength will be used as the spectral slice for the
       image.  For the 'peak' method, the flux cube
@@ -565,7 +565,7 @@ Some key parameters to note are listed below.
       select the spectral slice for the image.
 
    -  *Method for selecting spatial point*: May be 'reference' or 'peak'.
-      If set to 'reference', the OBSRA and OBSDEC keys are used
+      If set to 'reference', the ``OBSRA`` and ``OBSDEC`` keys are used
       to identify the spatial point for the displayed spectrum.  For the
       'peak' method, the peak flux in the selected spectral slice is used to
       select the spatial point.
