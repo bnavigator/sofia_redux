@@ -302,7 +302,9 @@ can be set to NaN. During the exposure time of a single chop cycle, if the
 pointing error exceeds the defined threshold specified by the
 *pointing_threshold* parameter, the slopes of all ramps in that chop cycle are
 set to NaN and discarded from further analysis. This is done to mitigate the
-risk of low-quality data influencing the final product.
+risk of low-quality data influencing the final product. Note that this feature
+is currently non-functional as pointing quality flags are intended to be added
+to FIFI-LS data in a future SDC release.
 
 Use Complete Ramps
 ^^^^^^^^^^^^^^^^^^
@@ -384,9 +386,15 @@ If the "perform telluric scaling" option in the Redux GUI is ticked, or if
 the ``telluric_scaling`` parameter in the config file is set to True, then telluric
 scaling will be performed during nod combination. This mode should be used only for
 On-the-fly (OTF) or Total Power (TP) observations, where no chopping has been performed.
-In this mode, a background emission function can be fit to the off-source nod beam signal,
-allowing the (telluric-dominated) background signal to be scaled to the zenith angle of
-the on-nod signal. This method is applied to each spaxel of the off-nod data. Further
+It corrects for differences in the transmission properties of the atmosphere between
+A- and B-nod positions with large zenith angle offsets, particularly when the transmission
+profiles contain strong telluric features such as absorption lines.
+
+The mode essentially runs a self-contained reduction of B-nod spectra, and fits a
+background emission spectrum to each spaxel. The coefficients of this fit are used to
+compute a telluric correction factor function, which is used to scale the total off-nod flux,
+such that it now has the transmittive properties at the zenith angle of the A-nod position.
+Following this, the nod subtraction routine proceeds as normal. Further
 description of this mode can be found in Fischer *et al*. 2025.
 
 Background Scaling
@@ -395,9 +403,13 @@ Background Scaling
 If the "Scale flux with backgrounds" option in the Redux GUI is ticked, or if the
 ``bg_scaling`` parameter in the config file is set to True, then background scaling
 will be performed during nod combination. This mode should be used only for On-the-fly (OTF)
-or Total Power (TP) observations, where no chopping has been performed. In this mode, the
-off-nod background flux is scaled by the ratio of the A and B nod backgrounds, prior
-to subtraction from the on-nod flux. Further description of this mode can be found in
+or Total Power (TP) observations, where no chopping has been performed. Similar to the above
+described telluric scaling method, it corrects for differences in the atmospheric properties
+between A- and B-nod positions with large zentih angle offsets. The key difference is that background
+scaling is for the case where the transmission profile is relatively flat and devoid of telluric
+features, making a fit to the background emission spectrum unfeasible. Instead, the B-nod flux
+is scaled by the ratio of the A- and B-nod backgrounds (as defined in the subtract_chops step),
+prior to the regular subtraction from the A-nod flux. Further description of this mode can be found in
 Fischer *et al*. 2025.
 
 .. figure:: images/fifi_nods_combined.png
