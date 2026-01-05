@@ -399,7 +399,7 @@ background emission spectrum to each spaxel. The coefficients of this fit are us
 compute a telluric correction factor function, which is used to scale the total off-nod flux,
 such that it now has the emittive properties at the zenith angle of the A-nod position.
 Following this, the nod subtraction routine proceeds as normal. Note that the robustness
-of this method is heavily influenced by the form of the atmopsheric spectrum, and the
+of this method is heavily influenced by the form of the atmospheric spectrum, and the
 ability to isolate the different background components. For a more robust and generalised
 method to scale atmospheric spectra at different zenith angles, refer to the background scaling
 method below. Further description of telluric scaling can be found in Fischer *et al*. 2025.
