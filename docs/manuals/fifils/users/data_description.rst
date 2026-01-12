@@ -289,7 +289,7 @@ positions for each ramp are calculated from an average over the positions
 for the readouts in the ramp, and propagated forward for later use in spatial
 calibration. Additionally, in OTF mode, the error on the flux for each ramp is calculated
 from the ramp-to-ramp scatter around a linear fit through the entire scan.
-This is feasible because the overall signal still  remains heavily background dominated
+This is feasible because the overall signal still remains heavily background dominated
 even when passing through a strong gradient in source emission.
 
 Some pixels in the data array may be set to not-a-number (NaN). These
@@ -402,7 +402,9 @@ Following this, the nod subtraction routine proceeds as normal. Note that the ro
 of this method is heavily influenced by the form of the atmospheric spectrum, and the
 ability to isolate the different background components. For a more robust and generalised
 method to scale atmospheric spectra at different zenith angles, refer to the background scaling
-method below. Further description of telluric scaling can be found in Fischer *et al*. 2025.
+method below. Further description of telluric scaling can be found in Fischer *et al*. 2025 [#Fischer2025]_
+
+.. [#Fischer2025] \C. Fischer *et al*. 2025 PASP 137 075002, https://doi.org/10.1088/1538-3873/adeec5
 
 Background Scaling
 ^^^^^^^^^^^^^^^^^^
@@ -739,7 +741,11 @@ reason, telluric corrections of FIFI-LS data rely on models of the
 atmospheric absorption, as provided by codes such as ATRAN, in
 combination with the estimated line-of-sight water vapor content
 (precipitable water vapor, PWV) calculated from ECMWF satellite data
-(see Iserlohe *et al*. 2021, 2022, Fischer *et al*. 2022 for details).
+(see Fischer *et al*. 2021 [#Fischer2021]_, Iserlohe *et al*. 2021 [#Iserlohe2021]_, 2022 [#Iserlohe2022]_ for details).
+
+.. [#Fischer2021] \C. Fischer *et al*. 2021 PASP 133 055001, https://doi.org/10.1088/1538-3873/abf1ca
+.. [#Iserlohe2021] \C. Iserlohe *et al*. 2021 PASP 133 055002, https://doi.org/10.1088/1538-3873/abef76
+.. [#Iserlohe2022] \C. Iserlohe *et al*. 2022 PASP 134 085001, https://doi.org/10.1088/1538-3873/ac82c5
 
 The satellite data is scaled to match in-flight measurements of the telluric lines
 made with FIFI-LS during the set-up period at the start of observing legs and after
@@ -822,7 +828,7 @@ for the time of each specific observation. To date, observations of Mars
 have been used as the primary flux calibration source. Predicted total
 fluxes for Mars across the FIFI-LS passband at the specific UT dates of
 the observations have been generated using the model of Lellouch and
-Amri. [#fn_fifi_mars]_ Predicted fluxes at several frequencies have been computed
+Amri [#fn_fifi_mars]_. Predicted fluxes at several frequencies have been computed
 and these have then been fit with blackbody curves to derive values at a
 large number of wavelength points. The deviations of the fits from the
 input predictions are much less than 1%. After the models have been
@@ -833,8 +839,7 @@ smoothed and then fit with a polynomial to derive response functions
 spectra of other astronomical sources (see :numref:`fifi_response`).
 
 
-.. [#fn_fifi_mars]
-   See http://www.lesia.obspm.fr/perso/emmanuel-lellouch/mars/index.php
+
 
 The pipeline stores a set of response functions for each channel and
 dichroic value. To perform flux calibration, it selects the correct
@@ -847,11 +852,12 @@ attached to the FITS file as a 25 x (16 \* N\ :sub:`scan`) data table in the
 first FITS extension (column ``RESPONSE``). Flux calibration is applied to
 both the telluric-corrected cube and the uncorrected cube. The estimated
 systematic error in the flux calibration is recorded in the ``CALERR``
-keyword in the FITS header, as an average fractional error. Fadda *et al*. 2023 estimate
-a flux calibration accuracy of about 5-10%. This estimate will likely be revised
+keyword in the FITS header, as an average fractional error. Fadda *et al*. 2023 [#Fadda2023]_ estimate
+a flux calibration accuracy of about 5-10% (``CALERR`` :math:`\leq` 0.1) [#fn_fifi_calerr]_. This estimate will likely be revised
 as part of the upcoming SDC flux calibration update.
-(``CALERR`` :math:`\leq` 0.1). [#fn_fifi_calerr]_
 
+.. [#fn_fifi_mars] See http://www.lesia.obspm.fr/perso/emmanuel-lellouch/mars/index.php
+.. [#Fadda2023] \D. Fadda *et al*. 2023 ApJ 166 237, https://doi.org/10.3847/1538-3881/acffb4
 .. [#fn_fifi_calerr]
    Earlier versions of this pipeline (prior to v1.3.2) propagated
    the systematic error on the flux calibration in the ``STDDEV``
