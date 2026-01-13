@@ -2,7 +2,7 @@
 ===========
 - FIFI-LS User Manual Iss. 02:
 
-   - Document DSI response curves for flux calibration.
+  - Document DSI response curves for flux calibration.
 
 - Support for Python 3.14
 
@@ -10,6 +10,7 @@
 ==================
 - This is the first full release of SOFIA Redux from the SOFIA Data Center
 - Update dependency versions for current support windows
+
   - Support Python 3.11 to 3.13
   - Update API usage for Astropy, NumPy, SciPy, Matplotlib, Pandas, ...
   - Switch from pyds9 to ds9samp for interaction with DS9
