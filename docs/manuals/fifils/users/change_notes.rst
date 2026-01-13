@@ -8,7 +8,7 @@ for more information.
 
 All pipeline versions prior to v2.0.0 were implemented in IDL;
 v2.0.0 and later were implemented in Python. For previously processed
-data, check the PIPEVERS keyword in the FITS header to determine the
+data, check the ``PIPEVERS`` keyword in the FITS header to determine the
 pipeline version used.
 
 
@@ -16,7 +16,8 @@ FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 02*
 
-- Telluric scaling feature added.
+- New pipeline features added, including telluric scaling, background scaling, narrow line mode,
+  ramp discard, OTF noise reduction and atran file interpolation.
 - Final DSI data files added, including 2024 flux response curves,
   updated flat fields, bad pixel tables and wavelength calibration sheets.
 
@@ -79,7 +80,7 @@ FIFI-LS Redux v2.4.0 (2020-12-17)
 *User manual: Rev. H*
 
 - Correction for local standard of rest (LSR) removed from barycentric
-  shift correction. It is stored in the LSRSHFT FITS keyword instead.
+  shift correction. It is stored in the ``LSRSHFT`` FITS keyword instead.
 - Introduce sample filtering for grating instability, when grating
   position data is available in the raw data tables..
 
@@ -133,7 +134,7 @@ FIFI-LS Redux v1.7.0 (2019-06-05)
   are static, with one provided for each possible combination of channel
   (RED, BLUE), order (1, 2), and dichroic (D105, D130).
 - Added support for telluric correction at specific water vapor values,
-  recorded in FITS header keys (WVZ_STA, WVZ_END). Requires a library
+  recorded in FITS header keys (``WVZ_STA``, ``WVZ_END``). Requires a library
   of ATRAN files generated at regular altitude, ZA, and WV.
 
 FIFI-LS Redux v1.6.0 (2019-02-21)
@@ -185,8 +186,8 @@ FIFI-LS Redux v1.3.2 (2016-10-12)
 *User manual: Rev. B*
 
 - Separated systematic error due to flux calibration from statistical
-  error propagated in the ERROR data array.  Mean calibration error
-  is instead recorded in the CALERR FITS keyword.
+  error propagated in the ``ERROR`` data array.  Mean calibration error
+  is instead recorded in the ``CALERR`` FITS keyword.
 
 FIFI-LS Redux v1.3.1 (2016-07-29)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
