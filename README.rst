@@ -5,8 +5,8 @@ SOFIA Data Reduction Pipelines
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
 
-.. image:: https://zenodo.org/badge/311773000.svg
-    :target: https://zenodo.org/badge/latestdoi/311773000
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17980054.svg
+    :target: https://doi.org/10.5281/zenodo.17980054
     :alt: DOI Badge
 
 
