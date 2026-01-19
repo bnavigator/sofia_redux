@@ -3,6 +3,8 @@
 - FIFI-LS User Manual Iss. 02:
 
   - Document DSI response curves for flux calibration.
+  - Additional documentation for new pipeline features, including
+    telluric scaling, background scaling & ATRAN interpolation features.
 
 - Support for Python 3.14
 - Update Zenodo DOI for citations.
