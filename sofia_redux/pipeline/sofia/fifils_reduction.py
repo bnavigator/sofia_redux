@@ -737,6 +737,8 @@ class FIFILSReduction(Reduction):
         cutoff = param.get_value('cutoff')
         atran_dir = param.get_value('atran_dir')
         use_wv = param.get_value('use_wv')
+        use_ecmwf = param.get_value('use_ecmwf')
+        ecmwf_dir = param.get_value('ecmwf_dir')
         narrow = param.get_value('narrow')
         hdr_ovr = param.get_value('hdr_ovr')
         restwav = param.get_value('restwav')
@@ -752,6 +754,8 @@ class FIFILSReduction(Reduction):
 
         if str(atran_dir).strip() == '':
             atran_dir = None
+        if str(ecmwf_dir).strip() == '':
+            ecmwf_dir = None
 
         if skip_tell:
             log.info('ATRAN file is attached, but no correction performed.')
@@ -762,7 +766,9 @@ class FIFILSReduction(Reduction):
                                        use_wv=use_wv, skip_corr=skip_tell,
                                        narrow=narrow,
                                        redshift=redshift, hdr_ovr=hdr_ovr,
-                                       restwav=restwav)
+                                       restwav=restwav,
+                                       use_ecmwf=use_ecmwf,
+                                       ecmwf_dir=ecmwf_dir)
         if not result:
             msg = 'Problem in fifi_ls.telluric_correct.'
             log.error(msg)

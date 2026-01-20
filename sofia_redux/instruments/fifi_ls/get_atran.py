@@ -3,9 +3,11 @@
 import glob
 import os
 import re
+from pathlib import Path
 
 from astropy import log
 from astropy.io import fits
+from astropy.time import Time
 import numpy as np
 
 from sofia_redux.instruments import fifi_ls
@@ -108,6 +110,98 @@ def store_atran_in_cache(atranfile, resolution, filename, wave,
     modtime = str(os.path.getmtime(atranfile))
     __atran_cache[key][modtime] = (
         filename, wave, unsmoothed, smoothed)
+
+
+def get_wv_from_ecmwf(header, ecmwf_dir):
+    """
+    Get water vapor value from ECMWF reanalysis data.
+
+    ECMWF files are organized by mission ID and contain time-series
+    data. This function finds the appropriate file and extracts the
+    water vapor value closest to the observation time.
+
+    Parameters
+    ----------
+    header : fits.Header
+        FITS header containing MISSN-ID and DATE-OBS keywords.
+    ecmwf_dir : str
+        Path to directory containing ECMWF FITS files.
+
+    Returns
+    ----------
+    tuple or None
+        Tuple of (wvz_ecmwf, wvz_fifi) where wvz_ecmwf is the raw ECMWF
+        water vapor value and wvz_fifi is the converted FIFI-LS scale
+        value. Returns None if ECMWF data could not be retrieved.
+    """
+    if ecmwf_dir is None or not os.path.isdir(str(ecmwf_dir)):
+        log.warning(f'ECMWF directory not found: {ecmwf_dir}')
+        return None
+
+    # Construct mission ID path from header
+    missn_id = header.get('MISSN-ID', '')
+    if not missn_id:
+        log.warning('MISSN-ID not found in header')
+        return None
+
+    # Format: last 3 chars + chars 10-14 + first 10 chars with dashes removed
+    # For example: From "2022-01-15_FI_F855" to "855F8552022-01-15" to "855F85520220115"
+    try:
+        ecmwf_mission_id = (missn_id[-3:] + missn_id[10:14]
+                           + missn_id[:10].replace('-', ''))
+    except (IndexError, TypeError):
+        log.warning(f'Could not get MISSN-ID: {missn_id}')
+        return None
+
+    # Get observation time
+    date_obs = header.get('DATE-OBS', '')
+    if not date_obs:
+        log.warning('DATE-OBS not found in header')
+        return None
+
+    try:
+        obs_time_unix = Time(date_obs).unix
+    except Exception as e:
+        log.warning(f'Could not get DATE-OBS: {date_obs} ({e})')
+        return None
+
+    # Search for matching ECMWF file
+    ecmwf_path = Path(ecmwf_dir, ecmwf_mission_id)
+    if not ecmwf_path.is_dir():
+        log.debug(f'ECMWF mission directory not found: {ecmwf_path}')
+        return None
+
+    wvz_ecmwf = None
+    wvz_fifi = None
+    for ecmwf_dataset in ecmwf_path.glob('*.fits'):
+        try:
+            ecmwf_hdul = fits.open(ecmwf_dataset)
+            # Check if observation time is within the data range (extension 6)
+            if (ecmwf_hdul[6].data.min() < obs_time_unix
+                    < ecmwf_hdul[6].data.max()):
+                # Find closest time index
+                ecmwf_idx = np.argmin(np.abs(ecmwf_hdul[6].data - obs_time_unix))
+                # Check quality flags (extensions 10 and 11 should be 0)
+                if (ecmwf_hdul[10].data[ecmwf_idx] == 0
+                        and ecmwf_hdul[11].data[ecmwf_idx] == 0):
+                    # Get water vapor from extension 14
+                    wvz_ecmwf = float(ecmwf_hdul[14].data[ecmwf_idx])
+                    # Convert to FIFI-LS scale
+                    wvz_fifi = 0.34 + wvz_ecmwf * 0.55
+                    log.debug(f'ECMWF WV: {wvz_ecmwf:.2f} -> '
+                             f'FIFI-LS WV: {wvz_fifi:.2f}')
+                    ecmwf_hdul.close()
+                    break
+            ecmwf_hdul.close()
+        except Exception as e:
+            log.debug(f'Error reading ECMWF file {ecmwf_dataset}: {e}')
+            continue
+
+    if wvz_fifi is None:
+        log.warning('No valid ECMWF data found for this observation')
+        return None
+
+    return (wvz_ecmwf, wvz_fifi)
 
 
 def get_atran(header, resolution=None, filename=None,
@@ -315,7 +409,8 @@ def get_atran(header, resolution=None, filename=None,
 
 def get_atran_interpolated(header, resolution=None,
                           get_unsmoothed=False, use_wv=False,
-                          atran_dir=None):
+                          atran_dir=None, use_ecmwf=False,
+                          ecmwf_dir=None):
 
     if not isinstance(header, fits.Header):
         log.error('Invalid header')
@@ -347,19 +442,36 @@ def get_atran_interpolated(header, resolution=None,
     alt /= 1000
 
     # get water vapor
-    wv_obs = float(header.get('WVZ_OBS', 0))
-    if wv_obs > 0:
-        wv = wv_obs
-    else:
-        wv_start = float(header.get('WVZ_STA', 0))
-        wv_end = float(header.get('WVZ_END', 0))
-        if wv_start > 0 >= wv_end:
-            wv = wv_start
-        elif wv_end > 0 >= wv_start:
-            wv = wv_end
-        else:
-            wv = 0.5 * (wv_start + wv_end)
+    wv = None
+    wvz_ecmwf = None
+    wvz_fifi = None
+    wv_source = 'HEADER'
 
+    if use_ecmwf:
+        # Try to get water vapor from ECMWF reanalysis data
+        ecmwf_result = get_wv_from_ecmwf(header, ecmwf_dir)
+        if ecmwf_result is not None:
+            wvz_ecmwf, wvz_fifi = ecmwf_result
+            wv = wvz_fifi
+            wv_source = 'ECMWF'
+            log.info(f'Using ECMWF water vapor: {wv:.2f}')
+
+    if wv is None:
+        # Fall back to header values
+        wv_obs = float(header.get('WVZ_OBS', 0))
+        if wv_obs > 0:
+            wv = wv_obs
+        else:
+            wv_start = float(header.get('WVZ_STA', 0))
+            wv_end = float(header.get('WVZ_END', 0))
+            if wv_start > 0 >= wv_end:
+                wv = wv_start
+            elif wv_end > 0 >= wv_start:
+                wv = wv_end
+            else:
+                wv = 0.5 * (wv_start + wv_end)
+        if use_ecmwf:
+            log.warning(f'Falling back to header water vapor: {wv:.2f}')
 
     if atran_dir is not None:
         if not os.path.isdir(str(atran_dir)):
@@ -489,6 +601,15 @@ def get_atran_interpolated(header, resolution=None,
     smoothed = smoothres(wave, unsmoothed, resolution)
 
     hdinsert(header, 'ATRNFILE', atrnfile_fits_keyword[:-2])
+
+    # Add water vapor source and values to header
+    hdinsert(header, 'WV_SRC', wv_source,
+             comment='Source of water vapor value (ECMWF or HEADER)')
+    hdinsert(header, 'WV_USED', round(wv, 2),
+             comment='[um] Water vapor used for ATRAN selection')
+    if wvz_ecmwf is not None:
+        hdinsert(header, 'WVZ_ECMW', round(wvz_ecmwf, 2),
+                 comment='[um] Raw ECMWF WV (before FIFI-LS conversion)')
 
     if not get_unsmoothed:
         return np.vstack((wave, smoothed))

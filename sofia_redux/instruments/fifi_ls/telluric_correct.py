@@ -235,14 +235,17 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
 
 def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
                      skip_corr=False, write=False, outdir=None, narrow=False,
-                     hdr_ovr=True, restwav=0.0, redshift=0.0):
+                     hdr_ovr=True, restwav=0.0, redshift=0.0,
+                     use_ecmwf=False, ecmwf_dir=None):
     """
     Correct spectra for atmospheric absorption features.
 
     The procedure is:
 
-        1. Identify ATRAN file to use.  Smooth it to the spectral
-           resolution of the input file.
+        1. Identify ATRAN file to use based on altitude, zenith angle,                                                    
+           and water vapor. If use_ecmwf is set, water vapor is retrieved                                                 
+           from ECMWF reanalysis data. Otherwise header values are used.                                                  
+           Smooth the ATRAN data to the spectral resolution of the input.
         2. Interpolate the atmospheric transmission data onto the wavelength
            value of each spexel. Divide the data at each point by the
            transmission value.
@@ -271,6 +274,11 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
     use_wv : bool, optional
         If set, water vapor values from the header will be used
         to select the correct ATRAN file.
+    use_ecmwf : bool, optional
+        If set, water vapor values will be retrieved from ECMWF
+        reanalysis files instead of the header.
+    ecmwf_dir : str, optional
+        Path to directory containing ECMWF FITS files.
     skip_corr : bool, optional
         If set, telluric correction will not be applied, but ATRAN
         spectra will still be attached to the output file.
@@ -314,8 +322,10 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
     atran_data = get_atran_interpolated(hdul[0].header, resolution=resolution,
-                           atran_dir=atran_dir, use_wv=use_wv,
-                           get_unsmoothed=True)
+                                        atran_dir=atran_dir, use_wv=use_wv,
+                                        get_unsmoothed=True,
+                                        use_ecmwf=use_ecmwf,
+                                        ecmwf_dir=ecmwf_dir)
     if atran_data is None or atran_data[0] is None:
         log.error("Unable to get ATRAN data")
         return
@@ -342,7 +352,8 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
                           atran_dir=None, cutoff=0.6, use_wv=False,
                           skip_corr=False, write=False,
                           jobs=None, narrow=False, hdr_ovr=True,
-                          redshift=0.0, restwav=0.0):
+                          redshift=0.0, restwav=0.0,
+                          use_ecmwf=False, ecmwf_dir=None):
     """
     Wrapper for telluric_correct over multiple files.
 
@@ -368,6 +379,11 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
     use_wv : bool, optional
         If set, water vapor values from the header will be used
         to select the correct ATRAN file.
+    use_ecmwf : bool, optional
+        If set, water vapor values will be retrieved from ECMWF
+        reanalysis files instead of the header.
+    ecmwf_dir : str, optional
+        Path to directory containing ECMWF FITS files.
     skip_corr : bool, optional
         If set, telluric correction will not be applied, but ATRAN
         spectra will still be attached to the output file.
@@ -395,8 +411,9 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
 
     kwargs = {'outdir': outdir, 'write': write, 'atran_dir': atran_dir,
               'cutoff': cutoff, 'use_wv': use_wv, 'skip_corr': skip_corr,
-              'narrow': narrow, 'hdr_ovr': hdr_ovr, 'redshift':redshift,
-              'restwav': restwav}
+              'narrow': narrow, 'hdr_ovr': hdr_ovr, 'redshift': redshift,
+              'restwav': restwav, 'use_ecmwf': use_ecmwf,
+              'ecmwf_dir': ecmwf_dir}
 
     output = multitask(telluric_correct_wrap_helper, files, None, kwargs,
                        jobs=jobs)
