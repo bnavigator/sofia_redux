@@ -178,8 +178,8 @@ channel, column 4 counts the readouts from 0 to 31, and
 column 5 indicates the ramp number.
 
 Where each chop and grating position starts and stops in the raw data
-table is determined using the header keywords RAMPLN\_[B,R],
-C\_CYC\_[B,R], C\_CHOPLN, G\_PSUP\_[B,R], G\_PSDN\_[B,R] keywords. A RED
+table is determined using the header keywords ``RAMPLN_[B,R]``,
+``C_CYC_[B,R]``, ``C_CHOPLN``, ``G_PSUP_[B,R]``, ``G_PSDN_[B,R]`` keywords. A RED
 data example is as follows::
 
     RAMPLN_R= 32 / number of readouts per red ramp
@@ -187,7 +187,7 @@ data example is as follows::
     G_PSUP_R= 5  / number of grating position up in one cycle
     G_PSDN_R= 0  / number of grating position down in one cycle
 
-Here, C\_CHOPLN / RAMPLN\_R is 64 / 32 = 2; therefore, there are 2 ramps
+Here, ``C_CHOPLN`` / ``RAMPLN_R`` is 64 / 32 = 2; therefore, there are 2 ramps
 per chop.
 
 Each chop switch index is determined using the 5\ :sup:`th` column in
@@ -198,9 +198,9 @@ up into separate extensions using the following formula:
 .. math:: binsize = (nreadout * ramplength) / (nstep * choplength)
 
 where *nreadout* is the total number of readouts (frames) in the file,
-*ramplength* is determined by the appropriate RAMPLN keyword, *nstep* is
-the number of grating steps (G\_PSDN + G\_PSUP), and *choplength* is the
-number of readouts per chop position (C\_CHOPLN).
+*ramplength* is determined by the appropriate ``RAMPLN`` keyword, *nstep* is
+the number of grating steps (``G_PSDN`` + ``G_PSUP``), and *choplength* is the
+number of readouts per chop position (``C_CHOPLN``).
 
 The binary data section is comprised of 468 signed 16-bit words: one
 each for 25 spaxels, plus one control value, times 18 spectral channels
@@ -225,17 +225,17 @@ reorganized into two files (chop 0 and chop 1) with 5 extensions each.
 For total power mode, there is only one chop position, so there will be
 one output file, with one extension for each grating step. Each
 extension in the output FITS files contains the data array corresponding
-to the grating position recorded in its header (keyword INDPOS).
+to the grating position recorded in its header (keyword ``INDPOS``).
 Hereafter, in the pipeline, until the Combine Grating Scans step, each
 grating scan is handled separately.
 
 For OTF mode data, an additional binary table is attached to the FITS file,
 recording the telescope position at each readout sample.  These positions
 are calculated from the telescope speed keywords in the FITS header
-(OBSLAMV and OBSBETV, for RA and Dec speeds in arcsec/s, respectively).
+(``OBSLAMV`` and ``OBSBETV``, for RA and Dec speeds in arcsec/s, respectively).
 Readouts taken before and after the telescope scanning motion are also
-identified using the OTFSTART and TRK_DRTN header keywords.  These
-readouts are flagged in the SCANPOS table for removal from consideration
+identified using the ``OTFSTART`` and ``TRK_DRTN`` header keywords.  These
+readouts are flagged in the ``SCANPOS`` table for removal from consideration
 in later pipeline steps.
 
 Fit Ramps
@@ -278,28 +278,48 @@ separate FITS image extension for each grating scan. The error values
 are recorded in a separate 25 x 16 array, in another FITS image
 extension.  The extensions are named with a suffix indicating the grating
 scan number.  For example, for two grating scans, the output will have
-extensions FLUX_G0, STDDEV_G0, FLUX_G1, and STDDEV_G1.
+extensions ``FLUX_G0``, ``STDDEV_G0``, ``FLUX_G1``, and ``STDDEV_G1``.
 
 For OTF data, each ramp represents a different sky position, so separate ramps
 are not averaged together, but are propagated through the pipeline as a data
 cube.  The flux and error data arrays have dimension 25 x 16 x N\ :sub:`ramp`,
 where N\ :sub:`ramp` is the number of ramps for which the telescope motion was
-nominal.  In the SCANPOS table attached to the FITS file, the telescope
+nominal.  In the ``SCANPOS`` table attached to the FITS file, the telescope
 positions for each ramp are calculated from an average over the positions
 for the readouts in the ramp, and propagated forward for later use in spatial
-calibration.
+calibration. Additionally, in OTF mode, the error on the flux for each ramp is calculated
+from the ramp-to-ramp scatter around a linear fit through the entire scan.
+This is feasible because the overall signal still remains heavily background dominated
+even when passing through a strong gradient in source emission.
 
 Some pixels in the data array may be set to not-a-number (NaN). These
 are either known bad detector pixels, or pixels for which the ramp fits
 did not have sufficient signal-to-noise. These pixels will be ignored in
 all further reduction steps.
 
-If the *pointing_discard* parameter is set to true, an entire set of data points
-can be set to NaN. During the exposure time of a single chop cycle, if the
+Pointing Discard
+^^^^^^^^^^^^^^^^
+
+If the *Discard ramps with bad pointing* option in the Redux GUI is ticked,
+or the ``pointing_discard`` parameter in the config file is set to true, an entire
+set of data points can be set to NaN. During the exposure time of a single chop cycle, if the
 pointing error exceeds the defined threshold specified by the
-*pointing_threshold* parameter, the slopes of all ramps in that chop cycle are
+``pointing_threshold`` parameter, the slopes of all ramps in that chop cycle are
 set to NaN and discarded from further analysis. This is done to mitigate the
-risk of low-quality data influencing the final product.
+risk of low-quality data influencing the final product. Note that this feature
+is currently non-functional as pointing quality flags are intended to be added
+to FIFI-LS data in a future SDC release.
+
+Use Complete Ramps
+^^^^^^^^^^^^^^^^^^
+
+If the *Use only full ramps* option in the Redux GUI is ticked, or the ``full_ramps``
+parameter in the config file is set to True, then only ramps that have the full
+number of FIFI-LS samples (28) will be used in the ramp fitting process. Any ramps with fewer
+than this number will be discarded. In combination with the standard bias subtraction,
+this method can potentially improve the quality of the final data product by systematically
+reducing the standard deviation of each ramp. If this parameter is set to False, the default
+minimum ramp length of 2 will be used.
 
 .. Data source: flight 280, folder 1, file 547-548 lw
    Full reduction set (for resample) is 471-578
@@ -342,9 +362,9 @@ residual background.
 
 In symmetric chopping mode, the A nods are paired to adjacent B nods. In
 order to match a given A nod, a B nod must have been taken at the same
-dither position (FITS header keywords DLAM\_MAP and DBET\_MAP), and with
-the same grating position (INDPOS). The B nod meeting these conditions
-and taken nearest in time to the A nod (keyword DATE-OBS) is added to
+dither position (FITS header keywords ``DLAM_MAP`` and ``DBET_MAP``), and with
+the same grating position (``INDPOS``). The B nod meeting these conditions
+and taken nearest in time to the A nod (keyword ``DATE-OBS``) is added to
 the A nod.
 
 In asymmetric mode, a single B nod may be subtracted from multiple A nods. For
@@ -362,6 +382,44 @@ from changes in the sky background between the A and B nod observations.
 This pipeline step produces an output file for each input A nod file,
 containing the chop- and nod-combined flux and error values for each
 grating scan.
+
+Telluric Scaling
+^^^^^^^^^^^^^^^^
+
+If the "perform telluric scaling" option in the Redux GUI is ticked, or if
+the ``telluric_scaling`` parameter in the config file is set to True, then telluric
+scaling will be performed during nod combination. This mode should be used only for
+On-the-fly (OTF) or Total Power (TP) observations, where no chopping has been performed.
+It corrects for differences in the emission properties of the atmosphere between
+A- and B-nod positions with large zenith angle offsets, particularly when the atmospheric
+profiles contain strong telluric features such as absorption lines.
+
+The mode essentially runs a self-contained reduction of B-nod spectra, and fits a
+background emission spectrum to each spaxel. The coefficients of this fit are used to
+compute a telluric correction factor function, which is used to scale the total off-nod flux,
+such that it now has the emittive properties at the zenith angle of the A-nod position.
+Following this, the nod subtraction routine proceeds as normal. Note that the robustness
+of this method is heavily influenced by the form of the atmospheric spectrum, and the
+ability to isolate the different background components. For a more robust and generalised
+method to scale atmospheric spectra at different zenith angles, refer to the background scaling
+method below. Further description of telluric scaling can be found in Fischer *et al*. 2025 [#Fischer2025]_
+
+.. [#Fischer2025] \C. Fischer *et al*. 2025 PASP 137 075002, https://doi.org/10.1088/1538-3873/adeec5
+
+Background Scaling
+^^^^^^^^^^^^^^^^^^
+
+If the "Scale flux with backgrounds" option in the Redux GUI is ticked, or if the
+``bg_scaling`` parameter in the config file is set to True, then background scaling
+will be performed during nod combination. This mode should be used only for On-the-fly (OTF)
+or Total Power (TP) observations, where no chopping has been performed. Similar to the above
+described telluric scaling method, it corrects for differences in the atmospheric properties
+between A- and B-nod positions with large zenith angle offsets. The key difference is that background
+scaling is for the case where the atmospheric profile is relatively linear and devoid of strong telluric
+features. This makes a fit to the background emission spectrum unfeasible, since the telluric background
+component cannot be reliably isolated from the non-telluric (instrument + telescope) background component.
+Instead, the B-nod flux is scaled by the ratio of the A- and B-nod backgrounds
+(as defined in the ``subtract_chops`` step), prior to the regular subtraction from the A-nod flux.
 
 .. figure:: images/fifi_nods_combined.png
    :alt: Nods combined
@@ -526,7 +584,7 @@ throughout the rest of the pipeline.
 
 The wavelength values calculated by the pipeline for each pixel are stored in
 a new 25 x 16 array in an image extension for each grating scan (extension name
-LAMBDA_G\ *i* for grating scan *i*).
+``LAMBDA_Gi`` for grating scan *i*).
 
 Spatial Calibrate
 ~~~~~~~~~~~~~~~~~
@@ -557,9 +615,9 @@ position using the following formulae:
 .. math:: y_{ij} = ps (ypos_{ij} + dy) + d\lambda sin(\theta) + d\beta cos(\theta)
 
 where *ps* is the plate scale in arcseconds/mm (FITS header keyword
-PLATSCAL), :math:`d\lambda` is the right ascension dither offset in arcseconds
-(keyword DLAM\_MAP), :math:`d\beta` is the declination dither offset in arcseconds
-(keyword DBET\_MAP), :math:`\theta` is the detector angle, :math:`xpos_{ij}` and
+``PLATSCAL``), :math:`d\lambda` is the right ascension dither offset in arcseconds
+(keyword ``DLAM_MAP``), :math:`d\beta` is the declination dither offset in arcseconds
+(keyword ``DBET_MAP``), :math:`\theta` is the detector angle, :math:`xpos_{ij}` and
 :math:`ypos_{ij}` are the fitted spaxel positions in mm for pixel *i,j*,
 and *dx* and *dy* are the spatial offsets between the primary array
 (usually BLUE), used for telescope pointing, and the secondary array
@@ -574,22 +632,22 @@ final coordinate system:
 .. math:: y'_{ij} =  x_{ij} sin(\theta) + y_{ij} cos(\theta)
 
 The pipeline stores these calculated x and y coordinates for each spaxel
-in two 25 element arrays for each grating scan (extensions XS_G\ *i* and
-YS_G\ *i* for grating scan *i*).
+in two 25 element arrays for each grating scan (extensions ``XS_Gi`` and
+``YS_Gi`` for grating scan *i*).
 
 In addition, the pipeline uses the base position for the observation and the
 computed offsets to derive true sky coordinates for each spaxel, in RA
 (decimal hours) and Dec (decimal degrees).  These positions are also stored
 in the output file in separate image extensions for each grating scan
-(RA_G\ *i* and DEC_G\ *i* for grating scan *i*), with array dimensions
-matching the corresponding XS and YS extensions.
+(``RA_Gi`` and ``DEC_Gi`` for grating scan *i*), with array dimensions
+matching the corresponding ``XS`` and ``YS`` extensions.
 
 For OTF data, the process is the same as described above, except that each
-ramp in the input data has its own DLAM_MAP and DBET_MAP value, recorded in
-the SCANPOS table, rather than in the primary FITS header.  The output
+ramp in the input data has its own ``DLAM_MAP`` and ``DBET_MAP`` value, recorded in
+the ``SCANPOS`` table, rather than in the primary FITS header.  The output
 spatial coordinates match the number of spaxels and ramps in the flux data,
-which has dimensions 25 x 16 x N\ :sub:`ramp`, such that the XS_G\ *i*,
-YS_G\ *i*, RA_G\ *i*, and DEC_G\ *i*, extensions have dimensions
+which has dimensions 25 x 16 x N\ :sub:`ramp`, such that the ``XS_Gi``,
+``YS_Gi``, ``RA_Gi``, and ``DEC_Gi``, extensions have dimensions
 25 x 1 x N\ :sub:`ramp`.
 
 
@@ -609,7 +667,7 @@ In order to apply the flat fields to the data, the pipeline interpolates
 the appropriate spectral flat onto the wavelengths of the observation, for
 each spexel, then multiplies the value by the appropriate spatial flat.
 The flux is then divided by this correction value.  The updated flux and
-associated error values are stored in the FLUX_G\ *i* and STDDDEV_G\ *i*
+associated error values are stored in the ``FLUX_Gi`` and ``STDDDEV_Gi``
 extensions.
 
 .. figure:: images/fifi_flat_applied.png
@@ -640,12 +698,12 @@ the result in a single data array with dimensions 25 x (16 \* N\ :sub:`scan`),
 where N\ :sub:`scan` is the total number of grating scans in the input file. Note
 that the wavelengths are still irregularly sampled at this point, due to the
 differing wavelength solutions for each grating scan and spatial pixel.
-All arrays in the output FITS file (FLUX, STDDEV, LAMBDA, XS, YS, RA, and DEC)
+All arrays in the output FITS file (``FLUX``, ``STDDEV``, ``LAMBDA``, ``XS``, ``YS``, ``RA``, and ``DEC``)
 now have dimensions 25 x (16 \* N\ :sub:`scan`).
 
-For the OTF mode, only a single grating scan exists. The output FLUX,
-STDDEV, XS, YS, RA, and DEC arrays for this mode have dimensions 25 x 16 x N\ :sub:`ramp`.
-Since the wavelength solution does not depend on the sky position, the LAMBDA
+For the OTF mode, only a single grating scan exists. The output ``FLUX``,
+``STDDEV``, ``XS``, ``YS``, ``RA``, and ``DEC`` arrays for this mode have dimensions 25 x 16 x N\ :sub:`ramp`.
+Since the wavelength solution does not depend on the sky position, the ``LAMBDA``
 array has dimensions 25 x 16.
 
 .. figure:: images/fifi_bias_correction.png
@@ -682,22 +740,54 @@ necessarily provide an accurate absorption correction spectrum. For this
 reason, telluric corrections of FIFI-LS data rely on models of the
 atmospheric absorption, as provided by codes such as ATRAN, in
 combination with the estimated line-of-sight water vapor content
-(precipitable water vapor, PWV) provided by the water vapor monitor
-(WVM) aboard SOFIA. Currently, the WVM does not generate PWV values that
-are inserted into the FITS headers of the FIFI-LS data files. It is
-expected that these values may become available in the future, and
-at that point the PWV values will be used to generate telluric
-correction spectra.
+(precipitable water vapor, PWV) calculated from ECMWF satellite data
+(see Fischer *et al*. 2021 [#Fischer2021]_, Iserlohe *et al*. 2021 [#Iserlohe2021]_, 2022 [#Iserlohe2022]_ for details).
 
-Currently, correction spectra are generated using
-PWV values derived from observations of telluric lines made with FIFI-LS
-during the set-up period at the start of observing legs and after changes
-of altitude. Experience has shown that these provide better corrections
+.. [#Fischer2021] \C. Fischer *et al*. 2021 PASP 133 055001, https://doi.org/10.1088/1538-3873/abf1ca
+.. [#Iserlohe2021] \C. Iserlohe *et al*. 2021 PASP 133 055002, https://doi.org/10.1088/1538-3873/abef76
+.. [#Iserlohe2022] \C. Iserlohe *et al*. 2022 PASP 134 085001, https://doi.org/10.1088/1538-3873/ac82c5
+
+The satellite data is scaled to match in-flight measurements of the telluric lines
+made with FIFI-LS during the set-up period at the start of observing legs and after
+changes of altitude. Experience has shown that these provide better corrections
 than simply using the expected value for the flight altitude and airmass,
 particularly in regions with deep, sharp features (e.g. near 63 microns).
 However, changes of PWV during flight legs are not monitored and this may
-cause inaccuracies if the value changes rapidly. Furthermore, accurate
-correction of spectral lines in the vicinity of narrow telluric absorption
+cause inaccuracies if the value changes rapidly. Currently, PWV values are inserted
+into the FIFI-LS raw data headers via the the keyword ``WVZ_OBS``. It is expected
+that in the future, the PWV values will be derived during reduction from separate
+time-resolved tables of PWV values for each FIFI-LS flight. Note that the PWV values
+contained within the header keywords ``WVZ_STA`` and ``WVZ_END`` are
+legacy values from the non-functional Water Vapor Monitor (WVM) and
+should not be used for telluric correction.
+
+A set of ATRAN models appropriate for a range of altitudes, zenith
+angles, and PWV values has been generated for pipeline use. In the
+telluric correction step, the pipeline uses the parameter set of observed altitude,
+zenith angle, and PWV in order to select the six models which lie adjacent to the
+observation in parameter spaces. Then, the pipeline carries out a series of two-file
+interpolations in order to build an optimal synthetic transmission spectrum. This spectrum
+is subsequently smoothed to the spectral resolution of the input file, and then
+interpolated to the observed wavelength at each spexel. Finally, the data is divided
+by the transmission spectrum. Very low transmission
+values result in poor corrections, so any pixel for which the transmission
+is less than 60% (by default) is set to NaN. For reference, the smoothed,
+binned transmission data is attached to the FITS file as a 25 x (16 \*
+N\ :sub:`scan`) data array (extension ``ATRAN``).  The original unsmoothed data is
+attached as well, in the extension ``UNSMOOTHED_ATRAN``.
+
+Since the telluric correction may introduce artifacts, or may, at some
+wavelength settings, produce flux cubes for which all pixels are set to
+NaN, the pipeline also propagates the uncorrected flux cube through the
+remaining reduction steps. The telluric-corrected cube and its
+associated error are stored in the ``FLUX`` and ``STDDEV`` extensions.
+The uncorrected cube and its associated error are stored in the
+``UNCORRECTED_FLUX`` and ``UNCORRECTED_STDDEV`` extensions.
+
+Narrow Line Mode
+^^^^^^^^^^^^^^^^
+
+Accurate correction of spectral lines in the vicinity of narrow telluric absorption
 features is problematic even with the use of good atmospheric models and
 knowledge of the PWV. This is due to the fact that the observed spectrum is
 the result of a multiplication of the intrinsic spectrum by the telluric
@@ -707,27 +797,11 @@ result of the convolution of the theoretical telluric absorption
 spectrum with the instrumental profile. The division of the former by
 the latter does not necessarily yield the correct results, and the
 output spectrum may retain telluric artifacts after telluric correction.
-
-A set of ATRAN models appropriate for a range of altitudes, zenith
-angles, and PWV values has been generated for pipeline use. In the
-telluric correction step, the pipeline selects the model closest to the
-observed altitude, zenith angle, and PWV value and smooths the transmission
-model to the resolution of the observed spectrum, interpolates the transmission
-data to the observed wavelength at each spexel, and
-then divides the data by the transmission model. Very low transmission
-values result in poor corrections, so any pixel for which the transmission
-is less than 60% (by default) is set to NaN. For reference, the smoothed,
-binned transmission data is attached to the FITS file as a 25 x (16 \*
-N\ :sub:`scan`) data array (extension ATRAN).  The original unsmoothed data is
-attached as well, in the extension UNSMOOTHED_ATRAN.
-
-Since the telluric correction may introduce artifacts, or may, at some
-wavelength settings, produce flux cubes for which all pixels are set to
-NaN, the pipeline also propagates the uncorrected flux cube through the
-remaining reduction steps. The telluric-corrected cube and its
-associated error are stored in the FLUX and STDDEV extensions.
-The uncorrected cube and its associated error are stored in the
-UNCORRECTED\_FLUX and UNCORRECTED\_STDDEV extensions.
+For this reason, if the *Narrow Line Mode (NLM)* option in the Redux GUI is ticked, or
+the parameter ``narrow`` in the config file is set to True, then Narrow Line Mode will be
+used for telluric correction. Here, a single transmission value is used for the complete wavelength
+range of the input data, determined from the redshift-corrected wavelength of the
+observed spectral line.
 
 .. figure:: images/fifi_telluric_corrected.png
    :alt: Telluric correction
@@ -754,7 +828,7 @@ for the time of each specific observation. To date, observations of Mars
 have been used as the primary flux calibration source. Predicted total
 fluxes for Mars across the FIFI-LS passband at the specific UT dates of
 the observations have been generated using the model of Lellouch and
-Amri. [#fn_fifi_mars]_ Predicted fluxes at several frequencies have been computed
+Amri [#fn_fifi_mars]_. Predicted fluxes at several frequencies have been computed
 and these have then been fit with blackbody curves to derive values at a
 large number of wavelength points. The deviations of the fits from the
 input predictions are much less than 1%. After the models have been
@@ -765,8 +839,7 @@ smoothed and then fit with a polynomial to derive response functions
 spectra of other astronomical sources (see :numref:`fifi_response`).
 
 
-.. [#fn_fifi_mars]
-   See http://www.lesia.obspm.fr/perso/emmanuel-lellouch/mars/index.php
+
 
 The pipeline stores a set of response functions for each channel and
 dichroic value. To perform flux calibration, it selects the correct
@@ -774,21 +847,23 @@ response function for each input observation, interpolates the response
 onto the wavelengths of each spexel, and divides the flux by the
 response value to convert it to physical units (Jy/pixel). From this point on,
 the data products are considered to be Level 3 (FITS keyword
-PROCSTAT=LEVEL\_3). For reference, the resampled response data is
+``PROCSTAT=LEVEL_3``). For reference, the resampled response data is
 attached to the FITS file as a 25 x (16 \* N\ :sub:`scan`) data table in the
-first FITS extension (column RESPONSE). Flux calibration is applied to
+first FITS extension (column ``RESPONSE``). Flux calibration is applied to
 both the telluric-corrected cube and the uncorrected cube. The estimated
-systematic error in the flux calibration is recorded in the CALERR
-keyword in the FITS header, as an average fractional error. At this
-time, flux calibration is expected to be good to within about 5-10%
-(CALERR :math:`\leq` 0.1). [#fn_fifi_calerr]_
+systematic error in the flux calibration is recorded in the ``CALERR``
+keyword in the FITS header, as an average fractional error. Fadda *et al*. 2023 [#Fadda2023]_ estimate
+a flux calibration accuracy of about 5-10% (``CALERR`` :math:`\leq` 0.1) [#fn_fifi_calerr]_. This estimate will likely be revised
+as part of the upcoming SDC flux calibration update.
 
+.. [#fn_fifi_mars] See http://www.lesia.obspm.fr/perso/emmanuel-lellouch/mars/index.php
+.. [#Fadda2023] \D. Fadda *et al*. 2023 ApJ 166 237, https://doi.org/10.3847/1538-3881/acffb4
 .. [#fn_fifi_calerr]
    Earlier versions of this pipeline (prior to v1.3.2) propagated
-   the systematic error on the flux calibration in the STDDEV
-   and ERROR arrays in the output products.  As of v1.3.2, the
+   the systematic error on the flux calibration in the ``STDDEV``
+   and ``ERROR`` arrays in the output products.  As of v1.3.2, the
    calibration error is only propagated in the FITS header keyword
-   CALERR.
+   ``CALERR``.
 
 .. figure:: images/fifi_response.png
    :alt: Response calculation
@@ -802,6 +877,60 @@ time, flux calibration is expected to be good to within about 5-10%
    plots on the right are for data taken with an updated
    filter set.
 
+"DSI" Response Curve Update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+From v2.10.0 onwards, the pipeline uses response curves generated at the
+Deutsches SOFIA Institut (DSI) in 2024. These response curves deviate from
+those of prior versions, and will result in differences in the absolute flux
+of data products.
+
+The main differences arise from changes in how the FIFI-LS-measured
+Mars flux images are sampled and compared to the Mars model fluxes. The prior
+approach attempted to fit the FIFI-LS spatial PSF to the Mars disk and then
+integrate the fitted flux distribution to derive a total flux. The benefit of
+this approach is that the loss of flux which "falls" off of the FIFI-LS field of
+view (relevant at low Mars separations) is counteracted. However, this approach
+suffers from the highly undersampled Mars disk, and therefore the 2-dimensional
+Gaussian fit is potentially unreliable.
+
+The 2024 DSI approach instead identifies the centre of Mars via the brightest pixel,
+and sums all flux within a static aperture around that pixel. This better captures
+the true measured flux, albeit without correcting for flux lost outside of the
+FIFI-LS field of view. Additionally, flightwise atmospheric calibration factors
+that are applied to the prior calibration have been removed in post-filter change
+response curves. The pre-filter change response curves remain the same as before,
+except those for the B2 filters, which have been scaled from their post-filter change
+counterparts. This corrects for artefacts in the response curves, and also extends
+response coverage for the [OIII] 52 micron line in the old filter configuration.
+
+In the near future, the SOFIA Data Center (SDC) will release an updated flux
+calibration which will encorporate a more robust image resampling and flux
+extraction method, along with a fully time & wavelength-resolved Mars model.
+For this reason, a comprehensive test of the relative robustnesses of the DSI
+and 2023 responses has not been carried out, however fluxes in data products may
+deviate between versions by up to 30%. :numref:`fifi_fadda_dsi_response_comparison` displays
+the difference between the two response versions for all FIFI-LS filter configurations.
+A more detailed investigation will be provided in future documentation of the SDC
+flux calibration.
+
+Manual selection of response curves is supported within the Redux GUI via the *Response file*
+field, or in the config file via the ``response_file`` parameter. Users may view
+the available historical response curves within
+*sofia_redux/sofia_redux/instruments/fifi_ls/data/response_files/*,
+for which the calibration dates are specified in the filenames (note: v1 refers to
+responses for data observed prior to the end of 2017, v2 is for data from 2018 onwards).
+Users may also choose to modify the lookup table *response_default.txt* within the
+above directory, pointing to the older response curves if desired. For reference,
+the response curve used in reduction of data products is specified in the FITS header
+keyword ``RSPNFILE``.
+
+.. figure:: images/fifi_fadda_dsi_response_comparison.png
+   :alt: Fadda DSI response comparison
+   :name: fifi_fadda_dsi_response_comparison
+   :height: 800
+
+   Comparison of Fadda et al. 2023 (orange) and DSI 2024 (blue) response curves
+   for all FIFI-LS filter configurations.
 
 Correct Wave Shift
 ~~~~~~~~~~~~~~~~~~
@@ -816,8 +945,8 @@ must be adjusted to remove the barycentric wavelength shift. This shift
 is calculated as an expected wavelength shift (:math:`d\lambda / \lambda`),
 from the radial velocity of the earth with respect to the solar barycenter
 on the observation date, toward the RA and Dec of the observed target.
-This shift is recorded in the header keyword BARYSHFT, and applied to the
-wavelength calibration in the LAMBDA extension as:
+This shift is recorded in the header keyword ``BARYSHFT``, and applied to the
+wavelength calibration in the ``LAMBDA`` extension as:
 
 .. math:: \lambda' = \lambda + \lambda(d\lambda/\lambda)
 
@@ -826,18 +955,18 @@ earth, the barycentric wavelength shift cannot be applied to
 non-telluric-corrected data. Doing so would result in a spectrum in
 which both the intrinsic features and the telluric lines are shifted.
 Therefore, the unshifted wavelength calibration is also propagated in
-the output file, in the extension UNCORRECTED\_LAMBDA.
+the output file, in the extension ``UNCORRECTED_LAMBDA``.
 
 It is possible to apply an additional wavelength shift to correct for the
 solar system's velocity with respect to the local standard of rest (LSR).
-This shift is calculated and stored in the header keyword LSRSHFT, but it
+This shift is calculated and stored in the header keyword ``LSRSHFT``, but it
 is not applied to the wavelength calibration. [#fn_fifi_waveshift]_
 
 .. [#fn_fifi_waveshift]
    Earlier versions of this pipeline (prior to v2.4.0) applied both the
    barycentric shift and the shift to LSR to the wavelength calibration.
    The summed barycentric and LSR radial velocity was stored as the
-   BARYSHFT value.
+   ``BARYSHFT`` value.
 
 Resample
 ~~~~~~~~
@@ -1005,8 +1134,8 @@ coordinates for each input data point, for the most accurate astrometry
 in the output map.  However, this is undesirable for nonsidereal data, for
 which the sky coordinates of the target change over the course of the
 observation.  For nonsidereal sources, the detector offsets
-(from input XS and YS extensions) are used instead
-of the sky coordinates (from RA and DEC extensions) to generate the output grid.
+(from input ``XS`` and ``YS`` extensions) are used instead
+of the sky coordinates (from ``RA`` and ``DEC`` extensions) to generate the output grid.
 For all other sources, detector coordinates may optionally be used instead of
 sky coordinates if desired.
 
@@ -1033,21 +1162,21 @@ yet been fully tested and optimized for FIFI-LS data.
 Output Data
 ^^^^^^^^^^^
 The pipeline stores the resampled data as a 3D FITS image extension
-with extension name FLUX. The associated error is stored in a
-separate extension, with the name ERROR. The non-telluric-corrected
-cubes are stored in UNCORRECTED\_FLUX and UNCORRECTED\_ERROR extensions,
+with extension name ``FLUX``. The associated error is stored in a
+separate extension, with the name ``ERROR``. The non-telluric-corrected
+cubes are stored in ``UNCORRECTED_FLUX`` and ``UNCORRECTED_ERROR`` extensions,
 respectively. The output wavelengths, x and y offsets, and RA and Dec
-coordinates are stored in WAVELENGTH, X, Y, RA---TAN, and DEC--TAN
+coordinates are stored in ``WAVELENGTH``, ``X``, ``Y``, ``RA---TAN``, and ``DEC--TAN``
 extensions.
 
 For reference, a model of the atmospheric
 transmission spectrum, smoothed to the resolution of the observation,
 and the instrumental response curve used in flux calibration are also
-attached to the FITS file in 1D extensions called TRANSMISSION and
-RESPONSE.
+attached to the FITS file in 1D extensions called ``TRANSMISSION`` and
+``RESPONSE``.
 
 Finally, an unsmoothed transmission spectrum is attached in a 2D
-image extension called UNSMOOTHED\_TRANSMISSION. This extension will have size
+image extension called ``UNSMOOTHED_TRANSMISSION``. This extension will have size
 N\ :sub:`trans` x 2, where N\ :sub:`trans` is the number of data points in the
 spectrum, the first row is the wavelength array, and the second row is
 the transmission fraction. This spectrum may be useful for further analysis
@@ -1056,39 +1185,39 @@ of the data (e.g. for determining the total flux in an emission line).
 The final output from the pipeline is a FITS file with 11 image
 extensions:
 
--  FLUX: The *nx* x *ny* x *nw* cube of flux values.
+-  ``FLUX``: The *nx* x *ny* x *nw* cube of flux values.
 
--  ERROR: The associated error values on the flux (also *nx* x *ny* x
+-  ``ERROR``: The associated error values on the flux (also *nx* x *ny* x
    *nw*).
 
--  UNCORRECTED\_FLUX: The *nx* x *ny* x *nw* cube of flux values that
+-  ``UNCORRECTED_FLUX``: The *nx* x *ny* x *nw* cube of flux values that
    have not been corrected for atmospheric transmission.
 
--  UNCORRECTED\_ERROR: The associated error values on the uncorrected
+-  ``UNCORRECTED_ERROR``: The associated error values on the uncorrected
    flux (also *nx* x *ny* x *nw*).
 
--  WAVELENGTH: The wavelength values associated with each plane of the
+-  ``WAVELENGTH``: The wavelength values associated with each plane of the
    cube (*nw*).
 
--  X: The x-coordinates of the data, in arcsecond offsets from the base
+-  ``X``: The x-coordinates of the data, in arcsecond offsets from the base
    position (*nx*).
 
--  Y: The y-coordinates of the data, in arcsecond offsets from the base
+-  ``Y``: The y-coordinates of the data, in arcsecond offsets from the base
    position (*ny*).
 
--  RA---TAN: The right ascension coordinates of the data, in decimal hours, in
+-  ``RA---TAN``: The right ascension coordinates of the data, in decimal hours, in
    a tangent projection from the base position.
 
--  DEC--TAN: The declination coordinates of the data, in decimal degrees, in
+-  ``DEC--TAN``: The declination coordinates of the data, in decimal degrees, in
    a tangent projection from the base position.
 
--  TRANSMISSION: The atmospheric transmission model (*nw*).
+-  ``TRANSMISSION``: The atmospheric transmission model (*nw*).
 
--  RESPONSE: The instrumental response curve (*nw*).
+-  ``RESPONSE``: The instrumental response curve (*nw*).
 
--  EXPOSURE\_MAP: The exposure map (*nx* x *ny* x *nw*).
+-  ``EXPOSURE_MAP``: The exposure map (*nx* x *ny* x *nw*).
 
--  UNSMOOTHED\_TRANSMISSION: The unsmoothed atmospheric transmission
+-  ``UNSMOOTHED\_TRANSMISSION``: The unsmoothed atmospheric transmission
    model (N\ :sub:`trans` x 2).
 
 
@@ -1157,8 +1286,8 @@ Pipeline Products
 The following table lists all intermediate products generated by Redux
 for FIFI-LS, in the order in which they are produced. The product type
 is stored in the primary FITS header of the file, under the keyword
-PRODTYPE. By default, the *scan\_combined*, *flux\_calibrated,* and
-and *resampled* products are saved. [#fn_fifi_dataprod]_
+``PRODTYPE``. By default, the ``scan_combined``, ``flux_calibrated``, and
+and ``resampled`` products are saved. [#fn_fifi_dataprod]_
 
 As a final step, the pipeline additionally produces an image in PNG
 format, intended to provide a quick-look preview of the data contained in
@@ -1258,6 +1387,6 @@ arrays (spaxel x spexel); the final product contains 3D spectral cubes
 
 For the OTF mode, intermediate data files produced by pipeline steps prior to
 the Spatial Calibrate step additionally contain a binary table holding
-sky position data for each scan position (extension SCANPOS_G0). Intermediate
+sky position data for each scan position (extension ``SCANPOS_G0``). Intermediate
 flux and error data in this mode are 3D cubes (spaxel x spexel x scan position).
 The final product is identical to other modes.

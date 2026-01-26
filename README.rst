@@ -5,8 +5,8 @@ SOFIA Data Reduction Pipelines
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
 
-.. image:: https://zenodo.org/badge/311773000.svg
-    :target: https://zenodo.org/badge/latestdoi/311773000
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17980054.svg
+    :target: https://doi.org/10.5281/zenodo.17980054
     :alt: DOI Badge
 
 
@@ -24,7 +24,8 @@ SOFIA raw and processed data can be accessed from the
 Archived data may not match the results of data processed
 with this pipeline software.
 
-SOFIA pipelines are developed internally by the SOFIA Data Center
+SOFIA pipelines are developed internally by the
+`SOFIA Data Center <https://www.irs.uni-stuttgart.de/en/research/satellitetechnology-and-instruments/SOFIA-Data-Center/>`__
 software team, then are published publicly at the
 `SOFIA Redux GitHub project
 <https://github.com/SOFIA-Data-Center/sofia_redux>`__.

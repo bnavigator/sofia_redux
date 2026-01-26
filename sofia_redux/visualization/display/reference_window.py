@@ -105,6 +105,7 @@ class ReferenceWindow(QtWidgets.QDialog, rd.Ui_Dialog):
             return False
         if not filename:
             return False
+        filename = os.path.normpath(filename)
         try:
             result = self.ref_models.add_line_list(filename)
         except IOError:

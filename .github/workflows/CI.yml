@@ -33,22 +33,26 @@ jobs:
       - name: Check Style
         run: |
           ref="${{github.base_ref}}"
-          ref=${ref+"origin/$ref"}
-          changedpyfiles=$(git diff --name-status ${ref:-HEAD~} -- '*.py' | grep -v '^D' | cut -f 2-)
-          if [ -n "$changedpyfiles" ]; then
-            tox -e check-style -- --force-exclude $changedpyfiles
-          else
-            echo "No python files changed"
-          fi
+          ref=${ref:+"origin/$ref"}
+          # get changed python files, exclude deletions and renames
+          git diff --diff-filter=rd --name-status ${ref:-HEAD~} -- '*.py' \
+          | cut -f 2- \
+          | xargs -d '\n' -r tox -e check-style -- --force-exclude
     
   unit-tests:
-    name: Unit Tests ${{ matrix.toxenv }}
+    name: Unit Tests ${{ matrix.pyver }} ${{ matrix.toxenv }}
     runs-on: self-hosted
     strategy:
       matrix:
         toxenv:
           - test-small-xdist
           - test-oldestdeps-small-xdist
+        # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations#expanding-or-adding-matrix-configurations
+        include:
+          - pyver: 3.14
+          - toxenv: test-oldestdeps-small-xdist
+            pyver: 3.11
+
     steps:
       - name: checkout git
         uses: actions/checkout@v4
@@ -57,7 +61,7 @@ jobs:
       - name: Set up python      
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: ${{ matrix.pyver }}
       - name: Install dependencies
         run: pip install tox
       - name: Run tests

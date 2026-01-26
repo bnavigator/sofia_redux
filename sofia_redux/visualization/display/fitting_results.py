@@ -338,7 +338,7 @@ class FittingResults(QtWidgets.QDialog, frw.Ui_Dialog):
         init_directory = os.path.expanduser('~')
         filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File',
                                                          init_directory)[0]
-        return filename
+        return os.path.normpath(filename) if filename else filename
 
     @staticmethod
     def _write_parameters(parameters: List[List[Union[str, float]]],

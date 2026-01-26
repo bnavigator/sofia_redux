@@ -13,6 +13,7 @@ import numpy as np
 from scipy.stats import gmean
 
 from sofia_redux.pipeline.gui.matplotlib_viewer import MatplotlibPlot
+from sofia_redux.pipeline.gui.qad.ds9_adapter import sanitize_path_ds9
 from sofia_redux.toolkit.utilities.fits import set_log_level
 
 try:
@@ -136,9 +137,6 @@ class QADImView(object):
             log.warning('Photometry tools are not available. Install '
                         'sofia_redux.calibration to enable photometry.')
 
-        # always set XPA_METHOD to local
-        os.environ["XPA_METHOD"] = "local"
-
         # signals for plot events
         self.HAS_PYQT6 = HAS_PYQT6
         if self.HAS_PYQT6:
@@ -165,7 +163,7 @@ class QADImView(object):
             else:
                 return True
 
-    def _run_internal(self, cmd, buf=None, via='set'):
+    def _run_internal(self, cmd, via='set'):
         """
         Format commands to send to ds9samp.
 
@@ -173,9 +171,6 @@ class QADImView(object):
         ----------
         cmd : str
             Command to send.
-        buf : list, str, or file-like; optional
-            Additional buffers to send.  May be a string or a file handler,
-            or a list of those.
         via : {'get', 'set'}, optional
             Command method.
 
@@ -187,10 +182,7 @@ class QADImView(object):
         log.debug('  Command: {}'.format(str(cmd)))
         retval = None
         if str(via).lower().strip() == 'set':
-            if type(buf) is list:
-                retval = self.ds9.set(cmd, *buf)
-            else:
-                retval = self.ds9.set(cmd, buf)
+                retval = self.ds9.set(cmd)
         elif str(via).lower().strip() == 'get':
             # workaround for DS9 seg fault with empty frame
             # and wcs requests
@@ -631,17 +623,14 @@ class QADImView(object):
                 # break loop if required
                 break
 
-    def run(self, cmd, buf=None, via='set', allframes=False):
+    def run(self, cmd, via='set', allframes=False):
         """
-        Send an XPA command to DS9.
+        Send a SAMP command to DS9.
 
         Parameters
         ----------
         cmd : str
             Command to send.
-        buf : list, str, or file-like; optional
-            Additional buffers to send.  May be a string or a file handler,
-            or a list of those.
         via : {'get', 'set'}, optional
             Command method.
         allframes : bool
@@ -678,11 +667,11 @@ class QADImView(object):
             for frm in framenums:
                 fcmd = 'frame ' + frm
                 self._run_internal(fcmd)
-                retval = self._run_internal(cmd, buf, via)
+                retval = self._run_internal(cmd, via)
                 retvalarr.append(retval)
             return retvalarr
         else:
-            retval = self._run_internal(cmd, buf, via)
+            retval = self._run_internal(cmd, via)
             return retval
 
     def get_extension_param(self):
@@ -860,12 +849,11 @@ class QADImView(object):
                     extenstr = ''
                 try:
                     if not is_data[ffile]:
+                        ffile_path = sanitize_path_ds9(ffile)
                         if cmd == 'multiframe':
-                            ds9_cmd = "{} {}{}".format(cmd, ffile, extenstr)
+                            ds9_cmd = f"{cmd} {ffile_path}{extenstr}"
                         else:
-                            ds9_cmd = "{} new {}{}".format(cmd, ffile,
-                                                           extenstr)
-                        log.debug("Running DS9 command: {}".format(ds9_cmd))
+                            ds9_cmd = f"{cmd} new {ffile_path}{extenstr}"
                         status = self.run(ds9_cmd)
                     else:
                         self.run('frame new')
@@ -885,14 +873,7 @@ class QADImView(object):
                         else:
                             data = imgdata[j]
 
-                        # try to stream the data to DS9.  If that fails,
-                        # try to write it to disk, then load it
-                        try:
-                            log.debug("Loading from memory")
-                            status = self._load_from_memory(cmd, ffile, data)
-                        except ValueError:
-                            log.debug("Loading from tempfile")
-                            status = self._load_from_tempfile(cmd, ffile, data)
+                        status = self._load_from_tempfile(cmd, ffile, data)
 
                     log.info(f'Loaded frame {frame_to_load}: '
                              f'{os.path.basename(ffile)}{extenstr}')
@@ -954,12 +935,14 @@ class QADImView(object):
                 if nframes == len(regfiles):
                     for reg_i, rfile in enumerate(regfiles):
                         if os.path.exists(rfile):
+                            rfile_path = sanitize_path_ds9(rfile)
                             self.run('frame {}'.format(frames[reg_i]))
-                            self.run('region load {}'.format(rfile))
+                            self.run('region load {}'.format(rfile_path))
                 else:
                     for rfile in regfiles:
                         if os.path.exists(rfile):
-                            self.run('region load all ' + rfile)
+                            rfile_path = sanitize_path_ds9(rfile)
+                            self.run('region load all ' + rfile_path)
 
             # reset the photometry table
             self.ptable = None
@@ -1000,14 +983,8 @@ class QADImView(object):
 
             # For SAMP, convert Windows backslashes to forward slashes
             # preventing that they are interpreted as escape characters
-            ds9_path = temp_path
-            if hasattr(self.ds9, '_ds9'):
-                ds9_path = temp_path.replace('\\', '/')
-                log.debug("Path for SAMP: {}".format(ds9_path))
-
-            ds9_cmd = "{} {}".format(cmd, ds9_path)
-            log.debug("Running DS9 command: {}".format(ds9_cmd))
-            status = self.run(ds9_cmd)
+            ds9_path = sanitize_path_ds9(temp_path)
+            status = self.run(f"{cmd} {ds9_path}")
 
             # Apply zoom to fit if enabled
             if self.disp_parameters.get('zoom_fit', True):
@@ -1032,18 +1009,6 @@ class QADImView(object):
                           f"{self._temp_dir}: {e}")
             finally:
                 self._temp_dir = None
-
-    def _load_from_memory(self, cmd, ffile, data):
-        """Use BytesIO to stream HDU data to DS9.
-
-        SAMP protocol does not support binary data streaming which
-        caused the warning. Now it will just show the debug message
-        that it is using the tempfile.
-        """
-        # SAMP does not support loading from memory
-        msg = "SAMP does not support loading from memory; using tempfile"
-        log.debug(msg)
-        raise ValueError(msg)
 
     def _make_s2n(self, ffile, hdul):
         """Retrieve or make an S/N image."""
@@ -1161,7 +1126,7 @@ class QADImView(object):
                  'point=x ' \
                  'color=blue tag=srcpos '\
                  'text=SRCPOS'.format(srcposx, srcposy)
-            self.run('regions', s1)
+            self.run(f'regions {s1}')
         except (KeyError, ValueError):
             pass
         try:
@@ -1172,15 +1137,15 @@ class QADImView(object):
             s1 = 'point({:f} {:f}) # ' \
                  'point=x ' \
                  'color=cyan tag=srcpos'.format(stcentx, stcenty)
-            self.run('regions', s1)
+            self.run(f'regions {s1}')
             s2 = 'circle({:f} {:f} {:f}) # ' \
                  'color=cyan tag=srcpos'.format(
                      stcentx, stcenty, photaper)
-            self.run('regions', s2)
+            self.run(f'regions {s2}')
             s3 = 'annulus({:f} {:f} {:f} {:f}) # ' \
                  'color=cyan tag=srcpos text=STCENT'.format(
                      stcentx, stcenty, photskap[0], photskap[1])
-            self.run('regions', s3)
+            self.run(f'regions {s3}')
         except (KeyError, ValueError):
             pass
         try:
@@ -1191,7 +1156,7 @@ class QADImView(object):
             s1 = 'text({:f} {:f}) # color=cyan ' \
                  'text="Flux={:.2f}, Sky={:.2f}"'.format(
                      stcentx, stcenty - 40, flux, sky)
-            self.run('regions', s1)
+            self.run(f'regions {s1}')
         except (KeyError, ValueError):
             pass
 
@@ -1291,7 +1256,7 @@ class QADImView(object):
 
         for reg in regions:
             try:
-                self.run('regions', reg)
+                self.run(f'regions {reg}')
             except ValueError:
                 # A bad WCS in the ds9 image will cause the
                 # region set to fail -- in this case, don't continue
@@ -2071,7 +2036,7 @@ class QADImView(object):
 
         try:
             self.ds9 = DS9()
-        except (ImportError, TypeError, ValueError, SAMPHubError):
+        except (RuntimeError, ValueError, SAMPHubError):
             log.error('DS9 is not accessible via SAMP. DS9 display '
                       'will not be available.')
             self.HAS_DS9 = False
@@ -2087,9 +2052,11 @@ class QADImView(object):
     def quit(self):
         """Quit DS9."""
         self.break_loop = True
-        try:
-            self._run_internal('quit')
-        except Exception as e:
-            log.error(f'Error occured while quitting {e}')
+        if self.ds9 is not None:
+            try:
+                self.ds9.quit()
+                self.ds9 = None
+            except Exception as e:
+                log.error(f'Error occured while quitting {e}')
         # Clean up temporary directory
         self._cleanup_temp_dir()
