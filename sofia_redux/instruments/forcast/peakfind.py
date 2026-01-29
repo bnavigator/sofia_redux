@@ -288,10 +288,16 @@ class PeakFinder(object):
         else:
             dtable = tables[0].copy()
 
-        self.frame.update(dtable.to_pandas())
+        dtable_frame = dtable.to_pandas()
+        self.frame.update(dtable_frame)
+        # try to keep the dtypes from the table
+        common_columns = self.frame.columns.intersection(dtable_frame.columns)
         fluxcol = 'fit_amplitude' if self.refine else 'flux'
-        self.frame = self.frame.rename(columns={
-            'xcentroid': 'x', 'ycentroid': 'y', 'flux': fluxcol})
+        self.frame = (self.frame
+            .astype(dtable_frame[common_columns].dtypes,
+                   errors='ignore')
+            .rename(columns={
+                    'xcentroid': 'x', 'ycentroid': 'y', 'flux': fluxcol}))
         cols = ['x', 'y', 'sharpness', 'roundness2',
                 'peak', fluxcol]
         self.print('\n' + self.frame[cols].to_string(
