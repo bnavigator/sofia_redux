@@ -110,7 +110,8 @@ def get_pointing_mask(primehead, pointing_threshold, grating_idx, dt_ramp,
     # Create an empty dataframe with the calculated chop cycle times.
     # The pointing error columns are filled with NaNs.
     df_chop_cycle_times = pd.DataFrame(index=chop_cycle_times,
-                                       columns=df_pointing_error.columns)
+                                       columns=df_pointing_error.columns,
+                                       ).astype(df_pointing_error.dtypes)
 
     # Merge the new empty dataframe with the loaded pointing error dataframe
     df_merged = pd.concat([df_pointing_error, df_chop_cycle_times])

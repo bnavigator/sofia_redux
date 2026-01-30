@@ -262,7 +262,7 @@ class TestCombineNods:
         b_file[0].header['DATE-OBS'] = '2019-01-01T01:00:00'
         result = combine_nods([b_file, a_file], write=False)
         abeams = result[result['nodbeam'] == 'A']
-        chdul = abeams['chdul'][0]
+        chdul = abeams['chdul'].iloc[0]
 
         assert chdul[0].header['EXPTIME'] > 0
         assert chdul[0].header['NEXP'] > 0
@@ -296,7 +296,7 @@ class TestCombineNods:
         for hdul in result[result['nodbeam'] == 'A']['chdul']:
             assert isinstance(hdul, fits.HDUList)
             for i in range(hdul[0].header['NGRATING']):
-                orig_hdul = result[result['nodbeam'] == 'A']['hdul'][0]
+                orig_hdul = result[result['nodbeam'] == 'A']['hdul'].iloc[0]
                 assert f'SCANPOS_G{i}' in hdul
                 assert isinstance(orig_hdul, fits.HDUList)
                 assert np.allclose(hdul[f'SCANPOS_G{i}'].data,
@@ -329,9 +329,9 @@ class TestCombineNods:
         assert 'Subbing B {} from ' \
                'A {}'.format(c2nc2[3][0].header['FILENAME'],
                              c2nc2[2][0].header['FILENAME']) in capt.out
-        hdul = default[default['nodbeam'] == 'A']['chdul'][0]
+        hdul = default[default['nodbeam'] == 'A']['chdul'].iloc[0]
         assert hdul[0].header['ASSC_OBS'] == 'R001,R002'
-        hdul = default[default['nodbeam'] == 'A']['chdul'][1]
+        hdul = default[default['nodbeam'] == 'A']['chdul'].iloc[1]
         assert hdul[0].header['ASSC_OBS'] == 'R003,R004'
 
         # average 2: first A will take only nearest B nod, since
@@ -346,9 +346,9 @@ class TestCombineNods:
                'A {}'.format(c2nc2[1][0].header['FILENAME'],
                              c2nc2[3][0].header['FILENAME'],
                              c2nc2[2][0].header['FILENAME']) in capt.out
-        hdul1 = result[result['nodbeam'] == 'A']['chdul'][0]
+        hdul1 = result[result['nodbeam'] == 'A']['chdul'].iloc[0]
         assert hdul1[0].header['ASSC_OBS'] == 'R001,R002'
-        hdul2 = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul2 = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         assert hdul2[0].header['ASSC_OBS'] == 'R002,R003,R004'
 
         # error estimate on averaged one should be lower, flux should be same
@@ -362,12 +362,12 @@ class TestCombineNods:
         c2nc2[2]['FLUX_G0'].data[:] = 40.0
         c2nc2[3]['FLUX_G0'].data[:] = 30.0
         result = combine_nods(c2nc2, write=False, b_nod_method='nearest')
-        hdul = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         assert np.allclose(hdul['FLUX_G0'].data, 10)
 
         c2nc2[2]['FLUX_G0'].data[:] = 40.0
         result = combine_nods(c2nc2, write=False, b_nod_method='average')
-        hdul = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         assert np.allclose(hdul['FLUX_G0'].data, 20)
 
     def test_interpolate_two(self, capsys, nodstyles):
@@ -406,9 +406,9 @@ class TestCombineNods:
                'A {}'.format(c2nc2[1][0].header['FILENAME'], btime1,
                              c2nc2[3][0].header['FILENAME'], btime2, atime,
                              c2nc2[2][0].header['FILENAME']) in capt.out
-        hdul1 = result[result['nodbeam'] == 'A']['chdul'][0]
+        hdul1 = result[result['nodbeam'] == 'A']['chdul'].iloc[0]
         assert hdul1[0].header['ASSC_OBS'] == 'R001,R002'
-        hdul2 = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul2 = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         assert hdul2[0].header['ASSC_OBS'] == 'R002,R003,R004'
 
         # error estimate on interpolated one should be close to
@@ -424,14 +424,14 @@ class TestCombineNods:
         c2nc2[2]['FLUX_G0'].data[:] = 40.0
         c2nc2[3]['FLUX_G0'].data[:] = 30.0
         result = combine_nods(c2nc2, write=False, b_nod_method='nearest')
-        hdul = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         assert np.allclose(hdul['FLUX_G0'].data, 10)
 
         # expected B value is point on the line between B values, at a time
         interp_val = (atime - btime1) * (30. - 10) / (btime2 - btime1) + 10.
         c2nc2[2]['FLUX_G0'].data[:] = 40.0
         result = combine_nods(c2nc2, write=False, b_nod_method='interpolate')
-        hdul = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         idx = ~np.isnan(hdul['FLUX_G0'].data)
         assert np.allclose(hdul['FLUX_G0'].data[idx], 40 - interp_val)
 
@@ -444,7 +444,7 @@ class TestCombineNods:
         incr = (btime2 - btime1) / 9
 
         result = combine_nods(c2nc2, write=False, b_nod_method='interpolate')
-        hdul = result[result['nodbeam'] == 'A']['chdul'][1]
+        hdul = result[result['nodbeam'] == 'A']['chdul'].iloc[1]
         # check interpolated value at each frame
         for i in range(10):
             atime = btime1 + i * incr
