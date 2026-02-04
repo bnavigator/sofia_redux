@@ -58,10 +58,11 @@ class TestReadHdr(object):
         assert rh._get_default('BADKEY', df) is None
         assert 'not found' in capsys.readouterr().err
 
-        # check non-robust bool handling
+        # check robust bool handling
         df.at['DITHER', 'type'] = bool
-        df.at['DITHER', 'default'] = True
-        assert rh._get_default('DITHER', df) is True
+        for tstring in ['Y', 'y', '1', 'true', 'yes' , 'True', 'YES']:
+            df.at['DITHER', 'default'] = tstring
+            assert rh._get_default('DITHER', df) is True
 
         # check bad typing
         df.at['DITHER', 'type'] = dict

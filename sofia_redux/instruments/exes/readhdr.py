@@ -205,7 +205,7 @@ def _get_default(keyword, table):
 
     # handle missing default, for keywords that should be
     # tracked but not added if missing
-    if value is None:
+    if pd.isna(value):
         return None
 
     try:

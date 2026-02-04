@@ -1,8 +1,15 @@
-1.4.1 (TBD)
-===========
+1.4.2 (2026-01-30)
+==================
+
+- Fix compatibility with pandas 3.0
+
+1.4.1 (2026-01-29)
+==================
 - FIFI-LS User Manual Iss. 02:
 
   - Document DSI response curves for flux calibration.
+  - Additional documentation for new pipeline features, including
+    telluric scaling, background scaling & ATRAN interpolation features.
 
 - Support for Python 3.14
 - Update Zenodo DOI for citations.
