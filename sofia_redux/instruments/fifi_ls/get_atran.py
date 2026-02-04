@@ -144,8 +144,8 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
         log.warning('MISSN-ID not found in header')
         return None
 
-    # Format: last 3 chars + chars 10-14 + first 10 chars with dashes removed
-    # For example: From "2022-01-15_FI_F855" to "855F8552022-01-15" to "855F85520220115"
+    # Format: last 3 chars + chars 10-14 + first 10 chars (no dashes)
+    # Example: "2022-01-15_FI_F855" -> "855_FI_20220115"
     try:
         ecmwf_mission_id = (missn_id[-3:] + missn_id[10:14]
                            + missn_id[:10].replace('-', ''))
@@ -180,7 +180,8 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
             if (ecmwf_hdul[6].data.min() < obs_time_unix
                     < ecmwf_hdul[6].data.max()):
                 # Find closest time index
-                ecmwf_idx = np.argmin(np.abs(ecmwf_hdul[6].data - obs_time_unix))
+                time_diff = np.abs(ecmwf_hdul[6].data - obs_time_unix)
+                ecmwf_idx = np.argmin(time_diff)
                 # Check quality flags (extensions 10 and 11 should be 0)
                 if (ecmwf_hdul[10].data[ecmwf_idx] == 0
                         and ecmwf_hdul[11].data[ecmwf_idx] == 0):

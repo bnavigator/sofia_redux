@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from sofia_redux.instruments.fifi_ls.get_atran \
-    import get_atran, clear_atran_cache, get_atran_interpolated
+    import clear_atran_cache, get_atran_interpolated
 from sofia_redux.instruments.fifi_ls.get_resolution \
     import get_resolution, clear_resolution_cache
 from sofia_redux.toolkit.utilities \
@@ -19,7 +19,8 @@ __all__ = ['apply_atran', 'telluric_correct', 'wrap_telluric_correct']
 
 
 @nb.njit(cache=True, nogil=False, parallel=False, fastmath=False)
-def apply_atran_correction(wave, data, var, atran, cutoff, transmission_narrow, narrow):  # pragma: no cover
+def apply_atran_correction(wave, data, var, atran, cutoff,  # pragma: no cover
+                           transmission_narrow, narrow):
     """
     Apply an atmospheric transmission correction to the flux data.
 
@@ -97,7 +98,8 @@ def apply_atran_correction(wave, data, var, atran, cutoff, transmission_narrow, 
                     atran_store[n, k, i] = transmission_narrow
                     if transmission_narrow >= cutoff:
                         tel_corr[n, k, i] = y[k] / transmission_narrow
-                        var_corr[n, k, i] = v[k] / transmission_narrow / transmission_narrow
+                        var_corr[n, k, i] = (v[k] / transmission_narrow
+                                             / transmission_narrow)
                     else:
                         tel_corr[n, k, i] = np.nan
                         var_corr[n, k, i] = np.nan
@@ -132,8 +134,8 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
         they might not be available in older observations), but provided
         manually.
     restwav : float, optionl
-        Rest wave length of observed line for narrow line mode. Only used if hrd_ovr
-        is set
+        Rest wavelength of observed line for narrow line mode.
+        Only used if hrd_ovr is set.
     redshift : float, optionl
         Redhift z of observed line for narrow line mode. Only used if hrd_ovr
         is set
@@ -156,18 +158,20 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
 
 
     if narrow:
-        # Wavelength from header for OTF or as config parameter as keyword only in newer observations
-        # wl =  Restwavelength * (1+ redshift) --> Property of line going through the atmosphere
-        # G_WAV_[R/B] is property of instrument and is applied to detector, can vary as per grating
-        # position. Is used for resolution as this is also property of intrument
+        # Wavelength from header for OTF or as config parameter
+        # (keyword only in newer observations)
+        # wl = Restwavelength * (1 + redshift)
+        # -> Property of line going through the atmosphere
+        # G_WAV_[R/B] is property of instrument, applied to detector,
+        # can vary per grating position. Used for resolution.
         if not hdr_ovr:
             try:
                 restwav = hdul[0].header['RESTWAV']
                 redshift =  hdul[0].header['REDSHIFT']
             except KeyError:
-                raise ValueError('Missing RESTWAV and REDSHIFT keys in headers, '
-                                 'use "Z and Rest Wavelength Override" option and provide '
-                                 'values manually.')
+                raise ValueError(
+                    'Missing RESTWAV and REDSHIFT keys in headers. '
+                    'Use "Z and Rest Wavelength Override" option.')
 
         wl = restwav*(1+redshift)
         aw = atran[0]
@@ -242,9 +246,9 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
 
     The procedure is:
 
-        1. Identify ATRAN file to use based on altitude, zenith angle,                                                    
-           and water vapor. If use_ecmwf is set, water vapor is retrieved                                                 
-           from ECMWF reanalysis data. Otherwise header values are used.                                                  
+        1. Identify ATRAN file to use based on altitude, zenith angle,
+           and water vapor. If use_ecmwf is set, water vapor is retrieved
+           from ECMWF reanalysis data. Otherwise header values are used.
            Smooth the ATRAN data to the spectral resolution of the input.
         2. Interpolate the atmospheric transmission data onto the wavelength
            value of each spexel. Divide the data at each point by the

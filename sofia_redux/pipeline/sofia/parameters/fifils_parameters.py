@@ -330,7 +330,7 @@ DEFAULT = {
          'wtype': 'check_box'},
         {'key': 'ecmwf_dir',
          'name': 'ECMWF directory',
-         'value': '/mnt/sofiadata/SOFIADATACENTER/data/WV_ECMWF',
+         'value': '',
          'description': 'Path to directory containing ECMWF FITS files',
          'dtype': 'str',
          'wtype': 'pick_directory'},
