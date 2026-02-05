@@ -783,14 +783,19 @@ if the value changes rapidly.
 The PWV data used for identification of ATRAN profiles is inserted into the pipeline
 using one of two sources:
 
-   1. If the source is from the ECMWF data, then the pipeline identifies
+   1. If the *Use ECMWF WV values* option in the Redux GUI is ticked, or the parameter
+   ``use_ecmwf`` in the config file is set to True, then the PWV is sourced directly from the
+   ECMWF data. The location of the ECMWF data is specified in the *ECMWF Directory* field in the GUI, or by
+   the parameter ``ecmwf_dir`` in the config file.  The pipeline identifies
    the satellite data which corresponds to the time and latitude of the observation, reads
    the PWV value, and scales it according to the above described method. The scaled value is stored
    in the keyword ``WVZ_FIFI``.
 
-   2. If the source is from the FIFI-LS headers, then the pipeline reads the keyword ``WVZ_OBS``,
-   which is a pre-computed scaling of the ECMWF data (testing has shown that these values
-   are accurate to within roughly 10% of the values derived directly from the ECMWF data).
+   2. If the *Use ECMWF WV values* option in the Redux GUI is left unticked, or the parameter
+   ``use_ecmwf`` in the config file is set to False, then the PWV is sourced from the FIFI-LS headers.
+   The pipeline reads the keyword ``WVZ_OBS``, which is a pre-computed scaling of the ECMWF data.
+   Testing has shown that these values are accurate to within roughly 10% of the values derived directly
+   from the ECMWF data.
 
 The source used for a particular pipeline product can be identified with the keyword
 ``WV_SRC``, which will have the value "ECMWF" or "HEADER". The actual PWV used for the
