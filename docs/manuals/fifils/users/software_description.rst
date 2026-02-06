@@ -391,11 +391,6 @@ Some key parameters to note are listed below.
    -  *Cutoff value*: Modify to adjust the transmission
       fraction below which the telluric-corrected data will be set to NaN.
 
-   -  *Use WV values*: Select to use water vapor values from the header
-      (keyword ``WVZ_OBS``) to select the ATRAN file to apply.  This option
-      will have no effect unless the ATRAN directory is set to a location
-      containing ATRAN files derived for different PWV values.
-
 -  **Flux Calibrate**
 
    -  *Skip flux calibration*: Select to skip flux calibration of the
