@@ -314,13 +314,6 @@ DEFAULT = {
                         'transmission, flux values are set to NaN.',
          'dtype': 'float',
          'wtype': 'text_box'},
-        {'key': 'use_wv',
-         'name': 'Use WV values',
-         'value': False,
-         'description': 'If set, water vapor values from the header will '
-                        'be used to choose the correct ATRAN file.',
-         'dtype': 'bool',
-         'wtype': 'check_box'},
         {'key': 'use_ecmwf',
          'name': 'Use ECMWF WV values',
          'value': False,
