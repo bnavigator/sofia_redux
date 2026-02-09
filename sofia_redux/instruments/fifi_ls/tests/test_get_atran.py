@@ -10,7 +10,7 @@ import numpy as np
 from sofia_redux.instruments import fifi_ls
 from sofia_redux.instruments.fifi_ls.get_atran \
     import (clear_atran_cache, get_atran_from_cache,
-            store_atran_in_cache, get_atran)
+            store_atran_in_cache, get_atran, get_wv_from_ecmwf)
 
 
 class TestGetAtran:
@@ -256,3 +256,52 @@ class TestGetAtran:
         assert 'Using nearest Alt/ZA/WV' in capt.out
         assert atran2 in capt.out
         assert np.allclose(result1, result2, equal_nan=True)
+
+
+def test_get_wv_from_ecmwf():
+    """
+    Test successful WV retrieval using real ECMWF data.
+
+    Uses flight F906 data from 2022-08-25.
+    ECMWF directory: /mnt/sofiadata/data/WV_ECMWF/906_FI_20220825/
+    THIS WILL CHANGE TO DARUS SOON
+    """
+    # Create a header that matches the F906 flight
+    header = fits.Header()
+    header['MISSN-ID'] = '2022-08-25_FI_F906'
+    header['DATE-OBS'] = '2022-08-25T09:40:20'
+
+    # Path to real ECMWF data
+    ecmwf_dir = '/mnt/sofiadata/data/WV_ECMWF'
+    # This will change to a DARUS link soon
+
+    wvz_ecmwf, wvz_fifi = get_wv_from_ecmwf(header, ecmwf_dir)
+
+    # Check the conversion formula: wvz_fifi = 0.34 + wvz_ecmwf * 0.55
+    expected_fifi = 0.34 + wvz_ecmwf * 0.55
+    assert abs(wvz_fifi - expected_fifi) < 0.001, \
+        f"Conversion mismatch: expected {expected_fifi}, got {wvz_fifi}"
+
+
+def test_missing_directory(caplog):
+    """
+    Test that function returns None when ECMWF directory doesn't exist.
+
+    This allows the calling code to fall back to header WV values.
+
+    # WE NEED TO DISCUSS IF THIS IS WANTED (AB, CI and BS)
+    # Same for when Quality Flag is bad...
+
+    """
+    header = fits.Header()
+    header['MISSN-ID'] = '2022-08-25_FI_F906'
+    header['DATE-OBS'] = '2022-08-25T09:40:20'
+
+    # Non existent folder Path
+    result = get_wv_from_ecmwf(header, '/nonexistentpath')
+    assert result is None
+    assert "ECMWF directory not found" in caplog.text
+
+    # None as directory
+    result = get_wv_from_ecmwf(header, None)
+    assert result is None
