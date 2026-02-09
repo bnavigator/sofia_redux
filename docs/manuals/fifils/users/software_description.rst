@@ -396,6 +396,14 @@ Some key parameters to note are listed below.
       will have no effect unless the ATRAN directory is set to a location
       containing ATRAN files derived for different PWV values.
 
+   -  *Use ECMWF WV values*: Select to source water vapor values directly from
+      ECMWF satellite data, which will be subsequently scaled to FIFI-LS values.
+      This requires an ECMWF directory to be specified. If unticked, the
+      pipeline will source water vapor values from pre-computed scaled values
+      in the FIFI-LS headers (keyword ``WVZ_OBS``).
+
+   -  *ECMWF Directory*: Specify the location of the ECMWF satellite data.
+
 -  **Flux Calibrate**
 
    -  *Skip flux calibration*: Select to skip flux calibration of the
