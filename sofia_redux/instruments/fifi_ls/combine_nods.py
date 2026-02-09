@@ -143,7 +143,7 @@ def _atransmission(hdul,row,hdr0, hdul0):
     # current resolution
     atran_data = get_atran_interpolated(
         hdr0, resolution=resolution,
-        atran_dir=None, use_wv=True,
+        atran_dir=None,
         get_unsmoothed=True
     )
 
@@ -263,7 +263,7 @@ def _telluric_scaling(hdul, brow, hdr0, hdul0, sig_rel):
     # current resolution
     atran_data = get_atran_interpolated(
         hdr0, resolution=resolution,
-        atran_dir=None, use_wv=True,
+        atran_dir=None,
         get_unsmoothed=True
     )
 

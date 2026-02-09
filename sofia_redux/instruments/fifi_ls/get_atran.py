@@ -206,8 +206,7 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
 
 
 def get_atran(header, resolution=None, filename=None,
-              get_unsmoothed=False, use_wv=False,
-              atran_dir=None):
+              get_unsmoothed=False, atran_dir=None):
     """
     Retrieve reference atmospheric transmission data.
 
@@ -221,17 +220,13 @@ def get_atran(header, resolution=None, filename=None,
     ZA of 45 degrees, and wavelengths between 40 and 300 microns
     should be named:
 
-        atran_41K_45deg_40-300mum.fits
-
-    If use_wv is set, files named for the precipitable water vapor
-    values for which they were generated will be used instead, as:
-
-        atran_[alt]K_[za]deg_[wv]pwv_[wmin]-[wmax]mum.fits
+        atran_41K_45deg_[wv]pwv_40-300mum.fits
 
     The procedure is:
 
-        1. Identify ATRAN file by ZA, Altitude, and WV , unless override is
-           provided.
+        1. Identify ATRAN file by ZA, Altitude, and WV, unless override is
+           provided. Water vapor values are retrieved from WVZ_OBS in the
+           header or from ECMWF data.
         2. Read ATRAN data from file and smooth to expected spectral
            resolution.
         3. Return transmission array.
@@ -257,9 +252,6 @@ def get_atran(header, resolution=None, filename=None,
         Path to a directory containing ATRAN reference FITS files.
         If not provided, the default set of files packaged with the
         pipeline will be used.
-    use_wv : bool, optional
-        If set, water vapor values from the header will be used
-        to select the correct ATRAN file.
 
     Returns
     -------
@@ -301,21 +293,7 @@ def get_atran(header, resolution=None, filename=None,
         alt /= 1000
 
         wv_obs = float(header.get('WVZ_OBS', 0))
-        if wv_obs > 0:
-            wv = wv_obs
-        else:
-            wv_start = float(header.get('WVZ_STA', 0))
-            wv_end = float(header.get('WVZ_END', 0))
-            if wv_start > 0 >= wv_end:
-                wv = wv_start
-            elif wv_end > 0 >= wv_start:
-                wv = wv_end
-            else:
-                wv = 0.5 * (wv_start + wv_end)
-        if use_wv and wv < 2:
-            log.warning(f'Bad WV value: {wv}')
-            log.warning('Using default ATRAN file.')
-            use_wv = False
+        wv = wv_obs
 
         log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
 
@@ -331,19 +309,16 @@ def get_atran(header, resolution=None, filename=None,
                                      'data', 'atran_files')
 
         atran_files = glob.glob(os.path.join(atran_dir, 'atran*fits'))
-        regex1 = re.compile(r'^atran_([0-9]+)K_([0-9]+)deg_40-300mum\.fits$')
-        regex2 = re.compile(r'^atran_([0-9]+)K_([0-9]+)deg_'
-                            r'([0-9]+)pwv_40-300mum\.fits$')
+        regex = re.compile(r'^atran_([0-9]+)K_([0-9]+)deg_'
+                           r'([0-9]+)pwv_40-300mum\.fits$')
 
         # set up some values for tracking best atran match
-        wv_overall_val = np.inf
-        wv_best_file = None
         overall_val = np.inf
         best_file = None
         for f in atran_files:
             # check for WV match
-            match = regex2.match(os.path.basename(f))
-            if use_wv and wv > 0 and match is not None:
+            match = regex.match(os.path.basename(f))
+            if match is not None and wv > 0:
                 match_val = 0
                 for i in range(3):
                     # file alt, za, or wv
@@ -351,30 +326,12 @@ def get_atran(header, resolution=None, filename=None,
                     # check difference from true value
                     d_val = abs(file_val - true_value[i]) / true_value[i]
                     match_val += d_val
-                if match_val < wv_overall_val:
-                    wv_overall_val = match_val
-                    wv_best_file = f
-            else:
-                # otherwise, check for non-WV match
-                match = regex1.match(os.path.basename(f))
-                if match is not None:
-                    match_val = 0
-                    for i in range(2):
-                        # file alt or za
-                        file_val = float(match.group(i + 1))
-                        # check difference from true value
-                        d_val = abs(file_val - true_value[i]) / true_value[i]
-                        match_val += d_val
-                    if match_val < overall_val:
-                        overall_val = match_val
-                        best_file = f
+                if match_val < overall_val:
+                    overall_val = match_val
+                    best_file = f
 
-        if use_wv and wv_best_file is not None:
-            log.debug('Using nearest Alt/ZA/WV')
-            filename = wv_best_file
-        else:
-            log.debug('Using nearest Alt/ZA')
-            filename = best_file
+        log.debug('Using nearest Alt/ZA/WV')
+        filename = best_file
 
     if filename is None:
         log.error('No ATRAN file found')
@@ -409,7 +366,7 @@ def get_atran(header, resolution=None, filename=None,
 
 
 def get_atran_interpolated(header, resolution=None,
-                          get_unsmoothed=False, use_wv=False,
+                          get_unsmoothed=False,
                           atran_dir=None, use_ecmwf=False,
                           ecmwf_dir=None):
 
@@ -458,21 +415,11 @@ def get_atran_interpolated(header, resolution=None,
             log.info(f'Using ECMWF water vapor: {wv:.2f}')
 
     if wv is None:
-        # Fall back to header values
+        # Fall back to header WVZ_OBS value
         wv_obs = float(header.get('WVZ_OBS', 0))
-        if wv_obs > 0:
-            wv = wv_obs
-        else:
-            wv_start = float(header.get('WVZ_STA', 0))
-            wv_end = float(header.get('WVZ_END', 0))
-            if wv_start > 0 >= wv_end:
-                wv = wv_start
-            elif wv_end > 0 >= wv_start:
-                wv = wv_end
-            else:
-                wv = 0.5 * (wv_start + wv_end)
-        if use_ecmwf:
-            log.warning(f'Falling back to header water vapor: {wv:.2f}')
+        wv = wv_obs
+        if use_ecmwf and wv <= 0:
+            log.warning('No valid water vapor value found')
 
     if atran_dir is not None:
         if not os.path.isdir(str(atran_dir)):
@@ -499,7 +446,7 @@ def get_atran_interpolated(header, resolution=None,
     else:
         za_high, za_low = np.inf, np.inf
 
-    if use_wv and not wv_values[-1] >= wv >= wv_values[0]:
+    if not wv_values[-1] >= wv >= wv_values[0]:
         log.warning('wv={} outside of available ATRAN data.'.format(wv))
         wv = np.clip(wv, a_min=wv_values[0], a_max=wv_values[-1])
         log.warning('Setting water vapor to {} um'.format(wv))
@@ -527,28 +474,20 @@ def get_atran_interpolated(header, resolution=None,
             za_low = za_values[i-1]
             break
 
-    # build filenames
+    # build filenames - always use WV-specific files
     current_atran_filenames = {}
-    if use_wv:
-        current_atran_filenames["za1_wv1"] = \
-            ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-            round(alt), za_low, wv_low), za_low, wv_low)
-        current_atran_filenames["za1_wv2"] = \
-            ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-            round(alt), za_low, wv_high), za_low, wv_high)
-        current_atran_filenames["za2_wv1"] = \
-            ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-            round(alt), za_high, wv_low), za_high, wv_low)
-        current_atran_filenames["za2_wv2"] = \
-            ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-            round(alt), za_high, wv_high), za_high, wv_high)
-    else:
-        current_atran_filenames["za1"] = \
-            ("atran_{}K_{}deg_40-300mum.fits".format(
-            round(alt), za_low,), za_low, None)
-        current_atran_filenames["za2"] = \
-            ("atran_{}K_{}deg_40-300mum.fits".format(
-            round(alt), za_high), za_high, None)
+    current_atran_filenames["za1_wv1"] = \
+        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
+        round(alt), za_low, wv_low), za_low, wv_low)
+    current_atran_filenames["za1_wv2"] = \
+        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
+        round(alt), za_low, wv_high), za_low, wv_high)
+    current_atran_filenames["za2_wv1"] = \
+        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
+        round(alt), za_high, wv_low), za_high, wv_low)
+    current_atran_filenames["za2_wv2"] = \
+        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
+        round(alt), za_high, wv_high), za_high, wv_high)
 
     # load all files
     atran_data = {}
@@ -580,22 +519,11 @@ def get_atran_interpolated(header, resolution=None,
             store_atran_in_cache(os.path.join(atran_dir, filename), resolution,
                                  atranfile, data[0], data[1], smoothed)
 
-    if use_wv:
-        # interpolate za for two pwv
-        za1_za2_wv1 = interpolate_two_atran_files(atran_data["za1_wv1"],
-                                                  atran_data["za2_wv1"],
-                                                  za, 0)
-        za1_za2_wv2 = interpolate_two_atran_files(atran_data["za1_wv2"],
-                                                  atran_data["za2_wv2"],
-                                                  za, 0)
-        # interpolate WV and hold ZA
-        interpolated = interpolate_two_atran_files(za1_za2_wv1,
-                                                   za1_za2_wv2,
-                                                   wv, 1)
-    else:
-        interpolated = interpolate_two_atran_files(atran_data["za1"],
-                                                   atran_data["za2"],
-                                                   za, 0)
+    # interpolate za for two pwv
+    za1_za2_wv1 = interpolate_two_atran_files(atran_data["za1_wv1"], atran_data["za2_wv1"], za, 0)
+    za1_za2_wv2 = interpolate_two_atran_files(atran_data["za1_wv2"], atran_data["za2_wv2"], za, 0)
+    # interpolate WV and hold ZA
+    interpolated = interpolate_two_atran_files(za1_za2_wv1, za1_za2_wv2, wv, 1)
 
     wave = interpolated[0][1]
     unsmoothed = interpolated[0][2]

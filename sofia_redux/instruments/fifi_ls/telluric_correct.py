@@ -237,7 +237,7 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
     return result
 
 
-def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
+def telluric_correct(filename, atran_dir=None, cutoff=0.6,
                      skip_corr=False, write=False, outdir=None, narrow=False,
                      hdr_ovr=True, restwav=0.0, redshift=0.0,
                      use_ecmwf=False, ecmwf_dir=None):
@@ -275,9 +275,6 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
     cutoff : float, optional
         Used as the fractional transmission below which data will
         be set to NaN. Set to 0 to keep all data.
-    use_wv : bool, optional
-        If set, water vapor values from the header will be used
-        to select the correct ATRAN file.
     use_ecmwf : bool, optional
         If set, water vapor values will be retrieved from ECMWF
         reanalysis files instead of the header.
@@ -326,7 +323,7 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
     atran_data = get_atran_interpolated(hdul[0].header, resolution=resolution,
-                                        atran_dir=atran_dir, use_wv=use_wv,
+                                        atran_dir=atran_dir,
                                         get_unsmoothed=True,
                                         use_ecmwf=use_ecmwf,
                                         ecmwf_dir=ecmwf_dir)
@@ -353,7 +350,7 @@ def telluric_correct_wrap_helper(_, kwargs, filename):
 
 
 def wrap_telluric_correct(files, outdir=None, allow_errors=False,
-                          atran_dir=None, cutoff=0.6, use_wv=False,
+                          atran_dir=None, cutoff=0.6,
                           skip_corr=False, write=False,
                           jobs=None, narrow=False, hdr_ovr=True,
                           redshift=0.0, restwav=0.0,
@@ -380,9 +377,6 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
     cutoff : float, optional
         Used as the fractional transmission below which data will
         be set to NaN. Set to 0 to keep all data.
-    use_wv : bool, optional
-        If set, water vapor values from the header will be used
-        to select the correct ATRAN file.
     use_ecmwf : bool, optional
         If set, water vapor values will be retrieved from ECMWF
         reanalysis files instead of the header.
@@ -414,7 +408,7 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
     clear_atran_cache()
 
     kwargs = {'outdir': outdir, 'write': write, 'atran_dir': atran_dir,
-              'cutoff': cutoff, 'use_wv': use_wv, 'skip_corr': skip_corr,
+              'cutoff': cutoff, 'skip_corr': skip_corr,
               'narrow': narrow, 'hdr_ovr': hdr_ovr, 'redshift': redshift,
               'restwav': restwav, 'use_ecmwf': use_ecmwf,
               'ecmwf_dir': ecmwf_dir}

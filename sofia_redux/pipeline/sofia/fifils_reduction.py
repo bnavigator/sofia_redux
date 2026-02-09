@@ -736,7 +736,6 @@ class FIFILSReduction(Reduction):
         skip_tell = param.get_value('skip_tell')
         cutoff = param.get_value('cutoff')
         atran_dir = param.get_value('atran_dir')
-        use_wv = param.get_value('use_wv')
         use_ecmwf = param.get_value('use_ecmwf')
         ecmwf_dir = param.get_value('ecmwf_dir')
         narrow = param.get_value('narrow')
@@ -763,7 +762,7 @@ class FIFILSReduction(Reduction):
         result = wrap_telluric_correct(self.input, write=False,
                                        jobs=jobs, allow_errors=True,
                                        atran_dir=atran_dir, cutoff=cutoff,
-                                       use_wv=use_wv, skip_corr=skip_tell,
+                                       skip_corr=skip_tell,
                                        narrow=narrow,
                                        redshift=redshift, hdr_ovr=hdr_ovr,
                                        restwav=restwav,
