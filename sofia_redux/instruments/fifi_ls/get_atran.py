@@ -122,6 +122,54 @@ def store_atran_in_cache(atranfile, resolution, filename, wave,
         filename, wave, unsmoothed, smoothed)
 
 
+def get_atran_data(filename, resolution, atran_dir=None):
+    """Get ATRAN data for given filename.
+    
+    Lookup Order:
+        1. Memory cache if already read in
+        2. ATRAN directory if provided
+        3. DaRUS, SOFIA Astronomy Dataverse
+
+    Parameters
+    ----------
+    filename : str
+        Name of the ATRAN file to be read.
+    resolution : float
+        Spectral resolution to which ATRAN data should be smoothed.
+    atran_dir : str
+        Path to a directory containing ATRAN reference FITS files,
+        comes from the recipe configuration.
+    """
+    atran_data = get_atran_from_cache(filename, resolution)
+
+    if atran_data is not None:
+        return atran_data
+
+    if atran_dir is not None:
+        if not os.path.isdir(str(atran_dir)):
+            log.warning(f'Cannot find ATRAN directory: {atran_dir}')
+            log.warning('Using default ATRAN set.')
+            atran_dir = None
+    if atran_dir is None:
+        atran_dir = os.path.join(os.path.dirname(fifi_ls.__file__),
+                                'data', 'atran_files')
+
+    hdul = gethdul(os.path.join(atran_dir, filename), verbose=True)
+    if hdul is None or hdul[0].data is None:
+        log.error(f'Invalid data in ATRAN file {filename}')
+        return
+    data = hdul[0].data
+
+    atranfile = os.path.basename(filename)
+    wave = data[0]
+    unsmoothed = data[1]
+    smoothed = smoothres(data[0], data[1], resolution)
+
+    store_atran_in_cache(os.path.join(atran_dir, filename), resolution,
+                            atranfile, data[0], data[1], smoothed)
+    return (atranfile, wave, unsmoothed, smoothed)
+
+
 def get_ecmwf_from_cache(ecmwf_file):
     """Return cached ECMWF arrays for ecmwf_file, or None if not cached."""
     global __ecmwf_cache
@@ -242,16 +290,21 @@ def get_atran(header, resolution=None, filename=None,
     Retrieve reference atmospheric transmission data.
 
     ATRAN files in the data/atran_files directory should be named
-    according to the altitude, ZA, and wavelengths for which they
-    were generated, as:
+    according to description in https://doi.org/10.18419/DARUS-5705:
 
-        atran_[alt]K_[za]deg_[wmin]-[wmax]mum.fits
+        atran_sdc_[alt]K_[za]deg_[wv]pwv_39deg_2nlayer_[wmin]-[wmax]mum_bt.fits
+
+    "39deg" denotes the Ozone model; "2nlayer" denotes the number
+    of atmospheric layers used in ATRAN. Both of these are currently
+    fixed.
+
+    The FIFI-LS files have a wavelength range of 40 to 300 microns.
 
     For example, the file generated for altitude of 41,000 feet,
     ZA of 45 degrees, and wavelengths between 40 and 300 microns
     should be named:
 
-        atran_41K_45deg_[wv]pwv_40-300mum.fits
+        atran_sdc_41K_45deg_10pwv_39deg_2nlayer_40-300mum_bt.fits
 
     The procedure is:
 
@@ -272,8 +325,11 @@ def get_atran(header, resolution=None, filename=None,
     filename : str, optional
         Atmospheric transmission file to be used.  If not provided,
         a default file will be retrieved from the data/atran_files
-        directory.  The file with the closest matching ZA and
-        Altitude to the input data will be used.  If override file
+        directory if provided or downloaded from the SOFIA Astronomy
+        Dataverse
+        (https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad).
+        The file with the closest matching ZA, Altitude and PWV
+        to the input data will be used.  If override file
         is provided, it should be a FITS image file containing
         wavelength and transmission data without smoothing.
     get_unsmoothed : bool, optional
@@ -291,11 +347,6 @@ def get_atran(header, resolution=None, filename=None,
         (2, nw) array containing wavelengths and (optionally
         smoothed) transmission data.
     """
-    if filename is not None:
-        if not goodfile(filename, verbose=True):
-            log.warning(f'File {filename} not found; '
-                        f'retrieving default')
-            filename = None
     if not isinstance(header, fits.Header):
         log.error('Invalid header')
         return
@@ -328,65 +379,23 @@ def get_atran(header, resolution=None, filename=None,
 
         log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
 
-        true_value = [alt, za, wv]
+        # these are currently not variable
+        O3_model = '39deg'
+        atran_layers = '2nlayer'
 
-        if atran_dir is not None:
-            if not os.path.isdir(str(atran_dir)):
-                log.warning(f'Cannot find ATRAN directory: {atran_dir}')
-                log.warning('Using default ATRAN set.')
-                atran_dir = None
-        if atran_dir is None:
-            atran_dir = os.path.join(os.path.dirname(fifi_ls.__file__),
-                                     'data', 'atran_files')
-
-        atran_files = glob.glob(os.path.join(atran_dir, 'atran*fits'))
-        regex = re.compile(r'^atran_([0-9]+)K_([0-9]+)deg_'
-                           r'([0-9]+)pwv_40-300mum\.fits$')
-
-        # set up some values for tracking best atran match
-        overall_val = np.inf
-        best_file = None
-        for f in atran_files:
-            # check for WV match
-            match = regex.match(os.path.basename(f))
-            if match is not None and wv > 0:
-                match_val = 0
-                for i in range(3):
-                    # file alt, za, or wv
-                    file_val = float(match.group(i + 1))
-                    # check difference from true value
-                    d_val = abs(file_val - true_value[i]) / true_value[i]
-                    match_val += d_val
-                if match_val < overall_val:
-                    overall_val = match_val
-                    best_file = f
+        # see https://doi.org/10.18419/DARUS-5705 for naming convention.
+        filename = (
+            "atran_sdc"
+            f"_{round(alt)}K_{za}deg_{wv}pwv"
+            f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
 
         log.debug('Using nearest Alt/ZA/WV')
-        filename = best_file
-
-    if filename is None:
-        log.error('No ATRAN file found')
-        return
 
     # Read the atran data from cache if possible
     log.debug(f'Using ATRAN file: {filename}')
-    atrandata = get_atran_from_cache(filename, resolution)
-    if atrandata is not None:
-        atranfile, wave, unsmoothed, smoothed = atrandata
-    else:
-        hdul = gethdul(filename, verbose=True)
-        if hdul is None or hdul[0].data is None:
-            log.error(f'Invalid data in ATRAN file {filename}')
-            return
-        data = hdul[0].data
 
-        atranfile = os.path.basename(filename)
-        wave = data[0]
-        unsmoothed = data[1]
-        smoothed = smoothres(data[0], data[1], resolution)
-
-        store_atran_in_cache(filename, resolution, atranfile,
-                             data[0], data[1], smoothed)
+    atran_data = get_atran_data(filename, resolution, atran_dir)
+    atranfile, wave, unsmoothed, smoothed = atran_data
 
     hdinsert(header, 'ATRNFILE', atranfile)
     if not get_unsmoothed:
@@ -453,15 +462,6 @@ def get_atran_interpolated(header, resolution=None,
         if use_ecmwf and wv <= 0:
             log.warning('No valid water vapor value found')
 
-    if atran_dir is not None:
-        if not os.path.isdir(str(atran_dir)):
-            log.warning(f'Cannot find ATRAN directory: {atran_dir}')
-            log.warning('Using default ATRAN set.')
-            atran_dir = None
-    if atran_dir is None:
-        atran_dir = os.path.join(os.path.dirname(fifi_ls.__file__),
-                                    'data', 'atran_files')
-
     za_values = list(range(30,75,5))
     wv_values = [1, 2, 3, 4, 5, 6, 7,
                 8, 9, 10, 11, 12, 13,
@@ -506,54 +506,33 @@ def get_atran_interpolated(header, resolution=None,
             za_low = za_values[i-1]
             break
 
-    # build filenames - always use WV-specific files
-    current_atran_filenames = {}
-    current_atran_filenames["za1_wv1"] = \
-        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-        round(alt), za_low, wv_low), za_low, wv_low)
-    current_atran_filenames["za1_wv2"] = \
-        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-        round(alt), za_low, wv_high), za_low, wv_high)
-    current_atran_filenames["za2_wv1"] = \
-        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-        round(alt), za_high, wv_low), za_high, wv_low)
-    current_atran_filenames["za2_wv2"] = \
-        ("atran_{}K_{}deg_{}pwv_40-300mum.fits".format(
-        round(alt), za_high, wv_high), za_high, wv_high)
+
+    # these are currently not variable
+    O3_model = '39deg'
+    atran_layers = '2nlayer'
 
     # load all files
     atran_data = {}
     atrnfile_fits_keyword = ''
-    for key, value in current_atran_filenames.items():
-        filename = value[0]
-        _za = value[1]  # the ZA value of this file
-        _wv = value[2]  # the WV value of this file
+    for key, _za, _wv in (("za1_wv1",  za_low, wv_low),
+                          ("za1_wv2",  za_low, wv_high),
+                          ("za2_wv1",  za_high, wv_low),
+                          ("za2_wv2",  za_high, wv_high)):
+        # see https://doi.org/10.18419/DARUS-5705 for naming convention.
+        filename = (
+            "atran_sdc"
+            f"_{round(alt)}K_{_za}deg_{_wv}pwv"
+            f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
 
-        atrandata = get_atran_from_cache(filename, resolution)
-
-        if atrandata is not None:
-            atran_data[key] = atrandata, _za, _wv
-        else:
-            hdul = gethdul(os.path.join(atran_dir, filename), verbose=True)
-            if hdul is None or hdul[0].data is None:
-                log.error(f'Invalid data in ATRAN file {filename}')
-                return
-            data = hdul[0].data
-
-            atranfile = os.path.basename(filename)
-            wave = data[0]
-            unsmoothed = data[1]
-            smoothed = smoothres(data[0], data[1], resolution)
-
-            atran_data[key] = (atranfile, wave, unsmoothed, smoothed), _za, _wv
-
-            atrnfile_fits_keyword += filename + ', '
-            store_atran_in_cache(os.path.join(atran_dir, filename), resolution,
-                                 atranfile, data[0], data[1], smoothed)
+        single_atran_data = get_atran_data(filename, resolution, atran_dir)
+        atran_data[key] = (single_atran_data, _za, _wv)
+        atrnfile_fits_keyword += filename + ', '
 
     # interpolate za for two pwv
-    za1_za2_wv1 = interpolate_two_atran_files(atran_data["za1_wv1"], atran_data["za2_wv1"], za, 0)
-    za1_za2_wv2 = interpolate_two_atran_files(atran_data["za1_wv2"], atran_data["za2_wv2"], za, 0)
+    za1_za2_wv1 = interpolate_two_atran_files(
+        atran_data["za1_wv1"], atran_data["za2_wv1"], za, 0)
+    za1_za2_wv2 = interpolate_two_atran_files(
+        atran_data["za1_wv2"], atran_data["za2_wv2"], za, 0)
     # interpolate WV and hold ZA
     interpolated = interpolate_two_atran_files(za1_za2_wv1, za1_za2_wv2, wv, 1)
 
