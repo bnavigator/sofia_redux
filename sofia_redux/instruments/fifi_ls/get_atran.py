@@ -124,7 +124,7 @@ def store_atran_in_cache(atranfile, resolution, filename, wave,
 
 def get_atran_data(filename, resolution, atran_dir=None):
     """Get ATRAN data for given filename.
-    
+
     Lookup Order:
         1. Memory cache if already read in
         2. ATRAN directory if provided
@@ -133,12 +133,23 @@ def get_atran_data(filename, resolution, atran_dir=None):
     Parameters
     ----------
     filename : str
-        Name of the ATRAN file to be read.
+        Name of the ATRAN file to be read, also used for cache key
     resolution : float
         Spectral resolution to which ATRAN data should be smoothed.
     atran_dir : str
         Path to a directory containing ATRAN reference FITS files,
         comes from the recipe configuration.
+
+    Returns
+    -------
+    atranfile : str
+        The basename of the ATRAN file
+    wave : numpy.ndarray
+        (nwave,) array of wavelengths
+    unsmoothed : numpy.ndarray
+        (nwave,) array containing the transmission spectrum from file
+    smoothed : numpy.ndarray
+        (nwave,) array containing the smoothed transmission spectrum
     """
     atran_data = get_atran_from_cache(filename, resolution)
 
@@ -154,19 +165,27 @@ def get_atran_data(filename, resolution, atran_dir=None):
         atran_dir = os.path.join(os.path.dirname(fifi_ls.__file__),
                                 'data', 'atran_files')
 
+    atranfile = os.path.basename(filename)
+
     hdul = gethdul(os.path.join(atran_dir, filename), verbose=True)
     if hdul is None or hdul[0].data is None:
         log.error(f'Invalid data in ATRAN file {filename}')
         return
-    data = hdul[0].data
 
-    atranfile = os.path.basename(filename)
-    wave = data[0]
-    unsmoothed = data[1]
-    smoothed = smoothres(data[0], data[1], resolution)
 
-    store_atran_in_cache(os.path.join(atran_dir, filename), resolution,
-                            atranfile, data[0], data[1], smoothed)
+    if len(hdul) < 2 or hdul[1].header['CONTENT'] != "ATRAN_SDC Model":
+        log.warning("Did not find ATRAN SDC model data in FITS BinTableHDU "
+                    f"in {filename}. Falling back to old format.")
+        wave = hdul[0].data[0, :]
+        unsmoothed = hdul[0].data[1, :]
+    else:
+        data_rec = hdul[1]
+        wave = data_rec['wavelength']
+        unsmoothed = data_rec['transmission']
+
+    smoothed = smoothres(wave, unsmoothed, resolution)
+    store_atran_in_cache(filename, resolution,
+                         atranfile, wave, unsmoothed, smoothed)
     return (atranfile, wave, unsmoothed, smoothed)
 
 
