@@ -17,9 +17,11 @@ from sofia_redux.spectroscopy.smoothres import smoothres
 
 
 __all__ = ['clear_atran_cache', 'get_atran_from_cache',
-           'store_atran_in_cache', 'get_atran', 'get_atran_interpolated']
+           'store_atran_in_cache', 'get_atran', 'get_atran_interpolated',
+           'clear_ecmwf_cache']
 
 __atran_cache = {}
+__ecmwf_cache = {}
 
 
 def clear_atran_cache():
@@ -28,6 +30,14 @@ def clear_atran_cache():
     """
     global __atran_cache
     __atran_cache = {}
+
+
+def clear_ecmwf_cache():
+    """
+    Clear all data from the ECMWF cache.
+    """
+    global __ecmwf_cache
+    __ecmwf_cache = {}
 
 
 def get_atran_from_cache(atranfile, resolution):
@@ -112,13 +122,26 @@ def store_atran_in_cache(atranfile, resolution, filename, wave,
         filename, wave, unsmoothed, smoothed)
 
 
+def get_ecmwf_from_cache(ecmwf_file):
+    """Return cached ECMWF arrays for ecmwf_file, or None if not cached."""
+    global __ecmwf_cache
+    return __ecmwf_cache.get(str(ecmwf_file))
+
+
+def store_ecmwf_in_cache(ecmwf_file, unixtime, pwv, posconst, posjump):
+    """Store ECMWF arrays in cache keyed by file path."""
+    global __ecmwf_cache
+    __ecmwf_cache[str(ecmwf_file)] = (unixtime, pwv, posconst, posjump)
+
+
 def get_wv_from_ecmwf(header, ecmwf_dir):
     """
     Get water vapor value from ECMWF reanalysis data.
 
-    ECMWF files are organized by mission ID and contain time-series
-    data. This function finds the appropriate file and extracts the
-    water vapor value closest to the observation time.
+    ECMWF files are stored as binary table FITS files named
+    <flight>_<instrument>_<YYYYMMDD>_pwv.fits in ecmwf_dir. This function
+    finds the right file and extracts the water vapor value closest
+    to the observation time.
 
     Parameters
     ----------
@@ -165,44 +188,52 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
         log.warning(f'Could not get DATE-OBS: {date_obs} ({e})')
         return None
 
-    # Search for matching ECMWF file
-    ecmwf_path = Path(ecmwf_dir, ecmwf_mission_id)
-    if not ecmwf_path.is_dir():
-        log.debug(f'ECMWF mission directory not found: {ecmwf_path}')
+    # Search for matching ECMWF file: <mission_id>_pwv.fits in ecmwf_dir
+    ecmwf_file = Path(ecmwf_dir, f'{ecmwf_mission_id}_pwv.fits')
+    if not ecmwf_file.is_file():
+        log.debug(f'ECMWF file not found: {ecmwf_file}')
         return None
 
     wvz_ecmwf = None
     wvz_fifi = None
-    for ecmwf_dataset in ecmwf_path.glob('*.fits'):
-        try:
-            ecmwf_hdul = fits.open(ecmwf_dataset)
-            # Check if observation time is within the data range (extension 6)
-            if (ecmwf_hdul[6].data.min() < obs_time_unix
-                    < ecmwf_hdul[6].data.max()):
-                # Find closest time index
-                time_diff = np.abs(ecmwf_hdul[6].data - obs_time_unix)
-                ecmwf_idx = np.argmin(time_diff)
-                # Check quality flags (extensions 10 and 11 should be 0)
-                if (ecmwf_hdul[10].data[ecmwf_idx] == 0
-                        and ecmwf_hdul[11].data[ecmwf_idx] == 0):
-                    # Get water vapor from extension 14
-                    wvz_ecmwf = float(ecmwf_hdul[14].data[ecmwf_idx])
-                    # Convert to FIFI-LS scale
-                    wvz_fifi = 0.34 + wvz_ecmwf * 0.55
-                    log.debug(f'ECMWF WV: {wvz_ecmwf:.2f} -> '
-                             f'FIFI-LS WV: {wvz_fifi:.2f}')
-                    ecmwf_hdul.close()
-                    break
-            ecmwf_hdul.close()
-        except Exception as e:
-            log.debug(f'Error reading ECMWF file {ecmwf_dataset}: {e}')
-            continue
+    try:
+        cached = get_ecmwf_from_cache(ecmwf_file)
+        if cached is not None:
+            unixtime, pwv, posconst, posjump = cached
+            log.debug(f'Retrieved ECMWF data from cache: {ecmwf_file}')
+        else:
+            with fits.open(ecmwf_file) as ecmwf_hdul:
+                data = ecmwf_hdul['DATA'].data
+                unixtime = data['unixtime'].copy()
+                pwv = data['pwv'].copy()
+                posconst = data['posconst'].copy()
+                posjump = data['posjump'].copy()
+            store_ecmwf_in_cache(ecmwf_file, unixtime, pwv, posconst, posjump)
+            log.debug(f'Stored ECMWF data in cache: {ecmwf_file}')
+
+        # Check if observation time is within the data range
+        if unixtime[0] < obs_time_unix < unixtime[-1]:
+            # Binary search for closest time index (unixtime is sorted)
+            ecmwf_idx = np.searchsorted(unixtime, obs_time_unix)
+            # Check quality flags (posconst and posjump should be 0)
+            if posconst[ecmwf_idx] == 0 and posjump[ecmwf_idx] == 0:
+                wvz_ecmwf = float(pwv[ecmwf_idx])
+                # Convert to FIFI-LS scale
+                wv_offset, wv_slope = 0.34, 0.55
+                wvz_fifi = wv_offset + wvz_ecmwf * wv_slope
+                wv_formula = (f'WVZ_FIFI = {wv_offset} '
+                              f'+ WVZ_ECMW * {wv_slope}')
+                log.debug(f'ECMWF WV: {wvz_ecmwf:.2f} -> '
+                          f'FIFI-LS WV: {wvz_fifi:.2f} '
+                          f'({wv_formula})')
+    except Exception as e:
+        log.debug(f'Errror reading ECMWF file {ecmwf_file}: {e}')
 
     if wvz_fifi is None:
         log.warning('No valid ECMWF data found for this observation')
         return None
 
-    return (wvz_ecmwf, wvz_fifi)
+    return (wvz_ecmwf, wvz_fifi, wv_formula, ecmwf_file.name)
 
 
 def get_atran(header, resolution=None, filename=None,
@@ -403,13 +434,14 @@ def get_atran_interpolated(header, resolution=None,
     wv = None
     wvz_ecmwf = None
     wvz_fifi = None
+    wv_formula = None
     wv_source = 'HEADER'
 
     if use_ecmwf:
         # Try to get water vapor from ECMWF reanalysis data
         ecmwf_result = get_wv_from_ecmwf(header, ecmwf_dir)
         if ecmwf_result is not None:
-            wvz_ecmwf, wvz_fifi = ecmwf_result
+            wvz_ecmwf, wvz_fifi, wv_formula, wv_file = ecmwf_result
             wv = wvz_fifi
             wv_source = 'ECMWF'
             log.info(f'Using ECMWF water vapor: {wv:.2f}')
@@ -539,6 +571,10 @@ def get_atran_interpolated(header, resolution=None,
     if wvz_ecmwf is not None:
         hdinsert(header, 'WVZ_ECMW', round(wvz_ecmwf, 2),
                  comment='[um] Raw ECMWF WV (before FIFI-LS conversion)')
+        hdinsert(header, 'WV_FORM', wv_formula,
+                 comment='Formula used to convert ECMWF WV to FIFI-LS scale')
+        hdinsert(header, 'WV_FILE', wv_file,
+                 comment='ECMWF PWV file used')
 
     if not get_unsmoothed:
         return np.vstack((wave, smoothed))
