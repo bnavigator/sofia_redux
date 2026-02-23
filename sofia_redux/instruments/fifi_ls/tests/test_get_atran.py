@@ -10,6 +10,7 @@ import numpy as np
 from sofia_redux.instruments import fifi_ls
 from sofia_redux.instruments.fifi_ls.get_atran \
     import (clear_atran_cache, get_atran_from_cache,
+            get_atran_from_darus,
             store_atran_in_cache, get_atran, get_wv_from_ecmwf)
 
 
@@ -150,14 +151,8 @@ class TestGetAtran:
         filename = test_files('scm')[0]
         header = fits.open(filename)[0].header
 
-        # make ATRAN repo without WV files
-        reference_atran = 'atran_40K_45deg_40-300mum.fits'
-        (tmp_path / reference_atran).symlink_to(
-            Path(fifi_ls.__file__).parent /
-            'data' / 'atran_files' / reference_atran)
-
         # default
-        default = get_atran(header, atran_dir=str(tmp_path))
+        default = get_atran(header)
         assert default is not None
         assert isinstance(default, np.ndarray)
 
@@ -165,21 +160,22 @@ class TestGetAtran:
 
         # wvz_obs is used if not ecmwf
         hdr['WVZ_OBS'] = 5.0
-        get_atran(hdr, atran_dir=str(tmp_path))
+        get_atran(hdr)
         capt = capsys.readouterr()
         assert "Alt, ZA, WV: 41.00 45.00 5.00" in capt.out
 
         # Fallback to 1um if it has a bad value
         hdr['WVZ_OBS'] = -9999.
-        get_atran(hdr, atran_dir=str(tmp_path))
+        get_atran(hdr)
         capt = capsys.readouterr()
         assert "Alt, ZA, WV: 41.00 45.00 -9999.0" in capt.out
         assert "Using nearest Alt 41K, ZA 45deg, WV 1um" in capt.out
 
-    def test_atran_dir(self, tmpdir, capsys, test_files):
+    def test_atran_dir(self, tmp_path, capsys, test_files):
         filename = test_files('scm')[0]
         header = fits.open(filename)[0].header
 
+        # get from cache or download from DaRUS
         default = get_atran(header)
 
         # specify bad directory: should get default
@@ -188,38 +184,29 @@ class TestGetAtran:
         capt = capsys.readouterr()
         assert 'Cannot find ATRAN directory' in capt.err
 
-        # specify empty directory -- returns None
-        result = get_atran(header, atran_dir=str(tmpdir))
-        assert result is None
+        # specify empty directory: should get the same as cached before
+        result = get_atran(header, atran_dir=str(tmp_path))
         capt = capsys.readouterr()
-        assert 'No ATRAN file found' in capt.err
+        assert 'ATRAN file not found in ATRAN directory' in capt.out
+        assert np.allclose(result, default)
 
-        # make a file that should match alt/za and
-        # one that matches alt/za/wv
-        atran1 = 'atran_41K_45deg_40-300mum.fits'
-        atran2 = 'atran_41K_45deg_6pwv_40-300mum.fits'
-        afile1 = str(tmpdir.join(atran1))
-        afile2 = str(tmpdir.join(atran2))
+        # put 2 files into the atran_directory
+        ref_files = [
+            'atran_sdc_41K_45deg_1pwv_39deg_2nlayer_40-300mum_bt.fits',
+            'atran_sdc_41K_45deg_5pwv_39deg_2nlayer_40-300mum_bt.fits',
+        ]
+        for pwvf in ref_files:
+            cachefile = get_atran_from_darus(41, pwvf)
+            (tmp_path / pwvf).symlink_to(cachefile)
 
-        data = np.arange(100).reshape(2, 50).astype(float)
-        hdul = fits.HDUList(fits.PrimaryHDU(data=data))
-        hdul.writeto(afile1, overwrite=True)
-        hdul.writeto(afile2, overwrite=True)
+        for i, wv in [(0, 1.), (1, 5.)]:
+            hdr = header.copy()
+            # wvz_obs is used if not ecmwf
+            hdr['WVZ_OBS'] = wv
+            result = get_atran(hdr, atran_dir=str(tmp_path), use_ecmwf=False)
+            capt = capsys.readouterr()
+            assert f"Using ATRAN file: {ref_files[i]}" in capt.out
 
-        # without use_wv, should get atran1
-        result1 = get_atran(header, atran_dir=str(tmpdir))
-        capt = capsys.readouterr()
-        assert atran1 in capt.out
-        assert result1 is not None
-
-        # with use_wv, will get the other one (but the data is the same)
-        header['WVZ_STA'] = 6.
-        header['WVZ_END'] = 6.
-        result2 = get_atran(header, atran_dir=str(tmpdir), use_wv=True)
-        capt = capsys.readouterr()
-        assert 'Using nearest Alt/ZA/WV' in capt.out
-        assert atran2 in capt.out
-        assert np.allclose(result1, result2, equal_nan=True)
 
 
 def test_get_wv_from_ecmwf():
