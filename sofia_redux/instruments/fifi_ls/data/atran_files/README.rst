@@ -1,10 +1,14 @@
 ATRAN data directory
 ====================
 
-This directory contains data files for atmospheric correction.
+This directory may contain data files for atmospheric correction.
 
-Note that this distribution contains a minimal reference set,
-used in our test suite, in order to keep the package size small.
+Note that the source code distribution does no longer provide any
+ATRAN files. The FIFI-LS reduction pipeline will automatically download
+the required ATRAN files from the SOFIA Astronomy Dataverse at DaRUS [1] as
+needed. The downloaded files will be placed in the Astropy cache directory
+and will be reused for subsequent reductions. Alternatively,
+users may download the required ATRAN files manually and provide
+the path `atran_dir` in the recipe or place them here.
 
-Full libraries of ATRAN files for FIFI-LS may be downloaded from the
-`SOFIA website <https://irsa.ipac.caltech.edu/data/SOFIA/docs/data/data-pipelines/>`__.
+[1] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad
