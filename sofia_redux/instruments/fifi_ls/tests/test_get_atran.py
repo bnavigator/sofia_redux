@@ -145,18 +145,6 @@ class TestGetAtran:
         result = get_atran(hdr)
         assert np.allclose(result, default)
 
-        # use_wv option: without wv keywords, should warn
-        # and produce same result
-        hdr = header.copy()
-        try:
-            del hdr['WVZ_STA']
-            del hdr['WVZ_END']
-        except KeyError:
-            pass
-        result = get_atran(hdr, use_wv=True)
-        assert np.allclose(result, default)
-        capt = capsys.readouterr()
-        assert 'Bad WV value' in capt.err
 
     def test_header_no_wv(self, capsys, tmp_path, test_files):
         filename = test_files('scm')[0]
