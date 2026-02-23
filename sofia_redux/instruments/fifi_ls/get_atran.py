@@ -486,6 +486,8 @@ def get_atran(header, resolution=None, filename=None,
     log.debug(f'Using ATRAN file: {filename}')
 
     atran_data = get_atran_data(filename, resolution, atran_dir)
+    if atran_data is None:
+        return None
     atranfile, wave, unsmoothed, smoothed = atran_data
 
     hdinsert(header, 'ATRNFILE', atranfile)
@@ -616,6 +618,8 @@ def get_atran_interpolated(header, resolution=None,
             f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
 
         single_atran_data = get_atran_data(filename, resolution, atran_dir)
+        if single_atran_data is None:
+            return None
         atran_data[key] = (single_atran_data, _za, _wv)
         atrnfile_fits_keyword += filename + ', '
 
