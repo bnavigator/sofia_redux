@@ -37,8 +37,10 @@ ATRAN_DATASETS = {
     42: "10.18419/DARUS-5713",
     43: "10.18419/DARUS-5714",
     44: "10.18419/DARUS-5715",
-    45: "10.18419/DARUS-5716",
+    45: "10.18419/DARUS-5716",    
 }
+# cache for list of files in each dataset, keyed by dataset DOI
+__atran_files_in_ds = {}
 
 ATRAN_ZA_VALUES = list(range(30,75,5))
 ATRAN_WV_VALUES = [
@@ -246,11 +248,15 @@ def get_atran_from_darus(altitude, filename):
     dataset_doi = ATRAN_DATASETS.get(altitude)
     if dataset_doi is None:
         raise ValueError(f'No dataset DOI found for altitude {altitude}K')
-    r = requests.get(f'{DARUS_URL_BASE}/api/datasets/:persistentId',
-                     params={'persistentId': f'doi:{dataset_doi}'})
-    r.raise_for_status()
+    global __atran_files_in_ds
+    if __atran_files_in_ds.get(dataset_doi) is None:
+        r = requests.get(f'{DARUS_URL_BASE}/api/datasets/:persistentId',
+                        params={'persistentId': f'doi:{dataset_doi}'})
+        r.raise_for_status()
+        __atran_files_in_ds[dataset_doi] = \
+            r.json()['data']['latestVersion']['files']
     atran_file = None
-    for file in r.json()['data']['latestVersion']['files']:
+    for file in __atran_files_in_ds[dataset_doi]:
         if file['label'] != filename:
             continue
         fid = file['dataFile']['id']
