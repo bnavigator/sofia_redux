@@ -146,7 +146,7 @@ class TestGetAtran:
         assert np.allclose(result, default)
 
 
-    def test_header_no_wv(self, capsys, tmp_path, test_files):
+    def test_header_wv(self, capsys, tmp_path, test_files):
         filename = test_files('scm')[0]
         header = fits.open(filename)[0].header
 
@@ -161,44 +161,20 @@ class TestGetAtran:
         assert default is not None
         assert isinstance(default, np.ndarray)
 
-        # add a WV value (start and/or end)
         hdr = header.copy()
-        hdr['WVZ_STA'] = 6.0
-        result = get_atran(hdr, use_wv=True, atran_dir=str(tmp_path))
-        assert np.allclose(result, default)
-        capt = capsys.readouterr()
-        assert 'Using nearest Alt/ZA' in capt.out
-        assert 'Using nearest Alt/ZA/WV' not in capt.out
 
-        hdr = header.copy()
-        hdr['WVZ_END'] = 6.0
-        result = get_atran(hdr, use_wv=True, atran_dir=str(tmp_path))
-        assert np.allclose(result, default)
-        capt = capsys.readouterr()
-        assert 'Using nearest Alt/ZA' in capt.out
-        assert 'Using nearest Alt/ZA/WV' not in capt.out
-
-        hdr = header.copy()
-        hdr['WVZ_STA'] = 6.0
-        hdr['WVZ_END'] = 8.0
-        result = get_atran(hdr, use_wv=True, atran_dir=str(tmp_path))
-        assert np.allclose(result, default)
-        capt = capsys.readouterr()
-        assert "Alt, ZA, WV: 41.00 45.00 7.00" in capt.out
-        assert 'Using nearest Alt/ZA' in capt.out
-        assert 'Using nearest Alt/ZA/WV' not in capt.out
-
-        # now add wvz_obs -- should be used in place of sta/end
+        # wvz_obs is used if not ecmwf
         hdr['WVZ_OBS'] = 5.0
-        get_atran(hdr, use_wv=True, atran_dir=str(tmp_path))
+        get_atran(hdr, atran_dir=str(tmp_path))
         capt = capsys.readouterr()
         assert "Alt, ZA, WV: 41.00 45.00 5.00" in capt.out
 
-        # but not if it has a bad value
+        # Fallback to 1um if it has a bad value
         hdr['WVZ_OBS'] = -9999.
-        get_atran(hdr, use_wv=True, atran_dir=str(tmp_path))
+        get_atran(hdr, atran_dir=str(tmp_path))
         capt = capsys.readouterr()
-        assert "Alt, ZA, WV: 41.00 45.00 7.00" in capt.out
+        assert "Alt, ZA, WV: 41.00 45.00 -9999.0" in capt.out
+        assert "Using nearest Alt 41K, ZA 45deg, WV 1um" in capt.out
 
     def test_atran_dir(self, tmpdir, capsys, test_files):
         filename = test_files('scm')[0]
