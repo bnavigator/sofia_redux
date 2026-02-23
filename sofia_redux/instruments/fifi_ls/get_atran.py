@@ -461,7 +461,7 @@ def get_atran(header, resolution=None, filename=None,
             alt = 0.5 * (alt_start + alt_end)
         alt /= 1000
 
-        wv_obs = float(header.get('WVZ_OBS', 0))
+        wv_obs = float(header.get('WVZ_OBS', 1.))
         wv = wv_obs
 
         log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
@@ -473,7 +473,7 @@ def get_atran(header, resolution=None, filename=None,
         # see https://doi.org/10.18419/DARUS-5705 for naming convention.
         filename = (
             "atran_sdc"
-            f"_{round(alt)}K_{za}deg_{wv}pwv"
+            f"_{int(alt)}K_{int(za)}deg_{int(wv)}pwv"
             f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
 
         log.debug('Using nearest Alt/ZA/WV')
@@ -553,7 +553,7 @@ def get_atran_interpolated(header, resolution=None,
     wv_values = [1, 2, 3, 4, 5, 6, 7,
                 8, 9, 10, 11, 12, 13,
                 14, 15, 16, 17, 18, 20,
-                22, 25, 27, 30, 32, 35,
+                22, 25, 30, 32, 35,
                 37, 40, 45, 50]
 
     # clip values to atran data range
