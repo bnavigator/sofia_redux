@@ -40,6 +40,14 @@ ATRAN_DATASETS = {
     45: "10.18419/DARUS-5716",
 }
 
+ATRAN_ZA_VALUES = list(range(30,75,5))
+ATRAN_WV_VALUES = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    11, 12, 13, 14, 15, 16, 17, 18,
+    20, 22, 25,     30, 32, 35, 37,
+    40, 45, 50,
+]
+
 def clear_atran_cache():
     """
     Clear all data from the atran cache.
@@ -371,8 +379,83 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
     return (wvz_ecmwf, wvz_fifi, wv_formula, ecmwf_file.name)
 
 
+def get_atran_parameters(header, use_ecmwf, ecmwf_dir):
+    """Read FITS Header and get WV for ATRAN file selection.
+
+    Parameters
+    ----------
+    header : fits.Header
+        FITS header containing observation information.
+    use_ecmwf : bool
+        Whether to attempt to get water vapor from ECMWF data or
+        from WVZ_OBS in the header.
+    ecmwf_dir : str
+        Directory containing ECMWF data files.
+    """
+    # get ZA
+    za_start = float(header.get('ZA_START', 0))
+    za_end = float(header.get('ZA_END', 0))
+    if za_start > 0 >= za_end:
+        za = za_start
+    elif za_end > 0 >= za_start:
+        za = za_end
+    else:
+        za = 0.5 * (za_start + za_end)
+
+    # get altitude in thousands feet
+    alt_start = float(header.get('ALTI_STA', 0))
+    alt_end = float(header.get('ALTI_END', 0))
+    if alt_start > 0 >= alt_end:
+        alt = alt_start
+    elif alt_end > 0 >= alt_start:
+        alt = alt_end
+    else:
+        alt = 0.5 * (alt_start + alt_end)
+    alt /= 1000
+
+    # get water vapor
+    wv = None
+    wvz_ecmwf = None
+    wvz_fifi = None
+    wv_formula = None
+    wv_source = 'HEADER'
+
+    if use_ecmwf:
+        # Try to get water vapor from ECMWF reanalysis data
+        ecmwf_result = get_wv_from_ecmwf(header, ecmwf_dir)
+        if ecmwf_result is not None:
+            wvz_ecmwf, wvz_fifi, wv_formula, wv_file = ecmwf_result
+            wv = wvz_fifi
+            wv_source = 'ECMWF'
+            log.info(f'Using ECMWF water vapor: {wv:.2f}')
+
+    if wv is None:
+        # Fall back to header WVZ_OBS value
+        wv = float(header.get('WVZ_OBS', 1.))
+    if  wv < 1.:
+        log.error(f'Invalid water vapor value in header: {wv}.')
+
+    log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
+
+    # Add water vapor source and values to header
+    hdinsert(header, 'WV_SRC', wv_source,
+             comment='Source of water vapor value (ECMWF or HEADER)')
+    hdinsert(header, 'WV_USED', round(wv, 2),
+             comment='[um] Water vapor used for ATRAN selection')
+    if wvz_ecmwf is not None:
+        hdinsert(header, 'WVZ_ECMW', round(wvz_ecmwf, 2),
+                 comment='[um] Raw ECMWF WV (before FIFI-LS conversion)')
+        hdinsert(header, 'WV_FORM', wv_formula,
+                 comment='Formula used to convert ECMWF WV to FIFI-LS scale')
+        hdinsert(header, 'WV_FILE', wv_file,
+                 comment='ECMWF PWV file used')
+
+    return alt, za, wv
+
+
 def get_atran(header, resolution=None, filename=None,
-              get_unsmoothed=False, atran_dir=None):
+              get_unsmoothed=False, atran_dir=None,
+              use_ecmwf=False, ecmwf_dir=None):
     """
     Retrieve reference atmospheric transmission data.
 
@@ -426,6 +509,11 @@ def get_atran(header, resolution=None, filename=None,
         Path to a directory containing ATRAN reference FITS files.
         If not provided, the default set of files packaged with the
         pipeline will be used.
+    use_ecmwf : bool, optional
+        Whether to attempt to get water vapor from ECMWF data or
+        from WVZ_OBS in the header.
+    ecmwf_dir : str, optional
+        Directory containing ECMWF data files, required if use_ecmwf is True.
 
     Returns
     -------
@@ -438,37 +526,24 @@ def get_atran(header, resolution=None, filename=None,
         log.warning(f'File {filename} not found; '
                     f'retrieving default')
         filename = None
+
     if not isinstance(header, fits.Header):
         log.error('Invalid header')
         return
+
     if resolution is None:
         log.warning('Getting default resolution from G_WAVE in header')
         resolution = get_resolution(header)
 
     if filename is None:
-        za_start = float(header.get('ZA_START', 0))
-        za_end = float(header.get('ZA_END', 0))
-        if za_start > 0 >= za_end:
-            za = za_start
-        elif za_end > 0 >= za_start:
-            za = za_end
-        else:
-            za = 0.5 * (za_start + za_end)
 
-        alt_start = float(header.get('ALTI_STA', 0))
-        alt_end = float(header.get('ALTI_END', 0))
-        if alt_start > 0 >= alt_end:
-            alt = alt_start
-        elif alt_end > 0 >= alt_start:
-            alt = alt_end
-        else:
-            alt = 0.5 * (alt_start + alt_end)
-        alt /= 1000
+        alt, za, wv = get_atran_parameters(header, use_ecmwf, ecmwf_dir)
 
-        wv_obs = float(header.get('WVZ_OBS', 1.))
-        wv = wv_obs
+        alt = int(round(alt))
+        za = ATRAN_ZA_VALUES[np.argmin(np.abs(np.array(ATRAN_ZA_VALUES) - za))]
+        wv = ATRAN_WV_VALUES[np.argmin(np.abs(np.array(ATRAN_WV_VALUES) - wv))]
 
-        log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
+        log.debug(f'Using nearest Alt {alt}K, ZA {za}deg, WV {wv}um')
 
         # these are currently not variable
         O3_model = '39deg'
@@ -477,10 +552,8 @@ def get_atran(header, resolution=None, filename=None,
         # see https://doi.org/10.18419/DARUS-5705 for naming convention.
         filename = (
             "atran_sdc"
-            f"_{int(alt)}K_{int(za)}deg_{int(wv)}pwv"
+            f"_{alt}K_{za}deg_{wv}pwv"
             f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
-
-        log.debug('Using nearest Alt/ZA/WV')
 
     # Read the atran data from cache if possible
     log.debug(f'Using ATRAN file: {filename}')
@@ -499,10 +572,33 @@ def get_atran(header, resolution=None, filename=None,
 
 
 def get_atran_interpolated(header, resolution=None,
-                          get_unsmoothed=False,
-                          atran_dir=None, use_ecmwf=False,
-                          ecmwf_dir=None):
+                           get_unsmoothed=False, atran_dir=None,
+                           use_ecmwf=False, ecmwf_dir=None):
+    """Get a set of ATRAN spectra and interpolate to the desired ZA and WV.
 
+    Replacement function for get_atran() that allows for interpolation between
+    ATRAN files, has not filename parameter.
+
+    Parameters
+    ----------
+    header : fits.Header
+        ATRNFILE keyword is written to the provided FITS header,
+        containing the name of the ATRAN file used.
+    resolution : float, optional
+        Spectral resolution to which ATRAN data should be smoothed.
+    get_unsmoothed : bool, optional
+        If True, return the unsmoothed atran data in addition to the
+        smoothed.
+    atran_dir : str, optional
+        Path to a directory containing ATRAN reference FITS files.
+        If not provided, the default set of files packaged with the
+        pipeline will be used.
+    use_ecmwf : bool, optional
+        Whether to attempt to get water vapor from ECMWF data or
+        from WVZ_OBS in the header.
+    ecmwf_dir : str, optional
+        Directory containing ECMWF data files, required if use_ecmwf is True.
+    """
     if not isinstance(header, fits.Header):
         log.error('Invalid header')
         return
@@ -511,94 +607,45 @@ def get_atran_interpolated(header, resolution=None,
         log.warning('Getting default resolution from G_WAVE in header')
         resolution = get_resolution(header)
 
-    # get ZA
-    za_start = float(header.get('ZA_START', 0))
-    za_end = float(header.get('ZA_END', 0))
-    if za_start > 0 >= za_end:
-        za = za_start
-    elif za_end > 0 >= za_start:
-        za = za_end
-    else:
-        za = 0.5 * (za_start + za_end)
-
-    # get altitude in thousands feet
-    alt_start = float(header.get('ALTI_STA', 0))
-    alt_end = float(header.get('ALTI_END', 0))
-    if alt_start > 0 >= alt_end:
-        alt = alt_start
-    elif alt_end > 0 >= alt_start:
-        alt = alt_end
-    else:
-        alt = 0.5 * (alt_start + alt_end)
-    alt /= 1000
-
-    # get water vapor
-    wv = None
-    wvz_ecmwf = None
-    wvz_fifi = None
-    wv_formula = None
-    wv_source = 'HEADER'
-
-    if use_ecmwf:
-        # Try to get water vapor from ECMWF reanalysis data
-        ecmwf_result = get_wv_from_ecmwf(header, ecmwf_dir)
-        if ecmwf_result is not None:
-            wvz_ecmwf, wvz_fifi, wv_formula, wv_file = ecmwf_result
-            wv = wvz_fifi
-            wv_source = 'ECMWF'
-            log.info(f'Using ECMWF water vapor: {wv:.2f}')
-
-    if wv is None:
-        # Fall back to header WVZ_OBS value
-        wv_obs = float(header.get('WVZ_OBS', 0))
-        wv = wv_obs
-        if use_ecmwf and wv <= 0:
-            log.warning('No valid water vapor value found')
-
-    za_values = list(range(30,75,5))
-    wv_values = [1, 2, 3, 4, 5, 6, 7,
-                8, 9, 10, 11, 12, 13,
-                14, 15, 16, 17, 18, 20,
-                22, 25, 30, 32, 35,
-                37, 40, 45, 50]
+    alt, za, wv = get_atran_parameters(header, use_ecmwf, ecmwf_dir)
 
     # clip values to atran data range
-    if not za_values[-1] >= za >= za_values[0]:
+    if not ATRAN_ZA_VALUES[-1] >= za >= ATRAN_ZA_VALUES[0]:
         log.warning('za={} outside of available ATRAN data.'.format(za))
-        za = np.clip(za, a_min=za_values[0], a_max=za_values[-1])
+        za = np.clip(za, a_min=ATRAN_ZA_VALUES[0], a_max=ATRAN_ZA_VALUES[-1])
         log.warning('Setting zenith angle to {} deg'.format(za))
-        za_high, za_low = za_values[-1], za_values[-2]
+        za_high, za_low = ATRAN_ZA_VALUES[-1], ATRAN_ZA_VALUES[-2]
     else:
         za_high, za_low = np.inf, np.inf
 
-    if not wv_values[-1] >= wv >= wv_values[0]:
+    if not ATRAN_WV_VALUES[-1] >= wv >= ATRAN_WV_VALUES[0]:
         log.warning('wv={} outside of available ATRAN data.'.format(wv))
-        wv = np.clip(wv, a_min=wv_values[0], a_max=wv_values[-1])
+        wv = np.clip(wv, a_min=ATRAN_WV_VALUES[0], a_max=ATRAN_WV_VALUES[-1])
         log.warning('Setting water vapor to {} um'.format(wv))
-        wv_high, wv_low = wv_values[-1], wv_values[-2]
+        wv_high, wv_low = ATRAN_WV_VALUES[-1], ATRAN_WV_VALUES[-2]
     else:
         wv_high, wv_low = np.inf, np.inf
 
     if not 45 >= alt >= 38:
         log.warning('alt={} outside of available ATRAN data.'.format(alt))
-        alt = np.clip(alt, a_min=38, a_max=45)
+        alt = np.clip(alt, a_min=35, a_max=45)
         log.warning('Setting altitude to {}K ft'.format(round(alt)))
 
     log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
 
     # find the higher and lower boundaries
-    for i, w in enumerate(wv_values):
-        if w > wv:
-            wv_high = w
-            wv_low = wv_values[i-1]
-            break
 
-    for i, z in enumerate(za_values):
+    for i, z in enumerate(ATRAN_ZA_VALUES):
         if z > za:
             za_high = z
-            za_low = za_values[i-1]
+            za_low = ATRAN_ZA_VALUES[i-1]
             break
 
+    for i, w in enumerate(ATRAN_WV_VALUES):
+        if w > wv:
+            wv_high = w
+            wv_low = ATRAN_WV_VALUES[i-1]
+            break
 
     # these are currently not variable
     O3_model = '39deg'
@@ -636,19 +683,6 @@ def get_atran_interpolated(header, resolution=None,
     smoothed = smoothres(wave, unsmoothed, resolution)
 
     hdinsert(header, 'ATRNFILE', atrnfile_fits_keyword[:-2])
-
-    # Add water vapor source and values to header
-    hdinsert(header, 'WV_SRC', wv_source,
-             comment='Source of water vapor value (ECMWF or HEADER)')
-    hdinsert(header, 'WV_USED', round(wv, 2),
-             comment='[um] Water vapor used for ATRAN selection')
-    if wvz_ecmwf is not None:
-        hdinsert(header, 'WVZ_ECMW', round(wvz_ecmwf, 2),
-                 comment='[um] Raw ECMWF WV (before FIFI-LS conversion)')
-        hdinsert(header, 'WV_FORM', wv_formula,
-                 comment='Formula used to convert ECMWF WV to FIFI-LS scale')
-        hdinsert(header, 'WV_FILE', wv_file,
-                 comment='ECMWF PWV file used')
 
     if not get_unsmoothed:
         return np.vstack((wave, smoothed))
