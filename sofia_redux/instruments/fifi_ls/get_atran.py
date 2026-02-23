@@ -1,14 +1,14 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-import glob
 import os
-import re
 from pathlib import Path
 
 from astropy import log
 from astropy.io import fits
 from astropy.time import Time
+from astropy.utils.data import download_file
 import numpy as np
+import requests
 
 from sofia_redux.instruments import fifi_ls
 from sofia_redux.instruments.fifi_ls.get_resolution import get_resolution
@@ -23,6 +23,22 @@ __all__ = ['clear_atran_cache', 'get_atran_from_cache',
 __atran_cache = {}
 __ecmwf_cache = {}
 
+
+# doi per altitude
+DARUS_URL_BASE = "https://darus.uni-stuttgart.de"
+ATRAN_DATASETS = {
+    35: "10.18419/DARUS-5705",
+    36: "10.18419/DARUS-5707",
+    37: "10.18419/DARUS-5708",
+    38: "10.18419/DARUS-5709",
+    39: "10.18419/DARUS-5710",
+    40: "10.18419/DARUS-5711",
+    41: "10.18419/DARUS-5712",
+    42: "10.18419/DARUS-5713",
+    43: "10.18419/DARUS-5714",
+    44: "10.18419/DARUS-5715",
+    45: "10.18419/DARUS-5716",
+}
 
 def clear_atran_cache():
     """
@@ -165,28 +181,80 @@ def get_atran_data(filename, resolution, atran_dir=None):
         atran_dir = os.path.join(os.path.dirname(fifi_ls.__file__),
                                 'data', 'atran_files')
 
+    if not filename.startswith("atran_sdc_"):
+        log.info('Non-standard ATRAN filename not starting with "atran_sdc_"'
+                 f'Looking for {atran_dir}/{filename} only.')
+        localpath = os.path.join(atran_dir, filename)
+    else:
+        parts = filename.split('_')
+        if parts[2][-1] != 'K':
+            raise ValueError(f'Invalid ATRAN filename: {filename}')
+        alt = int(parts[2][:-1])
+        localpath = os.path.join(atran_dir, f'{alt}K', filename)
+        if not goodfile(localpath):
+            log.debug(f'ATRAN file not found in ATRAN directory: {localpath}')
+            localpath = get_atran_from_darus(alt, filename)
+
     atranfile = os.path.basename(filename)
-
-    hdul = gethdul(os.path.join(atran_dir, filename), verbose=True)
-    if hdul is None or hdul[0].data is None:
-        log.error(f'Invalid data in ATRAN file {filename}')
+    hdul = gethdul(localpath, verbose=True)
+    if hdul is None:
+        log.error(f'Invalid data in ATRAN file {localpath}')
         return
-
 
     if len(hdul) < 2 or hdul[1].header['CONTENT'] != "ATRAN_SDC Model":
         log.warning("Did not find ATRAN SDC model data in FITS BinTableHDU "
-                    f"in {filename}. Falling back to old format.")
+                    f"in {localpath}. Falling back to old format.")
+        if hdul[0].data is None:
+            log.error(f'Invalid data in ATRAN file {localpath}')
+            return
         wave = hdul[0].data[0, :]
         unsmoothed = hdul[0].data[1, :]
     else:
-        data_rec = hdul[1]
+        data_rec = hdul[1].data
         wave = data_rec['wavelength']
         unsmoothed = data_rec['transmission']
 
     smoothed = smoothres(wave, unsmoothed, resolution)
-    store_atran_in_cache(filename, resolution,
+    store_atran_in_cache(localpath, resolution,
                          atranfile, wave, unsmoothed, smoothed)
     return (atranfile, wave, unsmoothed, smoothed)
+
+
+def get_atran_from_darus(altitude, filename):
+    """Download ATRAN file from DaRUS, SOFIA Astronomy Dataverse.
+
+    Parameters
+    ----------
+    altitude : int
+        Altitude in kft
+    filename : str
+        Name of the ATRAN file to be downloaded
+
+    Returns
+    -------
+    atran_file : str
+        Local file path to the downloaded ATRAN file
+    """
+    dataset_doi = ATRAN_DATASETS.get(altitude)
+    if dataset_doi is None:
+        raise ValueError(f'No dataset DOI found for altitude {altitude}K')
+    r = requests.get(f'{DARUS_URL_BASE}/api/datasets/:persistentId',
+                     params={'persistentId': f'doi:{dataset_doi}'})
+    r.raise_for_status()
+    atran_file = None
+    for file in r.json()['data']['latestVersion']['files']:
+        if file['label'] != filename:
+            continue
+        fid = file['dataFile']['id']
+        download_url = f'{DARUS_URL_BASE}/api/access/datafile/{fid}'
+        atran_file = download_file(download_url,
+            cache=True, pkgname="sofia_redux")
+        break
+    if atran_file is None:
+        raise FileNotFoundError(
+            f'ATRAN file {filename} not found in DaRUS dataset {dataset_doi}')
+    log.info(f'ATRAN file in astropy cache: {atran_file}')
+    return atran_file
 
 
 def get_ecmwf_from_cache(ecmwf_file):
