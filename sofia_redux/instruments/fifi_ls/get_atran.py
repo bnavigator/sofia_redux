@@ -434,6 +434,10 @@ def get_atran(header, resolution=None, filename=None,
         (2, nw) array containing wavelengths and (optionally
         smoothed) transmission data.
     """
+    if filename is not None and not goodfile(filename, verbose=True):
+        log.warning(f'File {filename} not found; '
+                    f'retrieving default')
+        filename = None
     if not isinstance(header, fits.Header):
         log.error('Invalid header')
         return
