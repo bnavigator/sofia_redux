@@ -3,13 +3,17 @@
 import os
 import time
 
-from astropy.io import fits
 import numpy as np
+from astropy.io import fits
 
-from sofia_redux.instruments.fifi_ls.get_atran \
-    import (clear_atran_cache, get_atran_from_cache,
-            get_atran_from_darus,
-            store_atran_in_cache, get_atran, get_wv_from_ecmwf)
+from sofia_redux.instruments.fifi_ls.get_atran import (
+    clear_atran_cache,
+    get_atran,
+    get_atran_from_cache,
+    get_atran_from_darus,
+    get_wv_from_ecmwf,
+    store_atran_in_cache,
+)
 
 
 def test_atran_cache(tmpdir):
@@ -69,6 +73,7 @@ def test_atran_cache(tmpdir):
     os.remove(atranfile)
     assert get_atran_from_cache(atranfile, res) is None
 
+
 def test_filename(tmpdir, capsys, test_files):
     atranfile = tmpdir.join('test_file.fits')
 
@@ -102,6 +107,7 @@ def test_filename(tmpdir, capsys, test_files):
     assert np.allclose(result[0], data[0])
     # data will be all nan
     assert np.all(np.isnan(result[1]))
+
 
 def test_header(capsys, test_files):
     filename = test_files('scm')[0]
@@ -167,6 +173,7 @@ def test_header_wv(capsys, tmp_path, test_files):
     assert "Alt, ZA, WV: 41.00 45.00 -9999.0" in capt.out
     assert "Using nearest Alt 41K, ZA 45deg, WV 1um" in capt.out
 
+
 def test_atran_dir(tmp_path, capsys, test_files):
     filename = test_files('scm')[0]
     header = fits.open(filename)[0].header
@@ -187,13 +194,15 @@ def test_atran_dir(tmp_path, capsys, test_files):
     assert np.allclose(result, default)
 
     # put 2 files into the atran_directory
+    atran_alt_dir = tmp_path / "41K"
+    atran_alt_dir.mkdir()
     ref_files = [
         'atran_sdc_41K_45deg_1pwv_39deg_2nlayer_40-300mum_bt.fits',
         'atran_sdc_41K_45deg_5pwv_39deg_2nlayer_40-300mum_bt.fits',
     ]
     for pwvf in ref_files:
         cachefile = get_atran_from_darus(41, pwvf)
-        (tmp_path / pwvf).symlink_to(cachefile)
+        (atran_alt_dir / pwvf).symlink_to(cachefile)
 
     for i, wv in [(0, 1.), (1, 5.)]:
         hdr = header.copy()
@@ -202,7 +211,7 @@ def test_atran_dir(tmp_path, capsys, test_files):
         result = get_atran(hdr, atran_dir=str(tmp_path), use_ecmwf=False)
         capt = capsys.readouterr()
         assert f"Using ATRAN file: {ref_files[i]}" in capt.out
-
+        assert 'ATRAN file not found in ATRAN directory' not in capt.out
 
 
 def test_get_wv_from_ecmwf():

@@ -1,6 +1,4 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-
-from pathlib import Path
 import shutil
 
 from astropy.io import fits
@@ -30,39 +28,36 @@ def header_for_atran():
 def fake_atran_dir(tmp_path):
     """Create a temporary fake ATRAN directory for the whole data range.
 
-    These are not the real spectra at those altitudes, zenith angles,
-    and water vapor values!
+    Get ATRAN spectra them from the cache or downloads from DaRUS and place
+    them into a temporary directory for the atran_dir argument.
     """
     atran_dir = tmp_path / 'atran'
     atran_dir.mkdir()
 
-    real_atran_dir = Path(get_atran.__file__).parent / 'data' / 'atran_files'
-    real_atran = [
-        real_atran_dir / 'atran_41K_45deg_45pwv_40-300mum.fits',
-        real_atran_dir / 'atran_41K_45deg_50pwv_40-300mum.fits'
-    ]
-
-    shutil.copy(real_atran[0], atran_dir / real_atran[0].name)
-    shutil.copy(real_atran[1], atran_dir / real_atran[1].name)
-
     for alt in [38, 41, 45]:
+        atran_alt_dir = atran_dir / f'{alt}K'
+        atran_alt_dir.mkdir()
         for za in [30, 35, 45, 50, 65, 70]:
             for wv in [1, 2, 45, 50]:
-                fake_atran = f"atran_{alt}K_{za}deg_{wv}pwv_40-300mum.fits"
-                shutil.copy(real_atran[0], atran_dir / fake_atran)
+                ref_atran = (
+                    f'atran_sdc_{alt}K_{za}deg_{wv}pwv'
+                    '_39deg_2nlayer_40-300mum_bt.fits'
+                )
+                cachefile = get_atran.get_atran_from_darus(alt, ref_atran)
+                shutil.copy(cachefile, atran_alt_dir / ref_atran)
     return atran_dir
 
 
 def test_get_atran_interpolated(header_for_atran):
     # default: gets alt/za/resolution from header
     atran_smoothed, atran_unsmoothed = get_atran.get_atran_interpolated(
-        header_for_atran, use_wv=True, get_unsmoothed=True
+        header_for_atran, get_unsmoothed=True
     )
     assert atran_smoothed.ndim == 2
     assert atran_unsmoothed.ndim == 2
     # default: no unsmoothed data
     atran_smoothed = get_atran.get_atran_interpolated(
-        header_for_atran, use_wv=True
+        header_for_atran
     )
     assert atran_smoothed.ndim == 2
 
@@ -108,11 +103,11 @@ def test_get_atran_interpolated(header_for_atran):
             ]
         ),
         (
-            {"ALTI_STA": "36900.", "ALTI_END": "38000."},
-            "Alt, ZA, WV: 38.00 45.60 47.90",
+            {"ALTI_STA": "33900.", "ALTI_END": "35000."},
+            "Alt, ZA, WV: 35.00 45.60 47.90",
             [
-                "alt=37.45 outside of available ATRAN data",
-                "Setting altitude to 38K ft"
+                "alt=34.45 outside of available ATRAN data",
+                "Setting altitude to 35K ft"
             ]
         ),
     ]
@@ -125,7 +120,7 @@ def test_get_atran_interpolated_clipped(
         header_for_atran[k] = v
 
     atran_spectrum = get_atran.get_atran_interpolated(
-        header_for_atran, use_wv=True, atran_dir=fake_atran_dir)
+        header_for_atran,  atran_dir=fake_atran_dir)
 
     assert atran_spectrum.ndim == 2
 
