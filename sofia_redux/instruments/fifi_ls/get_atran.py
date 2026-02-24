@@ -39,8 +39,10 @@ ATRAN_DATASETS = {
     44: "10.18419/DARUS-5715",
     45: "10.18419/DARUS-5716",    
 }
-# cache for list of files in each dataset, keyed by dataset DOI
-__atran_files_in_ds = {}
+# cache for list of files in each DaRUS dataset, keyed by dataset DOI
+__darus_files_in_ds = {}
+
+PWV_DOI = "10.18419/DARUS-5728"
 
 ATRAN_ZA_VALUES = list(range(30,75,5))
 ATRAN_WV_VALUES = [
@@ -230,6 +232,43 @@ def get_atran_data(filename, resolution, atran_dir=None):
     return (atranfile, wave, unsmoothed, smoothed)
 
 
+def get_file_from_darus(doi, filename):
+    """Download a file from a DaRUS dataset by DOI and filename.
+
+    Parameters
+    ----------
+    doi : str
+        DOI of the DaRUS dataset.
+    filename : str
+        Name of the file to be downloaded
+
+    Returns
+    -------
+    str
+        Local path to the downloaded file
+
+    """
+    global __darus_files_in_ds
+    if __darus_files_in_ds.get(doi) is None:
+        r = requests.get(f'{DARUS_URL_BASE}/api/datasets/:persistentId',
+                         params={'persistentId': f'doi:{doi}'})
+        r.raise_for_status()
+        __darus_files_in_ds[doi] = r.json()['data']['latestVersion']['files']
+    local_file = None
+    for file in __darus_files_in_ds[doi]:
+        if file['label'] != filename:
+            continue
+        fid = file['dataFile']['id']
+        download_url = f'{DARUS_URL_BASE}/api/access/datafile/{fid}'
+        local_file = download_file(download_url,
+                                   cache=True, pkgname="sofia_redux")
+        break
+    if local_file is None:
+        raise FileNotFoundError(
+            f'{filename} not found in DaRUS dataset {doi}')
+    return local_file
+
+
 def get_atran_from_darus(altitude, filename):
     """Download ATRAN file from DaRUS, SOFIA Astronomy Dataverse.
 
@@ -242,33 +281,34 @@ def get_atran_from_darus(altitude, filename):
 
     Returns
     -------
-    atran_file : str
+    str
         Local file path to the downloaded ATRAN file
     """
     dataset_doi = ATRAN_DATASETS.get(altitude)
     if dataset_doi is None:
         raise ValueError(f'No dataset DOI found for altitude {altitude}K')
-    global __atran_files_in_ds
-    if __atran_files_in_ds.get(dataset_doi) is None:
-        r = requests.get(f'{DARUS_URL_BASE}/api/datasets/:persistentId',
-                        params={'persistentId': f'doi:{dataset_doi}'})
-        r.raise_for_status()
-        __atran_files_in_ds[dataset_doi] = \
-            r.json()['data']['latestVersion']['files']
-    atran_file = None
-    for file in __atran_files_in_ds[dataset_doi]:
-        if file['label'] != filename:
-            continue
-        fid = file['dataFile']['id']
-        download_url = f'{DARUS_URL_BASE}/api/access/datafile/{fid}'
-        atran_file = download_file(download_url,
-            cache=True, pkgname="sofia_redux")
-        break
-    if atran_file is None:
-        raise FileNotFoundError(
-            f'ATRAN file {filename} not found in DaRUS dataset {dataset_doi}')
-    log.info(f'ATRAN file in astropy cache: {atran_file}')
-    return atran_file
+    local_file = get_file_from_darus(dataset_doi, filename)
+    log.info(f'ATRAN file in astropy cache: {local_file}')
+    return local_file
+
+
+def get_ecmwf_from_darus(filename):
+    """Download ECMWF PWV file from DaRUS, SOFIA Astronomy Dataverse.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the ECMWF PWV file to be downloaded,
+        e.g. '855_FI_20220115_pwv.fits'.
+
+    Returns
+    -------
+    str
+        Local file path to the downloaded ECMWF file.
+    """
+    local_file = get_file_from_darus(PWV_DOI, filename)
+    log.info(f'ECMWF file in astropy cache: {local_file}')
+    return local_file
 
 
 def get_ecmwf_from_cache(ecmwf_file):
@@ -283,34 +323,35 @@ def store_ecmwf_in_cache(ecmwf_file, unixtime, pwv, posconst, posjump):
     __ecmwf_cache[str(ecmwf_file)] = (unixtime, pwv, posconst, posjump)
 
 
-def get_wv_from_ecmwf(header, ecmwf_dir):
+def get_wv_from_ecmwf(header, ecmwf_dir=None):
     """
     Get water vapor value from ECMWF reanalysis data.
 
     ECMWF files are stored as binary table FITS files named
-    <flight>_<instrument>_<YYYYMMDD>_pwv.fits in ecmwf_dir. This function
+    <flight>_<instrument>_<YYYYMMDD>_pwv.fits. This function
     finds the right file and extracts the water vapor value closest
     to the observation time.
+
+    Lookup order:
+        1. Local directory ecmwf_dir if set.
+        2. DaRUS, SOFIA Astronomy Dataverse (PWV_DOI).
 
     Parameters
     ----------
     header : fits.Header
         FITS header containing MISSN-ID and DATE-OBS keywords.
-    ecmwf_dir : str
-        Path to directory containing ECMWF FITS files.
+    ecmwf_dir : str, optional
+        Path to a local directory containing ECMWF FITS files.
+        If not provided or the file is not found there, the file
+        will be downloaded from DaRUS.
 
     Returns
     ----------
     tuple or None
-        Tuple of (wvz_ecmwf, wvz_fifi) where wvz_ecmwf is the raw ECMWF
-        water vapor value and wvz_fifi is the converted FIFI-LS scale
-        value. Returns None if ECMWF data could not be retrieved.
+        Tuple of (wvz_ecmwf, wvz_fifi, wv_formula, filename) or None
+        if ECMWF data could not be retrieved.
     """
-    if ecmwf_dir is None or not os.path.isdir(str(ecmwf_dir)):
-        log.warning(f'ECMWF directory not found: {ecmwf_dir}')
-        return None
-
-    # Construct mission ID path from header
+    # Construct mission ID from header
     missn_id = header.get('MISSN-ID', '')
     if not missn_id:
         log.warning('MISSN-ID not found in header')
@@ -337,11 +378,24 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
         log.warning(f'Could not get DATE-OBS: {date_obs} ({e})')
         return None
 
-    # Search for matching ECMWF file: <mission_id>_pwv.fits in ecmwf_dir
-    ecmwf_file = Path(ecmwf_dir, f'{ecmwf_mission_id}_pwv.fits')
-    if not ecmwf_file.is_file():
-        log.debug(f'ECMWF file not found: {ecmwf_file}')
-        return None
+    # Find ECMWF file: try local directory first, then DaRUS
+    filename = f'{ecmwf_mission_id}_pwv.fits'
+    ecmwf_file = None
+    if ecmwf_dir is not None:
+        if not os.path.isdir(str(ecmwf_dir)):
+            log.warning(f'ECMWF directory not found: {ecmwf_dir}')
+        else:
+            candidate = Path(ecmwf_dir, filename)
+            if candidate.is_file():
+                ecmwf_file = candidate
+            else:
+                log.debug(f'ECMWF file not found locally: {candidate}')
+    if ecmwf_file is None:
+        try:
+            ecmwf_file = Path(get_ecmwf_from_darus(filename))
+        except Exception as e:
+            log.debug(f'Could not retrieve ECMWF file from DaRUS: {e}')
+            return None
 
     wvz_ecmwf = None
     wvz_fifi = None
@@ -382,7 +436,7 @@ def get_wv_from_ecmwf(header, ecmwf_dir):
         log.warning('No valid ECMWF data found for this observation')
         return None
 
-    return (wvz_ecmwf, wvz_fifi, wv_formula, ecmwf_file.name)
+    return (wvz_ecmwf, wvz_fifi, wv_formula, filename)
 
 
 def get_atran_parameters(header, use_ecmwf, ecmwf_dir):
