@@ -37,7 +37,7 @@ ATRAN_DATASETS = {
     42: "10.18419/DARUS-5713",
     43: "10.18419/DARUS-5714",
     44: "10.18419/DARUS-5715",
-    45: "10.18419/DARUS-5716",    
+    45: "10.18419/DARUS-5716",
 }
 # cache for list of files in each DaRUS dataset, keyed by dataset DOI
 __darus_files_in_ds = {}
@@ -686,7 +686,7 @@ def get_atran_interpolated(header, resolution=None,
     else:
         wv_high, wv_low = np.inf, np.inf
 
-    if not 45 >= alt >= 38:
+    if not 45 >= alt >= 35:
         log.warning('alt={} outside of available ATRAN data.'.format(alt))
         alt = np.clip(alt, a_min=35, a_max=45)
         log.warning('Setting altitude to {}K ft'.format(round(alt)))
