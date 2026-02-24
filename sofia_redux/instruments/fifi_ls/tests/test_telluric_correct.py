@@ -46,12 +46,17 @@ class TestTelluricCorrect:
 
     def test_no_correction(self, test_files):
         filename = test_files('scm')[0]
+        # set WVZ_OBS to a water vapor value that triggers a discard of
+        # flux values due to low transmission in case of skip_corr.
+        with fits.open(filename, mode='update') as hdul:
+            hdul[0].header['WVZ_OBS'] = 15.0
         default = telluric_correct(filename, skip_corr=False, cutoff=0.8)
         result = telluric_correct(filename, skip_corr=True, cutoff=0.8)
 
         assert 'Telluric corrected' in str(default[0].header['HISTORY'])
         assert 'Telluric corrected' not in str(result[0].header['HISTORY'])
         assert 'Telluric spectrum attached' in str(result[0].header['HISTORY'])
+        assert result[0].header['WV_SRC'] == 'HEADER'
 
         # output does not have uncorrected extensions; should
         # have everything else
