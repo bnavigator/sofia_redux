@@ -232,7 +232,8 @@ def test_get_wv_from_ecmwf():
     ecmwf_dir = '/mnt/sofiadata/data/WV_ECMWF'
     # This will change to a DARUS link soon
 
-    wvz_ecmwf, wvz_fifi, wv_formula, filename = get_wv_from_ecmwf(header, ecmwf_dir)
+    wvz_ecmwf, wvz_fifi, wv_formula, filename = get_wv_from_ecmwf(
+        header, ecmwf_dir)
 
     # Check the conversion formula: wvz_fifi = 0.34 + wvz_ecmwf * 0.55
     expected_fifi = 0.34 + wvz_ecmwf * 0.55
