@@ -2,6 +2,7 @@
 
 import os
 import time
+from unittest.mock import patch
 
 import numpy as np
 from astropy.io import fits
@@ -231,7 +232,7 @@ def test_get_wv_from_ecmwf():
     ecmwf_dir = '/mnt/sofiadata/data/WV_ECMWF'
     # This will change to a DARUS link soon
 
-    wvz_ecmwf, wvz_fifi = get_wv_from_ecmwf(header, ecmwf_dir)
+    wvz_ecmwf, wvz_fifi, wv_formula, filename = get_wv_from_ecmwf(header, ecmwf_dir)
 
     # Check the conversion formula: wvz_fifi = 0.34 + wvz_ecmwf * 0.55
     expected_fifi = 0.34 + wvz_ecmwf * 0.55
@@ -241,23 +242,26 @@ def test_get_wv_from_ecmwf():
 
 def test_missing_directory(caplog):
     """
-    Test that function returns None when ECMWF directory doesn't exist.
+    Test that function returns None when ECMWF data is unavailable
 
-    This allows the calling code to fall back to header WV values.
-
-    # WE NEED TO DISCUSS IF THIS IS WANTED (AB, CI and BS)
-    # Same for when Quality Flag is bad...
-
+    When the local directory is missing, the function falls back to DaRUS.
+    None is only returned if both the local directory and DaRUS fail.
     """
     header = fits.Header()
     header['MISSN-ID'] = '2022-08-25_FI_F906'
     header['DATE-OBS'] = '2022-08-25T09:40:20'
 
-    # Non existent folder Path
-    result = get_wv_from_ecmwf(header, '/nonexistentpath')
-    assert result is None
-    assert "ECMWF directory not found" in caplog.text
+    darus_fail = patch(
+        'sofia_redux.instruments.fifi_ls.get_atran.get_ecmwf_from_darus',
+        side_effect=FileNotFoundError("DaRUS unavailable"))
 
-    # None as directory
-    result = get_wv_from_ecmwf(header, None)
-    assert result is None
+    with darus_fail:
+        # Non-existent directory: logs warning - falls back to DaRUS
+        # DaRUS fails too then None
+        result = get_wv_from_ecmwf(header, '/nonexistentpath')
+        assert result is None
+        assert "ECMWF directory not found" in caplog.text
+
+        # None directory: goes straight to DaRUS, DaRUS fails then None
+        result = get_wv_from_ecmwf(header, None)
+        assert result is None
