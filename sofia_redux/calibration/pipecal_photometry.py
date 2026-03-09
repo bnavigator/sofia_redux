@@ -453,7 +453,8 @@ def pipecal_photometry(image, variance, srcpos=None,
         # scale background flux to source aperture area
         sky_area = sky_aper.area
         src_area = src_aper.area
-        bg_sum = float(np.squeeze(bg_table['aperture_sum'])) * src_area / sky_area
+        bg_sum = (float(np.squeeze(bg_table['aperture_sum']))
+                  * src_area / sky_area)
         varsky = (float(np.squeeze(varbg_table['aperture_sum']))
                   * (src_area / sky_area)**2)
 
