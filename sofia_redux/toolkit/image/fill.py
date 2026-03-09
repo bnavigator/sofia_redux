@@ -192,7 +192,7 @@ def maskinterp(image, func=spline_interp_2dfunc,
             else:
                 cin = np.array([xs[idx, pt], ys[idx, pt]]).T
                 cout = np.array([[xout], [yout]]).T
-                corrected[yout, xout] = func(din, cin, cout, **kwargs)[0]
+                corrected[yout, xout] = np.squeeze(func(din, cin, cout, **kwargs))
             found[yout, xout] = True
 
         radius += apstep
