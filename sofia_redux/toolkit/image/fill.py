@@ -188,7 +188,7 @@ def maskinterp(image, func=spline_interp_2dfunc,
             xout = xfind[pt]
             yout = yfind[pt]
             if statistical:
-                corrected[yout, xout] = func(din, **kwargs)
+                corrected[yout, xout] = np.squeeze(func(din, **kwargs))
             else:
                 cin = np.array([xs[idx, pt], ys[idx, pt]]).T
                 cout = np.array([[xout], [yout]]).T
