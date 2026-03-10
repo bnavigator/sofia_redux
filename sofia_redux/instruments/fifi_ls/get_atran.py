@@ -731,6 +731,7 @@ def get_atran_interpolated(header, resolution=None,
         atrnfile_fits_keyword += filename + ', '
 
     # interpolate za for two pwv
+    log.debug(f'Interpolating between ZA: {za_low:.2f}, {za_high:.2f} & WV: {wv_low:.2f}, {wv_high:.2f}')
     za1_za2_wv1 = interpolate_two_atran_files(
         atran_data["za1_wv1"], atran_data["za2_wv1"], za, 0)
     za1_za2_wv2 = interpolate_two_atran_files(
