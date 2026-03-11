@@ -60,7 +60,7 @@ test-display = [
     "pytest-qt",
 ]
 docs = [
-    "sphinx-astropy>=1.2",
+    "sphinx-astropy[confv2]",
     "imageio>=2.9.0",
 ]
 display = [

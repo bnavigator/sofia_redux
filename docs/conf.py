@@ -26,16 +26,19 @@
 # be accessible, and the documentation will not build correctly.
 
 import sys
-import datetime
+from datetime import UTC, datetime
 from importlib import import_module
 
 try:
-    from sphinx_astropy.conf.v1 import *  # noqa
+    from sphinx_astropy.conf.v2 import *  # noqa
 except ImportError:
     print('ERROR: the documentation requires the sphinx-astropy package to be installed')
     sys.exit(1)
 
 # -- General configuration ----------------------------------------------------
+
+# If your documentation needs a minimal Sphinx version, state it here.
+needs_sphinx = "8.2.0"
 
 # By default, don't highlight syntax in literals
 highlight_language = 'none'
@@ -68,8 +71,7 @@ rst_epilog += """
 # This does not *have* to match the package name, but typically does
 project = "sofia_redux"
 author ="SOFIA Data Center"
-copyright = '{0}, {1}'.format(
-    datetime.datetime.now().year, author)
+copyright = f"2021-2025 SOFIA-USRA, 2025–{datetime.now(tz=UTC).year}, {author}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -86,51 +88,29 @@ release = package.__version__
 
 # -- Options for HTML output --------------------------------------------------
 
-# A NOTE ON HTML THEMES
-# The global astropy configuration uses a custom theme, 'bootstrap-astropy',
-# which is installed along with astropy. A different theme can be used or
-# the options for this theme can be modified by overriding some of the
-# variables set in the global configuration. The variables set in the
-# global configuration are listed below, commented out.
 
-
-# Add any paths that contain custom themes here, relative to this directory.
-# To use a different custom theme, add the directory containing the theme.
-html_theme_path = ['']
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes. To override the custom theme, set this to the
-# name of a builtin theme or the name of a custom theme in html_theme_path.
-html_theme = 'bootstrap-sofia'
-
-
-# Please update these texts to match the name of your package.
-html_theme_options = {
-    'logotext1': 'SOFIA',  # white,  semi-bold
-    'logotext2': 'Redux',  # orange, light
-    'logotext3': ':docs'   # white,  light
+html_theme_options.update(
+    {
+        "github_url": "https://github.com/SOFIA-Data-Center/sofia_redux",
+        # "external_links": [
+        #     {"name": "Learn", "url": "https://learn.astropy.org/"},
+        #     {"name": "Packages", "url": "https://www.astropy.org/affiliated/"},
+        # ],
+        # "use_edit_page_button": True,
+        # https://github.com/pydata/pydata-sphinx-theme/issues/1492
+        "navigation_with_keys": False,
+        #"announcement": "https://www.astropy.org/annoucement_banner.html",
+        "header_links_before_dropdown": 6,
     }
+)
 
-
-# Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
-
-# The name of an image file (relative to this directory) to place at the top
-# of the sidebar.
-#html_logo = ''
-
-# The name of an image file (within the static path) to use as favicon of the
-# docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-# pixels large.
-html_favicon = os.path.join('_static', 'redux.ico')
-
-# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-# using the given strftime format.
-#html_last_updated_fmt = ''
-
-# The name for this set of Sphinx documents.  If None, it defaults to
-# "<project> v<release> documentation".
 html_title = '{0} v{1}'.format(project, release)
+
+html_logo = "_static/redux_icon.png"
+html_favicon = "_static/redux.ico"
+html_static_path = ["_static"]
+#html_css_files = ["sofia_redux.css"]
+html_copy_source = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = project + 'doc'
