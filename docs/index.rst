@@ -4,6 +4,7 @@ SOFIA Redux Documentation
 .. image:: _static/redux_icon.png
    :alt: SOFIA Redux Logo
    :align: center
+   :class: dark-light
 
 User and Developer Documentation
 --------------------------------
