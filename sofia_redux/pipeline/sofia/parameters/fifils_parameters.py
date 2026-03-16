@@ -352,6 +352,28 @@ DEFAULT = {
          'description': 'Redshift of target for narrow line mode',
          'dtype': 'float',
          'wtype': 'text_box'},
+        {'key': 'atran_file',
+         'name': 'ATRAN file override',
+         'value': '',
+         'description': 'If set, use this exact ATRAN file, skipping '
+                        'all automatic file selection.',
+         'dtype': 'str',
+         'wtype': 'pick_file'},
+        {'key': 'ozon',
+         'name': 'Ozone column model [deg]',
+         'value': 39,
+         'description': 'Ozone column model in degrees. '
+                        'Available values: 9, 30, 39, 43, 59.',
+         'dtype': 'int',
+         'wtype': 'text_box'},
+        {'key': 'interpolated',
+         'name': 'Interpolate between ATRAN files',
+         'value': True,
+         'description': 'If set, interpolate between the four '
+                        'ATRAN files. If not set, use the single '
+                        'nearest-matching file.',
+         'dtype': 'bool',
+         'wtype': 'check_box'},
     ],
     'flux_calibrate': [
         {'key': 'save',

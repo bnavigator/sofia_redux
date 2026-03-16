@@ -6,6 +6,7 @@ from astropy.io import fits
 import numpy as np
 import pytest
 
+from sofia_redux.instruments.fifi_ls.get_atran import get_atran_from_darus
 from sofia_redux.instruments.fifi_ls.telluric_correct \
     import telluric_correct, wrap_telluric_correct, apply_atran_correction
 
@@ -103,7 +104,7 @@ class TestTelluricCorrect:
     @pytest.mark.parametrize(
         'sub, msg',
         [('apply_atran', 'Unable to apply ATRAN'),
-         ('get_atran_interpolated', 'Unable to get ATRAN'),
+         ('get_atran', 'Unable to get ATRAN'),
          ('get_resolution', 'Unable to determine spectral resolution')])
     def test_cal_failure(self, mocker, capsys, sub, msg, test_files):
         filename = test_files('scm')[0]
@@ -242,3 +243,88 @@ class TestTelluricCorrect:
         hdul[0].header['CHANNEL'] = 'RED'
         red = telluric_correct(hdul, write=False)
         assert np.all(red['UNSMOOTHED_ATRAN'].data[0] > 90.)
+
+    def test_atran_dir(self, tmp_path, test_files):
+        """
+        Test that atran_dir is used when provided.
+        """
+
+        filename = test_files('scm')[0]
+
+        # create atran dir with one file from DaRUS cache
+        atran_alt_dir = tmp_path / '41K'
+        atran_alt_dir.mkdir()
+        atran_filename = (
+            'atran_sdc_41K_45deg_5pwv_39deg_2nlayer_40-300mum_bt.fits')
+        cachefile = get_atran_from_darus(41, atran_filename)
+        (atran_alt_dir / atran_filename).symlink_to(cachefile)
+
+        # use interpolated=False so only 1 file is needed from the dir
+        hdul = fits.open(filename)
+        hdul[0].header['WVZ_OBS'] = 5.0
+        result = telluric_correct(hdul, atran_dir=str(tmp_path),
+                                  use_ecmwf=False, interpolated=False)
+
+        assert isinstance(result, fits.HDUList)
+        assert atran_filename in result[0].header['ATRNFILE']
+        assert result[0].header['WV_SRC'] == 'HEADER'
+
+    def test_atran_file(self, test_files):
+        """
+        Test that a specific ATRAN file is used when atran_file is set.
+        """
+
+        filename = test_files('scm')[0]
+
+        # get a real ATRAN file from DaRUS cache
+        atran_filename = (
+            'atran_sdc_41K_45deg_5pwv_39deg_2nlayer_40-300mum_bt.fits')
+        atran_file = get_atran_from_darus(41, atran_filename)
+
+        # call telluric_correct with the specific file
+        result = telluric_correct(filename, atran_file=atran_file)
+
+        assert isinstance(result, fits.HDUList)
+        # ATRNFILE should be a single file, not 4 interpolated ones
+        assert ',' not in result[0].header['ATRNFILE']
+        # WV selection was skipped entirely
+        assert result[0].header.get('WV_SRC') is None
+
+    def test_interpolated(self, test_files):
+        """
+        Test that interpolated switches between single and 4-file ATRAN.
+        """
+
+        filename = test_files('scm')[0]
+
+        # interpolated=False: single nearest-matching file
+        result = telluric_correct(filename, interpolated=False,
+                                  use_ecmwf=False)
+        assert isinstance(result, fits.HDUList)
+        assert ',' not in result[0].header['ATRNFILE']
+
+        # interpolated=True: 4 files, comma-separated
+        result = telluric_correct(filename, interpolated=True,
+                                  use_ecmwf=False)
+        assert isinstance(result, fits.HDUList)
+        assert result[0].header['ATRNFILE'].count(',') == 3
+
+    def test_ecmwf_dir(self, tmp_path, mocker, test_files):
+        """
+        Test that ecmwf_dir is passed through to get_wv_from_ecmwf.
+        """
+        
+        filename = test_files('scm')[0]
+
+        mock_get_wv = mocker.patch(
+            'sofia_redux.instruments.fifi_ls.get_atran.get_wv_from_ecmwf',
+            return_value=(5.0, 3.1,
+                          'WVZ_FIFI = 0.34 + WVZ_ECMW * 0.55',
+                          'test_pwv.fits'))
+
+        telluric_correct(filename, use_ecmwf=True, ecmwf_dir=str(tmp_path))
+
+        # verify get_wv_from_ecmwf was called with the correct ecmwf_dir
+        mock_get_wv.assert_called_once()
+        args, _ = mock_get_wv.call_args
+        assert args[1] == str(tmp_path)
