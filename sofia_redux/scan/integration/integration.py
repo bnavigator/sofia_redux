@@ -1147,9 +1147,10 @@ class Integration(ABC):
         df = pd.DataFrame({
             'X pos': position.x,
             'Y pos': position.y,
-            'Velocity': speed,
-            'Range Min': speed_range.min,
-            'Range Max': speed_range.max})
+            'Velocity': speed})
+        # assign same scalar to whole dataframe
+        df['Range Min'] = speed_range.min.value
+        df['Range Max'] = speed_range.max.value
 
         speed_string = str(np.round(speed_range.min.to(speed_unit).value, 2))
         base_used = os.path.join(
