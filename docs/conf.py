@@ -102,7 +102,11 @@ html_theme_options.update(
         # "announcement": "https://www.astropy.org/annoucement_banner.html",
         "header_links_before_dropdown": 6,
         "navbar_align": "left",
-        # "navbar_center": [ "version-switcher", "navbar-nav" ],
+        "navbar_center": [ "version-switcher", "navbar-nav" ],
+        "switcher": {
+            "json_url": "https://redux.sofiadatacenter.de/versions.json",
+            "version_match": release,
+        }
     }
 )
 
