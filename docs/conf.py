@@ -99,14 +99,15 @@ html_theme_options.update(
         # "use_edit_page_button": True,
         # https://github.com/pydata/pydata-sphinx-theme/issues/1492
         "navigation_with_keys": False,
-        #"announcement": "https://www.astropy.org/annoucement_banner.html",
+        # "announcement": "https://www.astropy.org/annoucement_banner.html",
         "header_links_before_dropdown": 6,
+        "navbar_align": "left",
+        # "navbar_center": [ "version-switcher", "navbar-nav" ],
     }
 )
 
 html_title = '{0} v{1}'.format(project, release)
-
-html_logo = "_static/redux_icon.png"
+html_logo = "_static/sofialogo.png"
 html_favicon = "_static/redux.ico"
 html_static_path = ["_static"]
 #html_css_files = ["sofia_redux.css"]
@@ -114,6 +115,10 @@ html_copy_source = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = project + 'doc'
+
+html_sidebars = {
+  "**": []
+}
 
 
 # -- Options for LaTeX output -------------------------------------------------

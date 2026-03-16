@@ -1,6 +1,10 @@
 SOFIA Redux Documentation
 =========================
 
+.. image:: _static/redux_icon.png
+   :alt: SOFIA Redux Logo
+   :align: center
+
 User and Developer Documentation
 --------------------------------
 
