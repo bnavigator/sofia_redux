@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from sofia_redux.instruments.fifi_ls.get_atran \
-    import clear_atran_cache, get_atran_interpolated
+    import clear_atran_cache, get_atran
 from sofia_redux.instruments.fifi_ls.get_resolution \
     import get_resolution, clear_resolution_cache
 from sofia_redux.toolkit.utilities \
@@ -237,10 +237,11 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
     return result
 
 
-def telluric_correct(filename, atran_dir=None, cutoff=0.6,
+def telluric_correct(filename, atran_dir=None, atran_file=None, cutoff=0.6,
                      skip_corr=False, write=False, outdir=None, narrow=False,
                      hdr_ovr=True, restwav=0.0, redshift=0.0,
-                     use_ecmwf=False, ecmwf_dir=None):
+                     use_ecmwf=False, ecmwf_dir=None, ozon=39,
+                     interpolated=True):
     """
     Correct spectra for atmospheric absorption features.
 
@@ -322,11 +323,14 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6,
 
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
-    atran_data = get_atran_interpolated(hdul[0].header, resolution=resolution,
-                                        atran_dir=atran_dir,
-                                        get_unsmoothed=True,
-                                        use_ecmwf=use_ecmwf,
-                                        ecmwf_dir=ecmwf_dir)
+    atran_data = get_atran(hdul[0].header, resolution=resolution,
+                           atran_file=atran_file,
+                           atran_dir=atran_dir,
+                           get_unsmoothed=True,
+                           use_ecmwf=use_ecmwf,
+                           ecmwf_dir=ecmwf_dir,
+                           ozon=ozon,
+                           interpolated=interpolated)
     if atran_data is None or atran_data[0] is None:
         log.error("Unable to get ATRAN data")
         return
@@ -350,11 +354,12 @@ def telluric_correct_wrap_helper(_, kwargs, filename):
 
 
 def wrap_telluric_correct(files, outdir=None, allow_errors=False,
-                          atran_dir=None, cutoff=0.6,
+                          atran_dir=None, atran_file=None, cutoff=0.6,
                           skip_corr=False, write=False,
                           jobs=None, narrow=False, hdr_ovr=True,
                           redshift=0.0, restwav=0.0,
-                          use_ecmwf=False, ecmwf_dir=None):
+                          use_ecmwf=False, ecmwf_dir=None, ozon=39,
+                          interpolated=True):
     """
     Wrapper for telluric_correct over multiple files.
 
@@ -408,10 +413,12 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
     clear_atran_cache()
 
     kwargs = {'outdir': outdir, 'write': write, 'atran_dir': atran_dir,
-              'cutoff': cutoff, 'skip_corr': skip_corr,
+              'atran_file': atran_file, 'cutoff': cutoff,
+              'skip_corr': skip_corr,
               'narrow': narrow, 'hdr_ovr': hdr_ovr, 'redshift': redshift,
               'restwav': restwav, 'use_ecmwf': use_ecmwf,
-              'ecmwf_dir': ecmwf_dir}
+              'ecmwf_dir': ecmwf_dir, 'ozon': ozon,
+              'interpolated': interpolated}
 
     output = multitask(telluric_correct_wrap_helper, files, None, kwargs,
                        jobs=jobs)

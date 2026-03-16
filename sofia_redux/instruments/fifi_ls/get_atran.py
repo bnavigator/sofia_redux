@@ -17,7 +17,7 @@ from sofia_redux.spectroscopy.smoothres import smoothres
 
 
 __all__ = ['clear_atran_cache', 'get_atran_from_cache',
-           'store_atran_in_cache', 'get_atran', 'get_atran_interpolated',
+           'store_atran_in_cache', 'get_atran',
            'clear_ecmwf_cache']
 
 __atran_cache = {}
@@ -490,10 +490,28 @@ def get_atran_parameters(header, use_ecmwf, ecmwf_dir):
             log.info(f'Using ECMWF water vapor: {wv:.2f}')
 
     if wv is None:
-        # Fall back to header WVZ_OBS value
-        wv = float(header.get('WVZ_OBS', 1.))
-    if  wv < 1.:
-        log.error(f'Invalid water vapor value in header: {wv}.')
+        # Try to get water vapor from the header WVZ_OBS keyword
+        wvz_obs = float(header.get('WVZ_OBS', 0))
+        if wvz_obs > 0:
+            wv = wvz_obs
+        else:
+            log.warning('WVZ_OBS is missing or invalid in header.')
+            if not use_ecmwf:
+                log.warning('use_ecmwf=False but no valid WVZ_OBS available. '
+                            'Automatically applying use_ecmwf=True')
+                ecmwf_result = get_wv_from_ecmwf(header, ecmwf_dir)
+                if ecmwf_result is not None:
+                    wvz_ecmwf, wvz_fifi, wv_formula, wv_file = ecmwf_result
+                    wv = wvz_fifi
+                    wv_source = 'ECMWF'
+                    log.info(f'Using ECMWF water vapor: {wv:.2f}')
+            if wv is None:
+                log.error('No valid water vapor value available. '
+                          f'Using minimum WV ({ATRAN_WV_VALUES[0]} um).')
+                wv = float(ATRAN_WV_VALUES[0])
+
+    if wv < 1.:
+        log.error(f'Invalid water vapor value: {wv}.')
 
     log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
 
@@ -513,37 +531,34 @@ def get_atran_parameters(header, use_ecmwf, ecmwf_dir):
     return alt, za, wv
 
 
-def get_atran(header, resolution=None, filename=None,
+def get_atran(header, resolution=None, atran_file=None,
               get_unsmoothed=False, atran_dir=None,
-              use_ecmwf=False, ecmwf_dir=None):
+              use_ecmwf=False, ecmwf_dir=None, ozon=39,
+              interpolated=True):
     """
     Retrieve reference atmospheric transmission data.
 
     ATRAN files in the data/atran_files directory should be named
     according to description in https://doi.org/10.18419/DARUS-5705:
 
-        atran_sdc_[alt]K_[za]deg_[wv]pwv_39deg_2nlayer_[wmin]-[wmax]mum_bt.fits
+        atran_sdc_[alt]K_[za]deg_[wv]pwv_[ozon]deg_2nlayer_[wmin]-[wmax]mum_bt.fits
 
-    "39deg" denotes the Ozone model; "2nlayer" denotes the number
-    of atmospheric layers used in ATRAN. Both of these are currently
-    fixed.
-
+    "[ozon]deg" denotes the Ozone column model (9, 30, 39, 43, or 59);
+    "2nlayer" (currently fixed) denotes the number of atmospheric
+    layers used in ATRAN.
     The FIFI-LS files have a wavelength range of 40 to 300 microns.
 
-    For example, the file generated for altitude of 41,000 feet,
-    ZA of 45 degrees, and wavelengths between 40 and 300 microns
-    should be named:
+    Two selection modes are available via the `interpolated` parameter:
 
-        atran_sdc_41K_45deg_10pwv_39deg_2nlayer_40-300mum_bt.fits
+    - ``interpolated=True`` (default): Loads the four ATRAN files that
+      bracket the observed ZA and WV values and linearly interpolates
+      between them.
 
-    The procedure is:
+    - ``interpolated=False``: Selects the single ATRAN file with the
+      nearest matching ZA, altitude, and WV values.
 
-        1. Identify ATRAN file by ZA, Altitude, and WV, unless override is
-           provided. Water vapor values are retrieved from WVZ_OBS in the
-           header or from ECMWF data.
-        2. Read ATRAN data from file and smooth to expected spectral
-           resolution.
-        3. Return transmission array.
+    In both modes, if `atran_file` is provided it is used directly and
+    the selection logic is skipped entirely.
 
     Parameters
     ----------
@@ -552,41 +567,40 @@ def get_atran(header, resolution=None, filename=None,
         containing the name of the ATRAN file used.
     resolution : float, optional
         Spectral resolution to which ATRAN data should be smoothed.
-    filename : str, optional
-        Atmospheric transmission file to be used.  If not provided,
-        a default file will be retrieved from the data/atran_files
-        directory if provided or downloaded from the SOFIA Astronomy
-        Dataverse
-        (https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad).
-        The file with the closest matching ZA, Altitude and PWV
-        to the input data will be used.  If override file
-        is provided, it should be a FITS image file containing
-        wavelength and transmission data without smoothing.
+    atran_file : str, optional
+        Exact path to an ATRAN file to use directly. If provided, the
+        normal file selection and interpolation are skipped. If the file
+        is not found, a warning is issued and automatic selection is
+        used as fallback.
     get_unsmoothed : bool, optional
         If True, return the unsmoothed atran data in addition to the
         smoothed.
     atran_dir : str, optional
         Path to a directory containing ATRAN reference FITS files.
-        If not provided, the default set of files packaged with the
-        pipeline will be used.
+        If not provided, files will be downloaded from the SOFIA
+        Astronomy Dataverse
+        (https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad).
     use_ecmwf : bool, optional
-        Whether to attempt to get water vapor from ECMWF data or
-        from WVZ_OBS in the header.
+        Whether to get water vapor from ECMWF data. If False, WVZ_OBS
+        from the header is used. If WVZ_OBS is missing, ECMWF is applied
+        automatically with a warning.
     ecmwf_dir : str, optional
         Directory containing ECMWF data files, required if use_ecmwf is True.
+    ozon : int, optional
+        Ozon column model in degrees. Available values are 9, 30, 39, 43,
+        and 59. Default is 39.
+    interpolated : bool, optional
+        If True (default), linearly interpolate between the four ATRAN
+        files bracketing the observed ZA and WV. If False, use the single
+        nearest-matching file.
 
     Returns
     -------
-    numpy.ndarray
-        Filename of the atmospheric transmission file used and a
-        (2, nw) array containing wavelengths and (optionally
-        smoothed) transmission data.
+    numpy.ndarray or tuple of numpy.ndarray
+        A (2, nw) array of [wavelengths, smoothed transmission]. If
+        `get_unsmoothed` is True, returns a tuple
+        ``(smoothed_array, unsmoothed_array)``.
     """
-    if filename is not None and not goodfile(filename, verbose=True):
-        log.warning(f'File {filename} not found; '
-                    f'retrieving default')
-        filename = None
-
     if not isinstance(header, fits.Header):
         log.error('Invalid header')
         return
@@ -595,161 +609,132 @@ def get_atran(header, resolution=None, filename=None,
         log.warning('Getting default resolution from G_WAVE in header')
         resolution = get_resolution(header)
 
-    if filename is None:
+    # If an exact file is provided, load it directly and skip all selection
+    if atran_file is not None:
+        if not goodfile(atran_file, verbose=True):
+            log.warning(f'File {atran_file} not found; retrieving default')
+            atran_file = None
+        else:
+            log.debug(f'Using exact ATRAN file: {atran_file}')
+            atran_data = get_atran_data(atran_file, resolution)
+            if atran_data is None:
+                return None
+            atranfile, wave, unsmoothed, smoothed = atran_data
+            hdinsert(header, 'ATRNFILE', atranfile)
+            if not get_unsmoothed:
+                return np.vstack((wave, smoothed))
+            else:
+                return (np.vstack((wave, smoothed)),
+                        np.vstack((wave, unsmoothed)))
 
-        alt, za, wv = get_atran_parameters(header, use_ecmwf, ecmwf_dir)
+    # Get parameters from header (ZA, altitude, water vapor)
+    alt, za, wv = get_atran_parameters(header, use_ecmwf, ecmwf_dir)
 
+    # atran_layers is currently not variable
+    O3_model = f'{ozon}deg'
+    atran_layers = '2nlayer'
+
+    if not interpolated:
+        # Nearest-file selection
         alt = int(round(alt))
         za = ATRAN_ZA_VALUES[np.argmin(np.abs(np.array(ATRAN_ZA_VALUES) - za))]
         wv = ATRAN_WV_VALUES[np.argmin(np.abs(np.array(ATRAN_WV_VALUES) - wv))]
 
         log.debug(f'Using nearest Alt {alt}K, ZA {za}deg, WV {wv}um')
 
-        # these are currently not variable
-        O3_model = '39deg'
-        atran_layers = '2nlayer'
-
         # see https://doi.org/10.18419/DARUS-5705 for naming convention.
-        filename = (
+        atran_file = (
             "atran_sdc"
             f"_{alt}K_{za}deg_{wv}pwv"
             f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
 
-    # Read the atran data from cache if possible
-    log.debug(f'Using ATRAN file: {filename}')
-
-    atran_data = get_atran_data(filename, resolution, atran_dir)
-    if atran_data is None:
-        return None
-    atranfile, wave, unsmoothed, smoothed = atran_data
-
-    hdinsert(header, 'ATRNFILE', atranfile)
-    if not get_unsmoothed:
-        return np.vstack((wave, smoothed))
-    else:
-        return (np.vstack((wave, smoothed)),
-                np.vstack((wave, unsmoothed)))
-
-
-def get_atran_interpolated(header, resolution=None,
-                           get_unsmoothed=False, atran_dir=None,
-                           use_ecmwf=False, ecmwf_dir=None):
-    """Get a set of ATRAN spectra and interpolate to the desired ZA and WV.
-
-    Replacement function for get_atran() that allows for interpolation between
-    ATRAN files, has not filename parameter.
-
-    Parameters
-    ----------
-    header : fits.Header
-        ATRNFILE keyword is written to the provided FITS header,
-        containing the name of the ATRAN file used.
-    resolution : float, optional
-        Spectral resolution to which ATRAN data should be smoothed.
-    get_unsmoothed : bool, optional
-        If True, return the unsmoothed atran data in addition to the
-        smoothed.
-    atran_dir : str, optional
-        Path to a directory containing ATRAN reference FITS files.
-        If not provided, the default set of files packaged with the
-        pipeline will be used.
-    use_ecmwf : bool, optional
-        Whether to attempt to get water vapor from ECMWF data or
-        from WVZ_OBS in the header.
-    ecmwf_dir : str, optional
-        Directory containing ECMWF data files, required if use_ecmwf is True.
-    """
-    if not isinstance(header, fits.Header):
-        log.error('Invalid header')
-        return
-
-    if resolution is None:
-        log.warning('Getting default resolution from G_WAVE in header')
-        resolution = get_resolution(header)
-
-    alt, za, wv = get_atran_parameters(header, use_ecmwf, ecmwf_dir)
-
-    # clip values to atran data range
-    if not ATRAN_ZA_VALUES[-1] >= za >= ATRAN_ZA_VALUES[0]:
-        log.warning('za={} outside of available ATRAN data.'.format(za))
-        za = np.clip(za, a_min=ATRAN_ZA_VALUES[0], a_max=ATRAN_ZA_VALUES[-1])
-        log.warning('Setting zenith angle to {} deg'.format(za))
-        za_high, za_low = ATRAN_ZA_VALUES[-1], ATRAN_ZA_VALUES[-2]
-    else:
-        za_high, za_low = np.inf, np.inf
-
-    if not ATRAN_WV_VALUES[-1] >= wv >= ATRAN_WV_VALUES[0]:
-        log.warning('wv={} outside of available ATRAN data.'.format(wv))
-        wv = np.clip(wv, a_min=ATRAN_WV_VALUES[0], a_max=ATRAN_WV_VALUES[-1])
-        log.warning('Setting water vapor to {} um'.format(wv))
-        wv_high, wv_low = ATRAN_WV_VALUES[-1], ATRAN_WV_VALUES[-2]
-    else:
-        wv_high, wv_low = np.inf, np.inf
-
-    if not 45 >= alt >= 35:
-        log.warning('alt={} outside of available ATRAN data.'.format(alt))
-        alt = np.clip(alt, a_min=35, a_max=45)
-        log.warning('Setting altitude to {}K ft'.format(round(alt)))
-
-    log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
-
-    # find the higher and lower boundaries
-
-    for i, z in enumerate(ATRAN_ZA_VALUES):
-        if z > za:
-            za_high = z
-            za_low = ATRAN_ZA_VALUES[i-1]
-            break
-
-    for i, w in enumerate(ATRAN_WV_VALUES):
-        if w > wv:
-            wv_high = w
-            wv_low = ATRAN_WV_VALUES[i-1]
-            break
-
-    # these are currently not variable
-    O3_model = '39deg'
-    atran_layers = '2nlayer'
-
-    # load all files
-    atran_data = {}
-    atrnfile_fits_keyword = ''
-    for key, _za, _wv in (("za1_wv1",  za_low, wv_low),
-                          ("za1_wv2",  za_low, wv_high),
-                          ("za2_wv1",  za_high, wv_low),
-                          ("za2_wv2",  za_high, wv_high)):
-        # see https://doi.org/10.18419/DARUS-5705 for naming convention.
-        filename = (
-            "atran_sdc"
-            f"_{round(alt)}K_{_za}deg_{_wv}pwv"
-            f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
-
-        single_atran_data = get_atran_data(filename, resolution, atran_dir)
-        if single_atran_data is None:
+        log.debug(f'Using ATRAN file: {atran_file}')
+        atran_data = get_atran_data(atran_file, resolution, atran_dir)
+        if atran_data is None:
             return None
-        atran_data[key] = (single_atran_data, _za, _wv)
-        atrnfile_fits_keyword += filename + ', '
+        atranfile, wave, unsmoothed, smoothed = atran_data
+        hdinsert(header, 'ATRNFILE', atranfile)
 
-    # interpolate za for two pwv
-    log.debug(f'Interpolating between ZA: {za_low:.2f}, {za_high:.2f} & WV: {wv_low:.2f}, {wv_high:.2f}')
-    za1_za2_wv1 = interpolate_two_atran_files(
-        atran_data["za1_wv1"], atran_data["za2_wv1"], za, 0)
-    za1_za2_wv2 = interpolate_two_atran_files(
-        atran_data["za1_wv2"], atran_data["za2_wv2"], za, 0)
-    # interpolate WV and hold ZA
-    interpolated = interpolate_two_atran_files(za1_za2_wv1, za1_za2_wv2, wv, 1)
+    else:
+        # interpolation over ZA and WV
 
-    wave = interpolated[0][1]
-    unsmoothed = interpolated[0][2]
-    smoothed = smoothres(wave, unsmoothed, resolution)
+        # Clip values to ATRAN data range
+        if not ATRAN_ZA_VALUES[-1] >= za >= ATRAN_ZA_VALUES[0]:
+            log.warning('za={} outside of available ATRAN data.'.format(za))
+            za = np.clip(za, a_min=ATRAN_ZA_VALUES[0],
+                         a_max=ATRAN_ZA_VALUES[-1])
+            log.warning('Setting zenith angle to {} deg'.format(za))
+            za_high, za_low = ATRAN_ZA_VALUES[-1], ATRAN_ZA_VALUES[-2]
+        else:
+            za_high, za_low = np.inf, np.inf
 
-    hdinsert(header, 'ATRNFILE', atrnfile_fits_keyword[:-2])
+        if not ATRAN_WV_VALUES[-1] >= wv >= ATRAN_WV_VALUES[0]:
+            log.warning('wv={} outside of available ATRAN data.'.format(wv))
+            wv = np.clip(wv, a_min=ATRAN_WV_VALUES[0],
+                         a_max=ATRAN_WV_VALUES[-1])
+            log.warning('Setting water vapor to {} um'.format(wv))
+            wv_high, wv_low = ATRAN_WV_VALUES[-1], ATRAN_WV_VALUES[-2]
+        else:
+            wv_high, wv_low = np.inf, np.inf
+
+        if not 45 >= alt >= 35:
+            log.warning('alt={} outside of available ATRAN data.'.format(alt))
+            alt = np.clip(alt, a_min=35, a_max=45)
+            log.warning('Setting altitude to {}K ft'.format(round(alt)))
+
+        log.debug(f'Alt, ZA, WV: {alt:.2f} {za:.2f} {wv:.2f}')
+
+        # find the higher and lower boundaries
+        for i, z in enumerate(ATRAN_ZA_VALUES):
+            if z > za:
+                za_high = z
+                za_low = ATRAN_ZA_VALUES[i-1]
+                break
+
+        for i, w in enumerate(ATRAN_WV_VALUES):
+            if w > wv:
+                wv_high = w
+                wv_low = ATRAN_WV_VALUES[i-1]
+                break
+
+        # load all files
+        grid_data = {}
+        atrnfile_fits_keyword = ''
+        for key, _za, _wv in (("za1_wv1", za_low,  wv_low),
+                               ("za1_wv2", za_low,  wv_high),
+                               ("za2_wv1", za_high, wv_low),
+                               ("za2_wv2", za_high, wv_high)):
+            # see https://doi.org/10.18419/DARUS-5705 for naming convention.
+            grid_file = (
+                "atran_sdc"
+                f"_{round(alt)}K_{_za}deg_{_wv}pwv"
+                f"_{O3_model}_{atran_layers}_40-300mum_bt.fits")
+
+            single_atran_data = get_atran_data(grid_file, resolution, atran_dir)
+            if single_atran_data is None:
+                return None
+            grid_data[key] = (single_atran_data, _za, _wv)
+            atrnfile_fits_keyword += grid_file + ', '
+
+        # interpolate za for two pwv
+        za1_za2_wv1 = interpolate_two_atran_files(
+            grid_data["za1_wv1"], grid_data["za2_wv1"], za, 0)
+        za1_za2_wv2 = interpolate_two_atran_files(
+            grid_data["za1_wv2"], grid_data["za2_wv2"], za, 0)
+        result = interpolate_two_atran_files(za1_za2_wv1, za1_za2_wv2, wv, 1)
+
+        wave = result[0][1]
+        unsmoothed = result[0][2]
+        smoothed = smoothres(wave, unsmoothed, resolution)
+        hdinsert(header, 'ATRNFILE', atrnfile_fits_keyword[:-2])
 
     if not get_unsmoothed:
         return np.vstack((wave, smoothed))
     else:
         return (np.vstack((wave, smoothed)),
                 np.vstack((wave, unsmoothed)))
+
+
 
 
 def interpolate_two_atran_files(atran_data1, atran_data2, des_val, itype=0):

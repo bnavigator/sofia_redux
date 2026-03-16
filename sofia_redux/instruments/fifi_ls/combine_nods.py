@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 
 from sofia_redux.instruments.fifi_ls.apply_static_flat import (calculate_flat,
                                                                get_flat)
-from sofia_redux.instruments.fifi_ls.get_atran import get_atran_interpolated
+from sofia_redux.instruments.fifi_ls.get_atran import get_atran
 from sofia_redux.instruments.fifi_ls.get_resolution import get_resolution
 from sofia_redux.instruments.fifi_ls.lambda_calibrate import wave
 from sofia_redux.instruments.fifi_ls.make_header import make_header
@@ -141,10 +141,11 @@ def _atransmission(hdul,row,hdr0, hdul0):
 
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
-    atran_data = get_atran_interpolated(
+    atran_data = get_atran(
         hdr0, resolution=resolution,
         atran_dir=None,
-        get_unsmoothed=True
+        get_unsmoothed=True,
+        interpolated=True
     )
 
     if atran_data is None or atran_data[0] is None:
@@ -261,10 +262,11 @@ def _telluric_scaling(hdul, brow, hdr0, hdul0, sig_rel):
 
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
-    atran_data = get_atran_interpolated(
+    atran_data = get_atran(
         hdr0, resolution=resolution,
         atran_dir=None,
-        get_unsmoothed=True
+        get_unsmoothed=True,
+        interpolated=True
     )
 
     if atran_data is None or atran_data[0] is None:

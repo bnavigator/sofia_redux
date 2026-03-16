@@ -50,13 +50,13 @@ def fake_atran_dir(tmp_path):
 
 def test_get_atran_interpolated(header_for_atran):
     # default: gets alt/za/resolution from header
-    atran_smoothed, atran_unsmoothed = get_atran.get_atran_interpolated(
+    atran_smoothed, atran_unsmoothed = get_atran.get_atran(
         header_for_atran, get_unsmoothed=True
     )
     assert atran_smoothed.ndim == 2
     assert atran_unsmoothed.ndim == 2
     # default: no unsmoothed data
-    atran_smoothed = get_atran.get_atran_interpolated(
+    atran_smoothed = get_atran.get_atran(
         header_for_atran
     )
     assert atran_smoothed.ndim == 2
@@ -119,7 +119,7 @@ def test_get_atran_interpolated_clipped(
     for k, v in hdrval.items():
         header_for_atran[k] = v
 
-    atran_spectrum = get_atran.get_atran_interpolated(
+    atran_spectrum = get_atran.get_atran(
         header_for_atran,  atran_dir=fake_atran_dir)
 
     assert atran_spectrum.ndim == 2
