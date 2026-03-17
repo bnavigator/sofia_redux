@@ -6,36 +6,32 @@ on:
       - sdc-dev
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
   deploy-docs:
     runs-on: self-hosted
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Install tox
         run: |
           pip install tox
       - name: Run tox to build docs
         run: |
           tox -e build-docs
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: docs/_build/html
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v3
+      - name: Deploy documentation
+        env:
+          DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
+        run: |
+          echo "Deploying documentation..."
+          echo "${DEPLOY_KEY}" > ~/.ssh/id_rsa_deploy_sdcwww
+          chmod 600 ~/.ssh/id_rsa_deploy_sdcwww
+          version="v$(python -c 'import sofia_redux; print(sofia_redux.__version__)')"
+          mv docs/_build/html docs/_build/${version}
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/id_rsa_deploy_sdcwww -o StrictHostKeyChecking=yes" \
+            "docs/_build/${version}/" "gha-runner@sdcwww.irs.uni-stuttgart.de:${version}/"
+
