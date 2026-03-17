@@ -313,7 +313,6 @@ class TestTelluricCorrect:
         """
         Test that ecmwf_dir is passed through to get_wv_from_ecmwf.
         """
-        
         filename = test_files('scm')[0]
 
         mock_get_wv = mocker.patch(
