@@ -1,5 +1,5 @@
 1.5.0 (TBD)
-==================
+===========
 - FIFI-LS User Manual Iss. 03:
 
   - Document changes to spectral/spatial resolution data file,
