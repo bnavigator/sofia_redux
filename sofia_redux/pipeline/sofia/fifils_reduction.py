@@ -737,7 +737,7 @@ class FIFILSReduction(Reduction):
         cutoff = param.get_value('cutoff')
         atran_dir = param.get_value('atran_dir')
         atran_file = param.get_value('atran_file')
-        ozon = param.get_value('ozon')
+        ozone_model = param.get_value('ozone_model')
         interpolated = param.get_value('interpolated')
         use_ecmwf = param.get_value('use_ecmwf')
         ecmwf_dir = param.get_value('ecmwf_dir')
@@ -777,7 +777,7 @@ class FIFILSReduction(Reduction):
                                        restwav=restwav,
                                        use_ecmwf=use_ecmwf,
                                        ecmwf_dir=ecmwf_dir,
-                                       ozon=ozon,
+                                       ozone_model=ozone_model,
                                        interpolated=interpolated)
         if not result:
             msg = 'Problem in fifi_ls.telluric_correct.'

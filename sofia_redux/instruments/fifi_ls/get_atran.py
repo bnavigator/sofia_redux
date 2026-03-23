@@ -533,7 +533,7 @@ def get_atran_parameters(header, use_ecmwf, ecmwf_dir):
 
 def get_atran(header, resolution=None, atran_file=None,
               get_unsmoothed=False, atran_dir=None,
-              use_ecmwf=False, ecmwf_dir=None, ozon=39,
+              use_ecmwf=True, ecmwf_dir=None, ozone_model=39,
               interpolated=True):
     """
     Retrieve reference atmospheric transmission data.
@@ -586,9 +586,9 @@ def get_atran(header, resolution=None, atran_file=None,
         automatically with a warning.
     ecmwf_dir : str, optional
         Directory containing ECMWF data files, required if use_ecmwf is True.
-    ozon : int, optional
-        Ozon column model in degrees. Available values are 9, 30, 39, 43,
-        and 59. Default is 39.
+    ozone_model : int, optional
+        Ozone column model in degrees. Available values are 9, 30, 39, 43,
+        and 59. Currently only 39 is available via DaRUS. Default is 39.
     interpolated : bool, optional
         If True (default), linearly interpolate between the four ATRAN
         files bracketing the observed ZA and WV. If False, use the single
@@ -631,7 +631,7 @@ def get_atran(header, resolution=None, atran_file=None,
     alt, za, wv = get_atran_parameters(header, use_ecmwf, ecmwf_dir)
 
     # atran_layers is currently not variable
-    O3_model = f'{ozon}deg'
+    O3_model = f'{ozone_model}deg'
     atran_layers = '2nlayer'
 
     if not interpolated:
@@ -717,6 +717,8 @@ def get_atran(header, resolution=None, atran_file=None,
             atrnfile_fits_keyword += grid_file + ', '
 
         # interpolate za for two pwv
+        log.debug(f'Interpolating between ZA: {za_low:.2f}, {za_high:.2f}'
+                  f' & WV: {wv_low:.2f}, {wv_high:.2f}')
         za1_za2_wv1 = interpolate_two_atran_files(
             grid_data["za1_wv1"], grid_data["za2_wv1"], za, 0)
         za1_za2_wv2 = interpolate_two_atran_files(
@@ -727,6 +729,8 @@ def get_atran(header, resolution=None, atran_file=None,
         unsmoothed = result[0][2]
         smoothed = smoothres(wave, unsmoothed, resolution)
         hdinsert(header, 'ATRNFILE', atrnfile_fits_keyword[:-2])
+        log.debug(f'Interpolated ATRAN: alt={round(alt)}K, '
+                  f'za={za:.2f}deg, wv={wv:.2f}um')
 
     if not get_unsmoothed:
         return np.vstack((wave, smoothed))

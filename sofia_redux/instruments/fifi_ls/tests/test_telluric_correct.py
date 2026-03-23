@@ -51,8 +51,10 @@ class TestTelluricCorrect:
         # flux values due to low transmission in case of skip_corr.
         with fits.open(filename, mode='update') as hdul:
             hdul[0].header['WVZ_OBS'] = 15.0
-        default = telluric_correct(filename, skip_corr=False, cutoff=0.8)
-        result = telluric_correct(filename, skip_corr=True, cutoff=0.8)
+        default = telluric_correct(filename, skip_corr=False, cutoff=0.8,
+                                   use_ecmwf=False)
+        result = telluric_correct(filename, skip_corr=True, cutoff=0.8,
+                                  use_ecmwf=False)
 
         assert 'Telluric corrected' in str(default[0].header['HISTORY'])
         assert 'Telluric corrected' not in str(result[0].header['HISTORY'])

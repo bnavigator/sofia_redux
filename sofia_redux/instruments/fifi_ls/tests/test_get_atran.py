@@ -166,13 +166,13 @@ def test_header_wv(capsys, tmp_path, test_files):
 
     # wvz_obs is used if not ecmwf
     hdr['WVZ_OBS'] = 5.0
-    get_atran(hdr)
+    get_atran(hdr, use_ecmwf=False)
     capt = capsys.readouterr()
     assert "Alt, ZA, WV: 41.00 45.00 5.00" in capt.out
 
-    # WVZ_OBS invalid: warns and falls back to ECMWF
+    # WVZ_OBS invalid with use_ecmwf=False: warns and falls back to ECMWF
     hdr['WVZ_OBS'] = -9999.
-    get_atran(hdr)
+    get_atran(hdr, use_ecmwf=False)
     capt = capsys.readouterr()
     assert "WVZ_OBS is missing or invalid in header" in capt.err
     assert "use_ecmwf=False but no valid WVZ_OBS available" in capt.err
@@ -320,7 +320,7 @@ def fake_atran_dir(tmp_path):
     return atran_dir
 
 
-def test_get_atran_interpolated(header_for_atran):
+def test_get_atran(header_for_atran):
     # default: gets alt/za/resolution from header
     atran_smoothed, atran_unsmoothed = get_atran(
         header_for_atran, get_unsmoothed=True
@@ -384,7 +384,7 @@ def test_get_atran_interpolated(header_for_atran):
         ),
     ]
 )
-def test_get_atran_interpolated_clipped(
+def test_get_atran_clipped(
         header_for_atran, capsys, caplog, fake_atran_dir,
         hdrval, expected_atran_string, expected_warnings):
     """Test that get_atran handles the desired clipping."""
@@ -406,25 +406,3 @@ def test_get_atran_interpolated_clipped(
     else:
         for expected_warning in expected_warnings:
             assert expected_warning in caplog.text
-
-
-def plot_single_atran_file(filename):
-    with fits.open(filename) as hdul:
-        wavelength = hdul[0].data[0, :]
-        transmission = hdul[0].data[1, :]
-
-        print("plotting file ", filename)
-        plt.plot(wavelength, transmission, label=filename)
-
-
-def plot_all_atran_files(filenames):
-    [plot_single_atran_file(fn) for fn in filenames]
-
-    plt.title("Transmission over Wavelength")
-    plt.xlabel(r"Wavelength [$\mu$m]")
-    plt.ylabel("Transmission")
-    plt.grid(True)
-    plt.legend(loc='lower left')
-    plt.xlim(63., 63.5)
-
-    plt.show()
