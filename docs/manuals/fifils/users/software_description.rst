@@ -187,7 +187,7 @@ files.
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
    | Spectral Flat          | FITS       | Apply Flat                  | Contains flat correction values for all spexels at all possible wavelengths |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
-   | Resolution             | ASCII      | Telluric Correct, Resample  | Contains the expected spatial and spectral resolution for all modes         |
+   | Resolution             | ASCII      | Telluric Correct, Resample  | Contains the expected spectral resolution and fit window FWHM for all modes |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
    | ATRAN                  | FITS       | Telluric Correct            | Contains an unsmoothed atmospheric transmission model spectrum              |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
@@ -485,9 +485,9 @@ Some key parameters to note are listed below.
          sky coordinates otherwise.
 
       -  *Spatial oversample*: This parameter controls the resolution of the output
-         spatial grid, with reference to the assumed FWHM at the observed wavelength.
+         spatial grid, with reference to the fixed fit window FWHM for the given channel.
          The value is given in terms of pixels per reference FWHM for the
-         detector channel used.
+         detector channel used (5.0 arcsec for BLUE, 10.0 arcsec for RED).
 
       -  *Output spatial pixel size (arcsec)*: This parameter directly controls
          the resolution of the output spatial grid. If set, this
@@ -501,7 +501,7 @@ Some key parameters to note are listed below.
 
       -  *Spatial fit window*: This parameter controls how much data to use in the
          fit at each grid point. It is given in terms of a factor times the
-         average spatial FWHM. Higher values will lead to more input data being
+         fixed fit window FWHM for the given channel. Higher values will lead to more input data being
          considered in the output solution, at the cost of longer processing time.
          Too-low values may result in missing data (holes) in the output map.
 

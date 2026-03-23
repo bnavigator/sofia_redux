@@ -997,83 +997,113 @@ For OTF data, the scan positions for each ramp in each input
 file are also considered.  The full range of sky positions and wavelengths
 observed sets the range of the output grid.
 
-The spacing of the output grid in the wavelength dimension (dw) is set
+The spacing of the output grid in the wavelength dimension (:math:`dw`) is set
 by the desired oversampling. By default, in the wavelength dimension, the
 pipeline samples the average expected spectral FWHM for the observation
 (:numref:`fifi_spatial_res`) with 8 output pixels.
 
-The spacing in the spatial dimensions (dx) is fixed for each channel
+The spacing in the spatial dimensions (:math:`dx`) is fixed for each channel
 at 1.5 arcseconds in the BLUE and 3.0 arcseconds in the RED. These values
 are chosen to ensure an oversampling of the spatial FWHM by at least a
 factor of three.
 
-For example, for the RED observation in the figures above, the expected
-spectral FWHM at the central wavelength is 0.13 um, so sampling this FWHM
-with 8 pixels creates a grid with a spectral width of 0.016 um. Given a
-min and max wavelength of 157.27 um and 158.48 um, the output grid will
-sample the full range of wavelengths with 76 spectral pixels. Since it is
-a RED channel observation, the spatial scale will be 3.0 arcseconds. If
-the range of x offsets is -41.0 to 57.74 and the range of y offsets is
--43.9 to 36.9, then the output spatial grid will have dimensions 33 x 27,
-with an oversampling of the FWHM (using the interpolated value at
-157.876 um of 15.6 arcseconds) of 5.2. The full output cube then is
-33 x 27 x 76 (nx x ny x nw).
+For example, for the RED observation in the figures above, covering a wavelength range
+of 157.27 - 158.48 µm, with a standard spectral oversample factor of 8, the spectral grid
+is calculated as follows:
+
+- Spectral coverage: :math:`\Delta\lambda` = 1.21 µm
+- Median wavelength: :math:`\lambda_{\text{median}}` = 157.875 µm
+- Spectral resolution at median: :math:`R` = :math:`d\lambda/\lambda_{\text{median}}` = 1210
+- Spectral FWHM at median: :math:`\delta\lambda` = :math:`\lambda_{\text{median}}/R` = 157.875/1210 = 0.130 µm
+- Spectral grid spacing: :math:`dw` = :math:`\delta\lambda/\text{oversample}` = 0.130/8 = 0.016 µm
+- Output spectral grid length: :math:`nw` = :math:`\Delta\lambda/dw` = 1.21/0.016 = 75.6 pixels (rounded to 76)
+
+If using the standard spatial scale (thus ignoring any custom spatial oversampling),
+the spatial grid is calculated as follows:
+
+- Standard red spatial scale: :math:`dx` = 3.0"
+- Range of x offsets: :math:`\Delta x` = 57.74 - (-41.0) = 98.74"
+- Range of y offsets: :math:`\Delta y` = 36.9 - (-41.0) = 80.9"
+- Output spatial grid length in x: :math:`nx` = :math:`\Delta x/dx` = 98.74/3.0 = 32.9 pixels (rounded to 33)
+- Output spatial grid length in y: :math:`ny` = :math:`\Delta y/dx` = 80.9/3.0 = 26.97 pixels (rounded to 27)
+- Actual spatial FWHM at median wavelength: :math:`\theta_{xy}` = 15.6"
+- Implied oversampling of spatial FWHM: :math:`oversample_{xy}` = :math:`\theta_{xy}/dx` = 15.6/3.0 = 5.2
+
+The full output cube then is 33 x 27 x 76 (:math:`nx` x :math:`ny` x :math:`nw`).
+
+For the case that an oversampling factor is specified, with no standard spatial scale,
+the spatial grid is calculated from the fixed fit window FWHM, rather than the
+wavelength-dependent spatial FWHM. This is based on historical experience, where
+decoupling the spatial grid from observed wavelength greatly simplifies data analysis.
+The difference between these two values is exemplified in table :ref:`fifi_spatial_res`.
+The spatial grid is calculated as follows:
+
+- Desired oversampling of spatial FWHM: :math:`oversample_{xy}` = 5.0
+- Window FWHM at median wavelength: :math:`\theta_{window}` = 10.0"
+- Spatial grid spacing: :math:`dx` = :math:`\theta_{window}/oversample_{xy}` = 10.0/5.0 = 2.0"
+- Output spatial grid length in x: :math:`nx` = :math:`\Delta x/dx` = 98.74/2.0 = 49.37 pixels (rounded to 50)
+- Output spatial grid length in y: :math:`ny` = :math:`\Delta y/dx` = 80.9/2.0 = 40.45 pixels (rounded to 41)
+
+The full output cube then is 50 x 41 x 76 (:math:`nx` x :math:`ny` x :math:`nw`).
 
 In the spatial dimensions, the flux in each pixel represents an integrated
 flux over the area of the pixel.  Since the pixel width changes
 after resampling, the output flux must be corrected for flux conservation.
 To do so, the resampled flux is multiplied by the
-area of the new pixel (*dx*\ :sup:`2`\ ), divided by the intrinsic area of
+area of the new pixel (:math:`dx^2`), divided by the intrinsic area of
 the spaxel (approximately 36 arcseconds\ :sup:`2` for BLUE, 144
 arcseconds\ :sup:`2` for RED).
 
 .. _fifi_spatial_res:
 .. table:: Spectral and spatial resolution by central wavelength
-   :width: 20%
+   :width: 50%
 
-   +---------------+------------+----------------------------+--------------------+
-   | Channel/Order | Wavelength | Spectral Resolution        | Spatial Resolution |
-   |               | (um)       | (:math:`d\lambda/\lambda`) | (arcsec)           |
-   +===============+============+============================+====================+
-   | Blue Order 1  |   70       |     545                    |  6.9               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 1  |   80       |     570                    |  7.9               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 1  |   90       |     628                    |  8.9               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 1  |   100      |     720                    |  9.9               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 1  |   110      |     846                    |  11.0              |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 1  |   120      |     1005                   |  12.0              |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 2  |   45       |     947                    |  5.9               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 2  |   50       |     920                    |  6.2               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 2  |   65       |     1415                   |  7.3               |
-   +---------------+------------+----------------------------+--------------------+
-   | Blue Order 2  |   70       |     1772                   |  7.7               |
-   +---------------+------------+----------------------------+--------------------+
-   | Red           |   120      |     747                    |  11.9              |
-   +---------------+------------+----------------------------+--------------------+
-   | Red           |   140      |     939                    |  13.9              |
-   +---------------+------------+----------------------------+--------------------+
-   | Red           |   160      |     1180                   |  15.8              |
-   +---------------+------------+----------------------------+--------------------+
-   | Red           |   180      |     1471                   |  17.7              |
-   +---------------+------------+----------------------------+--------------------+
-   | Red           |   200      |     1813                   |  19.6              |
-   +---------------+------------+----------------------------+--------------------+
-
-
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | **Channel/**  | **Wavelength** | **Spectral**                   | **Actual Spatial** | **Fit Window**       |
+   | **Order**     |                | **Resolution**                 | **Resolution**     | **FWHM**             |
+   |               | (µm)           | (:math:`d\lambda/\lambda`)     | (arcsec)           | (arcsec)             |
+   +===============+================+================================+====================+======================+
+   | Blue Order 1  |   70           |     589                        |  6.9               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 1  |   80           |     591                        |  7.9               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 1  |   90           |     630                        |  8.9               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 1  |   100          |     709                        |  9.9               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 1  |   110          |     826                        |  11.0              | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 1  |   120          |     982                        |  12.0              | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 2  |   45           |     947                        |  5.9               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 2  |   50           |     920                        |  6.2               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 2  |   65           |     1416                       |  7.3               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Blue Order 2  |   70           |     1772                       |  7.7               | 5.0                  |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Red           |   120          |     787                        |  11.9              | 10.0                 |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Red           |   140          |     1009                       |  13.9              | 10.0                 |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Red           |   160          |     1232                       |  15.8              | 10.0                 |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Red           |   180          |     1455                       |  17.7              | 10.0                 |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   | Red           |   200          |     1678                       |  19.6              | 10.0                 |
+   +---------------+----------------+--------------------------------+--------------------+----------------------+
+   
 Algorithm
 ^^^^^^^^^
 For each pixel in the 3D output grid, the resampling algorithm finds
 all flux values with assigned wavelengths and spatial positions
 within a fitting window, typically 0.5 times the spectral
 FWHM in the wavelength dimension, and 3 times the spatial FWHM in the
-spatial dimensions. For the spatial grid, a larger fit window is typically
+spatial dimensions. For the purposes of this fit, the window size is not
+based on the actual wavelength-dependent FWHM as shown in the Table, but
+rather a fixed channel-specific value. This allows for direct control of
+the spatial fit window through the oversample factor. A larger fit window is typically
 necessary than for the spectral grid, since the observation setup
 usually allows more oversampling in wavelength than in space.
 
