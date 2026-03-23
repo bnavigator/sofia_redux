@@ -19,6 +19,7 @@ jobs:
     name: Build and Deploy Documentation
     runs-on:
       group: sofiagharunner
+    # Can only run with secrets on merged PRs from the same repository
     if: >
       ${{
         github.event_name != 'pull_request' ||
