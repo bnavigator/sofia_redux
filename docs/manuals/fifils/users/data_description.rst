@@ -743,8 +743,10 @@ combination with the estimated line-of-sight water vapor content
 (precipitable water vapor, PWV) calculated from ECMWF satellite data
 (see `Section "Water Vapor Sources" <#water-vapor-sources>`_). 
 
-A set of ATRAN models appropriate for a range of altitudes, zenith
-angles, and PWV values has been generated for pipeline use. In the
+Using the modified SDC-ATRAN code, a set of ATRAN models appropriate for a range of altitudes,
+zenith angles, and PWV values has been generated for pipeline use, and are stored in
+the DaRUS data repository. The pipeline will attempt to retreve these automatically,
+unless an ATRAN directry is specified, or a single ATRAN file is specified. In the
 telluric correction step, the pipeline uses the parameter set of observed altitude,
 zenith angle, and PWV in order to select the six models which lie adjacent to the
 observation in parameter spaces. Then, the pipeline carries out a series of two-file
@@ -786,7 +788,8 @@ using one of two sources:
    1. If the *Use ECMWF WV values* option in the Redux GUI is ticked, or the parameter
    ``use_ecmwf`` in the config file is set to True, then the PWV is sourced directly from the
    ECMWF data. The location of the ECMWF data is specified in the *ECMWF Directory* field in the GUI, or by
-   the parameter ``ecmwf_dir`` in the config file.  The pipeline identifies
+   the parameter ``ecmwf_dir`` in the config file. If these are left blank, the pipeline will attempt to
+   source ECMWF data from the DaRUS data repository. The pipeline identifies
    the satellite data which corresponds to the time and latitude of the observation, reads
    the PWV value, and scales it according to the above described method. The scaled value is stored
    in the keyword ``WVZ_FIFI``.

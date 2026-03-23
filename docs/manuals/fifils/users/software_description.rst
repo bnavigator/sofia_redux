@@ -384,9 +384,9 @@ Some key parameters to note are listed below.
    -  *Skip telluric correction*: Select to skip correcting the data for
       telluric absorption. This option is mostly used for testing.
 
-   -  *ATRAN directory*: Use this option to select a directory containing
-      ATRAN FITS files.  This must be set in order to use water vapor
-      values for telluric correction.
+   -  *ATRAN directory*: Specify the location of ATRAN transmission files.
+      If left blank, the pipeline will attempt to source ATRAN files from
+      the DaRUS data repository.
 
    -  *Cutoff value*: Modify to adjust the transmission
       fraction below which the telluric-corrected data will be set to NaN.
@@ -398,6 +398,9 @@ Some key parameters to note are listed below.
       in the FIFI-LS headers (keyword ``WVZ_OBS``).
 
    -  *ECMWF Directory*: Specify the location of the ECMWF satellite data.
+      Requires the *Use ECMWF WV values* option to be ticked.
+      If left blank, the pipeline will attempt to source ECMWF data from
+      the DaRUS data repository.
 
 -  **Flux Calibrate**
 
