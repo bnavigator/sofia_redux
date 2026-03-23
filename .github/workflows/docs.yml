@@ -16,8 +16,10 @@ on:
 
 jobs:
   deploy-docs:
+    name: Build and Deploy Documentation
     runs-on:
       group: sofiagharunner
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,8 +37,8 @@ jobs:
         env:
           DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
         run: |
-          echo "${DEPLOY_KEY}" > ~/.ssh/id_rsa_deploy_sdcwww
-          chmod 600 ~/.ssh/id_rsa_deploy_sdcwww
+          echo "${DEPLOY_KEY}" > id_rsa_deploy_key
+          chmod 600 id_rsa_deploy_key
       - name: Deploy documentation
         env:
           DEPLOY_HOST: ${{ secrets.SOFIA_REDUX_DOC_HOST }}
@@ -46,7 +48,7 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
-          echo "Deploying documentation"
+          echo -n "Deploying documentation"
           version="v$(python -c 'import sofia_redux; print(sofia_redux.__version__)')"
           case "$GITHUB_EVENT_NAME" in
             pull_request)
@@ -67,17 +69,19 @@ jobs:
               exit 1
               ;;
           esac
+          echo " to ${target_dir}"
+          deploy_keyfile="$PWD/id_rsa_deploy_key"
           cd docs/_build
           mv html ${target_dir}
           # Note: the key for the user on the remote host has rrsync restricted to /var/www/redux,
           # so the deployment is relative to that directory.
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/id_rsa_deploy_sdcwww -o StrictHostKeyChecking=yes" \
+            -e "ssh -i $deploy_keyfile -o StrictHostKeyChecking=yes" \
             "${target_dir}/" "${DEPLOY_USER}@${DEPLOY_HOST}:${target_dir}/"
           if [ -n "$link" ]; then
             ln -sf "${target_dir}" ${link}
             rsync -vz \
-              -e "ssh -i ~/.ssh/id_rsa_deploy_sdcwww -o StrictHostKeyChecking=yes" \
+              -e "ssh -i $deploy_keyfile -o StrictHostKeyChecking=yes" \
               ${link} "${DEPLOY_USER}@${DEPLOY_HOST}:${link}"
           fi
 
