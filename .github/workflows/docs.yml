@@ -1,41 +1,87 @@
 name: Build Documentation
 
 on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/**'
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - sdc-dev
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+    paths:
+      - 'docs/**'
+  release:
+    types: [published]
 
 jobs:
   deploy-docs:
-    runs-on: self-hosted
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    name: Build and Deploy Documentation
+    runs-on:
+      group: sofiagharunner
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Install tox
         run: |
           pip install tox
       - name: Run tox to build docs
         run: |
           tox -e build-docs
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: docs/_build/html
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v3
+      - name: Prepare SSH Key
+        env:
+          DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
+        run: |
+          echo "${DEPLOY_KEY}" > id_rsa_deploy_key
+          chmod 600 id_rsa_deploy_key
+      - name: Deploy documentation
+        env:
+          DEPLOY_HOST: ${{ secrets.SOFIA_REDUX_DOC_HOST }}
+          DEPLOY_USER: ${{ secrets.GHA_RUNNER_USER }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo -n "Deploying documentation"
+          version="v$(python -c 'import sofia_redux; print(sofia_redux.__version__)')"
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              target_dir="pr-${PR_NUMBER}"
+              ;;
+            push)
+              target_dir="${BRANCH_NAME}"
+              ;;
+            release)
+              target_dir="${RELEASE_TAG}"
+              link="stable"
+              ;;
+            workflow_dispatch)
+              target_dir="workflow-dispatch-${GITHUB_RUN_ID}"
+              ;;
+            *)
+              echo "Unsupportet Event: $GITHUB_EVENT_NAME"
+              exit 1
+              ;;
+          esac
+          echo " to ${target_dir}"
+          deploy_keyfile="$PWD/id_rsa_deploy_key"
+          cd docs/_build
+          mv html ${target_dir}
+          # Note: the key for the user on the remote host has rrsync restricted to /var/www/redux,
+          # so the deployment is relative to that directory.
+          rsync -avz --delete \
+            -e "ssh -i $deploy_keyfile -o StrictHostKeyChecking=yes" \
+            "${target_dir}/" "${DEPLOY_USER}@${DEPLOY_HOST}:${target_dir}/"
+          if [ -n "$link" ]; then
+            ln -sf "${target_dir}" ${link}
+            rsync -vz \
+              -e "ssh -i $deploy_keyfile -o StrictHostKeyChecking=yes" \
+              ${link} "${DEPLOY_USER}@${DEPLOY_HOST}:${link}"
+          fi
+

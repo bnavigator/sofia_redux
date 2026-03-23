@@ -49,7 +49,7 @@ Some optional visualization tools in the SOFIA Redux interface also
 use the `ds9samp` and `regions` packages to interface with the external
 SAOImage DS9 tool. To use these tools, install
 `DS9 <https://sites.google.com/cfa.harvard.edu/saoimageds9>`__, then
-install pyds9 and regions directly via pip::
+install ds9samp and regions directly via pip::
 
   pip install ds9samp regions
 

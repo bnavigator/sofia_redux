@@ -1,0 +1,37 @@
+name: Cleanup PR Docs
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'docs/**'
+
+jobs:
+  cleanup-pr-docs:
+    if: github.event.pull_request.merged == true
+    runs-on: sofiagharunner
+    steps:
+      - name: Prepare SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
+        run: |
+          if [ -n "${DEPLOY_KEY}" ]; then
+            echo "No secret for DEPLOY_KEY found"
+            exit 1
+          fi
+          echo "${DEPLOY_KEY}" > id_rsa_deploy_key
+          chmod 600 id_rsa_deploy_key
+      - name: Cleanup PR docs via rsync
+        env:
+          DEPLOY_HOST: ${{ secrets.SOFIA_REDUX_DOC_HOST }}
+          DEPLOY_USER: ${{ secrets.GHA_RUNNER_USER }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "${DEPLOY_HOST}" ]; then
+            echo "No secret for DEPLOY_HOST found"
+            exit 1
+          fi
+          mkdir -p empty_dir
+          rsync -avz --delete \
+            -e "ssh -i id_rsa_deploy_key -o StrictHostKeyChecking=yes" \
+            empty_dir/ "gha-runner@${DEPLOY_HOST}:pr-${PR_NUMBER}/"
