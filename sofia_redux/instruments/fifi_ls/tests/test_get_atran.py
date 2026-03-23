@@ -5,7 +5,6 @@ import shutil
 import time
 from unittest.mock import patch
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from astropy.io import fits
