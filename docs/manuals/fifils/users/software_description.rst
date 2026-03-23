@@ -396,6 +396,15 @@ Some key parameters to note are listed below.
       will have no effect unless the ATRAN directory is set to a location
       containing ATRAN files derived for different PWV values.
 
+   -  *Narrow Line Mode (NLM)*: Select to use Narrow Line Mode for telluric correction.
+      A single transmission value will be used for the complete wavelength
+      range of the input data, determined from the redshift-corrected wavelength of the
+      observed spectral line, using header keywords ``RESTWAV`` and ``REDSHIFT``.
+
+   -  *(NLM) Z and Rest Wavelength Override*: Select to override automatic identification
+      of the redshift and rest wavelength for the NLM telluric correction. Values for these
+      can be manually specified in the subsequent two fields.
+
 -  **Flux Calibrate**
 
    -  *Skip flux calibration*: Select to skip flux calibration of the

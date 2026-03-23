@@ -88,7 +88,7 @@ def binspec(x, y, delta, xout=None, lmin=None, lmax=None, average=False):
         # single value for delta (constant dl)
         lmin = x.min() if lmin is None else lmin
         lmax = x.max() if lmax is None else lmax
-        nedgs = int((lmax - lmin) / delta) + 1
+        nedgs = int((lmax - lmin) / np.squeeze(delta)) + 1
         xledg = np.arange(nedgs) * delta + lmin
         xhedg = xledg.copy() + delta
         xout = xledg + delta / 2

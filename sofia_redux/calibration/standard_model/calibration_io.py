@@ -422,7 +422,7 @@ def plot_spectrum(model_wave, model_flux, power_law, blackbody,
         ax.scatter(isophotal_weight.iloc[i], f_mean.iloc[i],
                    marker='d', color='k')
         fiso = iso.interpol(model_flux, model_wave, isophotal_weight.iloc[i])
-        print(f'{isophotal_weight[i]:.5e}\t{f_mean[i]:.5e}\t{fiso:.5e}')
+        print(f'{isophotal_weight.iloc[i]:.5e}\t{f_mean.iloc[i]:.5e}\t{fiso:.5e}')
 
     ax.set_ylabel([fmin, fmax])
     ax.set_yscale('log')

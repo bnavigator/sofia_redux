@@ -31,7 +31,7 @@ def test_ordermask(flat_info_file):
 def test_adjust_guesspos(flat_info_file):
     fname = flat_info_file
     flat = FlatInfo(fname)
-    mid_order = int(np.unique(flat.orders[flat.norders // 2]))
+    mid_order = int(np.unique(flat.orders[flat.norders // 2])[0])
     image = np.zeros(flat.shape)
     image[flat.omask == mid_order] = 1.0
     shifted = np.roll(image, 3, axis=0)
