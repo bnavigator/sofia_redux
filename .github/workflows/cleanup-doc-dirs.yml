@@ -8,7 +8,10 @@ on:
 
 jobs:
   cleanup-pr-docs:
-    if: github.event.pull_request.merged == true
+    # Can only run with secrets on merged PRs from the same repository
+    if: >
+      ${{ github.event.pull_request.merged == true
+      && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: sofiagharunner
     steps:
       - name: Prepare SSH
