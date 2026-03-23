@@ -1,14 +1,23 @@
 name: Build Documentation
 
 on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/**'
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - sdc-dev
-  workflow_dispatch:
+    paths:
+      - 'docs/**'
+  release:
+    types: [published]
 
 jobs:
   deploy-docs:
-    runs-on: self-hosted
+    runs-on:
+      group: sofiagharunner
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,16 +31,53 @@ jobs:
       - name: Run tox to build docs
         run: |
           tox -e build-docs
-      - name: Deploy documentation
+      - name: Prepare SSH Key
         env:
           DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
         run: |
-          echo "Deploying documentation..."
           echo "${DEPLOY_KEY}" > ~/.ssh/id_rsa_deploy_sdcwww
           chmod 600 ~/.ssh/id_rsa_deploy_sdcwww
+      - name: Deploy documentation
+        env:
+          DEPLOY_HOST: ${{ secrets.SOFIA_REDUX_DOC_HOST }}
+          DEPLOY_USER: ${{ secrets.GHA_RUNNER_USER }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "Deploying documentation"
           version="v$(python -c 'import sofia_redux; print(sofia_redux.__version__)')"
-          mv docs/_build/html docs/_build/${version}
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              target_dir="pr-${PR_NUMBER}"
+              ;;
+            push)
+              target_dir="${BRANCH_NAME}"
+              ;;
+            release)
+              target_dir="${RELEASE_TAG}"
+              link="stable"
+              ;;
+            workflow_dispatch)
+              target_dir="workflow-dispatch-${GITHUB_RUN_ID}"
+              ;;
+            *)
+              echo "Unsupportet Event: $GITHUB_EVENT_NAME"
+              exit 1
+              ;;
+          esac
+          cd docs/_build
+          mv html ${target_dir}
+          # Note: the key for the user on the remote host has rrsync restricted to /var/www/redux,
+          # so the deployment is relative to that directory.
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/id_rsa_deploy_sdcwww -o StrictHostKeyChecking=yes" \
-            "docs/_build/${version}/" "gha-runner@sdcwww.irs.uni-stuttgart.de:${version}/"
+            "${target_dir}/" "${DEPLOY_USER}@${DEPLOY_HOST}:${target_dir}/"
+          if [ -n "$link" ]; then
+            ln -sf "${target_dir}" ${link}
+            rsync -vz \
+              -e "ssh -i ~/.ssh/id_rsa_deploy_sdcwww -o StrictHostKeyChecking=yes" \
+              ${link} "${DEPLOY_USER}@${DEPLOY_HOST}:${link}"
+          fi
 
