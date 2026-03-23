@@ -5,7 +5,7 @@ Installation
 Stable release
 --------------
 
-The `sofia_redux` package is available via PyPI::
+The `sofia-redux` package is available via PyPI::
 
    pip install sofia-redux
 
