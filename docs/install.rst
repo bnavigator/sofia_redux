@@ -108,13 +108,13 @@ from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
 
     - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad?q=atran&types=datasets>`__
     - Size: 3.6 GB
-    - MD5 checksum: 
+    - MD5 checksum: see individual files on DaRUS
 
   - ECMWF water vapor data for all FIFI-LS flights
 
     - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-5728>`__
     - Size: 340.6 MB
-    - MD5 checksum: 
+    - MD5 checksum: see individual files on DaRUS
 
 - FLITECAM:
 
