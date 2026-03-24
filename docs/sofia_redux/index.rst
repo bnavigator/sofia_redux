@@ -85,6 +85,20 @@ Developer's Manuals:
 - :doc:`../manuals/forcast/developers/developers`
 - :doc:`../manuals/hawc/developers/developers`
 
+
+Instrument Pipeline Modules
+===========================
+
+.. toctree::
+  :maxdepth: 2
+
+  instruments/exes/index.rst
+  instruments/fifi_ls/index.rst
+  instruments/flitecam/index.rst
+  instruments/forcast/index.rst
+  instruments/hawc/index.rst    
+
+
 Submodules
 ==========
 
@@ -97,4 +111,3 @@ Submodules
   spectroscopy/index.rst
   toolkit/index.rst
   visualization/index.rst
-  instruments/index.rst

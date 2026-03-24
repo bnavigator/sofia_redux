@@ -189,7 +189,7 @@ def test_get_elements(obj, elements):
 def test_get_ephemerides(obj, ephem, field):
     e = horizons.get_ephemerides(obj)
     assert isinstance(e, Table)
-    npt.assert_approx_equal(e[field], ephem[field])
+    npt.assert_approx_equal(e[field][0], ephem[field][0])
 
 
 def test_verify_object_name(obj):

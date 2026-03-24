@@ -179,8 +179,8 @@ def stack_c2nc2(data, header, variance=None, bglevel=None, extra=None):
 
     chopscale = np.array([[scale[on] / scale[~on]]]).T
     for val in chopscale:
-        addhist(header, 'Scaling for frame 2: %f' % val)
-        log.info('Scaling for frame 2: %f' % val)
+        addhist(header, 'Scaling for frame 2: %f' % np.squeeze(val))
+        log.info('Scaling for frame 2: %f' % np.squeeze(val))
     chopsub = chopsub[on] - (chopsub[~on] * chopscale)
     if dovar:
         var = var[on] + (var[~on] * (chopscale ** 2))
@@ -292,7 +292,9 @@ def stack_map(data, header, variance=None, bglevel=None, extra=None):
 
     # Additional reporting to the user and header
     for i in range(d.shape[0] // 4):
-        scales = chopscale[i * 2], chopscale[i * 2 + 1], nodscale[i]
+        scales = (np.squeeze(chopscale[i * 2]),
+                  np.squeeze(chopscale[i * 2 + 1]),
+                  np.squeeze(nodscale[i]))
         if bglevel is not None:
             addhist(header, 'Scaling factors for frames '
                             '2,3,4: %f,%f,%f' % scales)

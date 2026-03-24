@@ -10,7 +10,6 @@ on:
       - sdc-dev
   pull_request:
     branches:
-      - fifi-pointing-discard
       - sdc-dev
 
 jobs:
@@ -38,7 +37,7 @@ jobs:
           git diff --diff-filter=rd --name-status ${ref:-HEAD~} -- '*.py' \
           | cut -f 2- \
           | xargs -d '\n' -r tox -e check-style -- --force-exclude
-    
+
   unit-tests:
     name: Unit Tests ${{ matrix.pyver }} ${{ matrix.toxenv }}
     runs-on: self-hosted
@@ -58,7 +57,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up python      
+      - name: Set up python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.pyver }}

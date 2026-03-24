@@ -453,8 +453,10 @@ def pipecal_photometry(image, variance, srcpos=None,
         # scale background flux to source aperture area
         sky_area = sky_aper.area
         src_area = src_aper.area
-        bg_sum = bg_table['aperture_sum'] * src_area / sky_area
-        varsky = varbg_table['aperture_sum'] * (src_area / sky_area)**2
+        bg_sum = (float(np.asarray(bg_table['aperture_sum']).squeeze())
+                  * src_area / sky_area)
+        varsky = (float(np.asarray(varbg_table['aperture_sum']).squeeze())
+                  * (src_area / sky_area)**2)
 
         # store sky value as average per pixel
         sky = float(bg_sum / sky_area)
@@ -478,10 +480,10 @@ def pipecal_photometry(image, variance, srcpos=None,
     # subtract background from source flux
     if not np.isfinite(float(bg_sum)):
         bg_sum = 0.0
-    final_sum = raw_table['aperture_sum'] - bg_sum
+    final_sum = float(np.asarray(raw_table['aperture_sum']).squeeze()) - bg_sum
 
     # variance is summed over the aperture
-    varflux = var_table['aperture_sum']
+    varflux = float(np.asarray(var_table['aperture_sum']).squeeze())
 
     # propagate sky error to subtracted source error
     varflux += varsky
