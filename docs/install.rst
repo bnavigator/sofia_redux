@@ -104,7 +104,7 @@ from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
   as an input ATRAN directory. ECMWF water vapor data are also stored in DaRUS, and can also either be automatically retrieved
   by the pipeline, or downloaded and locally stored. See the user manual for details.
   
-  - SDC-ATRAN models, organised by flight altitude
+  - SDC-ATRAN models, organized by flight altitude
 
     - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad?q=atran&types=datasets>`__
     - Size: 3.6 GB
