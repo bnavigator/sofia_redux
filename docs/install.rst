@@ -75,16 +75,14 @@ reductions require a library of FITS files, containing model atmospheric
 transmission spectra, derived from the
 `ATRAN model <https://atran.arc.nasa.gov/cgi-bin/atran/atran.cgi>`__.
 
-Two versions of the model libraries are available for each instrument, except
-FLITECAM.  ATRAN files parameterized by water vapor are not available for
-FLITECAM.
-
 The EXES pipeline does not use ATRAN models for telluric correction, but it
 does attach a reference atmospheric model at a matching altitude and zenith
 angle to output spectral products, if available. The models used are derived
 from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
 
 - FORCAST:
+
+  For FORCAST, two versions of the ATRAN libraries are available, with and without water vapor parameterization.
 
   - Approximate models, not accounting for water vapor variation
 
@@ -101,21 +99,27 @@ from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
 
 - FIFI-LS:
 
-  - Approximate models, not accounting for water vapor variation
+  For FIFI-LS, modified SDC-ATRAN models, parameterized by water vapor, are stored in the DaRUS data repository.
+  The Pipeline will attempt to retrieve these automatically, however they can also be downloaded and stored locally, and specified
+  as an input ATRAN directory. ECMWF water vapor data are also stored in DaRUS, and can also either be automatically retrieved
+  by the pipeline, or downloaded and locally stored. See the user manual for details.
+  
+  - SDC-ATRAN models, organised by flight altitude
 
-    - Download: `atran_fifi-ls_standard.tgz <https://irsa.ipac.caltech.edu/data/SOFIA/ATRAN_FITS/atran_fifi-ls_standard.tgz>`__
-    - Size: 143.9 MB
-    - MD5 checksum: 9a6480d5967f4287388a3070e71e40e8
+    - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad?q=atran&types=datasets>`__
+    - Size: 3.6 GB
+    - MD5 checksum: 
 
-  - More accurate models, enabling use of water vapor values
-    recorded in the FITS headers for more accurate telluric correction
+  - ECMWF water vapour data for all FIFI-LS flights
 
-    - Download: `atran_fifi-ls_wv.tgz <https://irsa.ipac.caltech.edu/data/SOFIA/ATRAN_FITS/atran_fifi-ls_wv.tgz>`__
-    - Size: 2.8 GB
-    - MD5 checksum: 486a34fd229b13d8e45768f3664fff64
+    - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-5728>`__
+    - Size: 340.6 MB
+    - MD5 checksum: 
 
 - FLITECAM:
 
+  For FLITECAM, only approximate ATRAN models, with water vapor parameterized by flight altitude, are available.
+  
   - Approximate models, not accounting for water vapor variation
 
     - Download: `atran_flitecam_standard.tgz <https://irsa.ipac.caltech.edu/data/SOFIA/ATRAN_FITS/atran_flitecam_standard.tgz>`__
