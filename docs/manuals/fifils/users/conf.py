@@ -34,7 +34,7 @@ from pathlib import Path
 from tomllib import load as toml_load
 
 try:
-    from sphinx_astropy.conf.v1 import *  # noqa
+    from sphinx_astropy.conf.v2 import *  # noqa
 except ImportError:
     print('ERROR: the documentation requires the sphinx-astropy package to be installed')
     sys.exit(1)
@@ -72,7 +72,7 @@ rst_epilog += """
 
 # NASA document number and revision
 docnumber = 'SDC-MAN-0001'
-issue = '02'
+issue = '03'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']

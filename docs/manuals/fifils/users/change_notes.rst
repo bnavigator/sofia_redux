@@ -12,6 +12,7 @@ data, check the ``PIPEVERS`` keyword in the FITS header to determine the
 pipeline version used.
 
 
+
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 02*
@@ -20,6 +21,11 @@ FIFI-LS Redux v2.10.0
   ramp discard, OTF noise reduction and atran file interpolation.
 - Final DSI data files added, including 2024 flux response curves,
   updated flat fields, bad pixel tables and wavelength calibration sheets.
+
+*User manual: Iss. 03*
+
+- Add a description for the Narrow Line Mode (NLM) and
+  Z and Rest Wavelength Override
 
 FIFI-LS Redux v2.9.0
 ~~~~~~~~~~~~~~~~~~~~
