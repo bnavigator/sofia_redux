@@ -5,6 +5,7 @@ on:
     types: [closed]
     paths:
       - 'docs/**'
+      - CHANGES.rst
 
 jobs:
   cleanup-pr-docs:
