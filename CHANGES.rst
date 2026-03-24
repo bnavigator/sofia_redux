@@ -1,3 +1,26 @@
+1.4.3 (2026-03-24)
+==================
+
+- Fix compatibility with NumPy 2.4
+
+  - Numba 0.64 has been released and unlocked Numpy 2.4 for us, revealing some
+    issues with the handling of scalars and 0-dimensional arrays.
+
+- New home for the Redux documentation: https://redux.sofiadatacenter.de
+
+  - The documentation has been migrated to a new server hosted by the SOFIA Data Center.
+  - The new documentation uses the
+    `PyData Sphinx Theme <https://pydata-sphinx-theme.readthedocs.io/en/stable/>`__
+    following most of the Scientific Python stack projects.
+  - A version selector dropdown now let's you easily switch between documentation
+    for different versions of the software.
+
+- FIFI-LS User Manual Iss. 03:
+
+   - Add a description for the Narrow Line Mode (NLM) and
+     Z and Rest Wavelength Override parameters to the documentation.
+
+
 1.4.2 (2026-01-30)
 ==================
 
