@@ -745,7 +745,7 @@ combination with the estimated line-of-sight water vapor content
 
 Using the modified SDC-ATRAN code, a set of ATRAN models appropriate for a range of altitudes,
 zenith angles, and PWV values has been generated for pipeline use, and are stored in
-the DaRUS data repository [#fn_fifi_sdcatran]_. The pipeline will attempt to retreve these automatically,
+the DaRUS data repository [#fn_fifi_sdcatran]_. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directry is specified, or a single ATRAN file is specified. In the
 the DaRUS data repository. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
