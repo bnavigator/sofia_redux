@@ -12,13 +12,13 @@
   - The new documentation uses the
     `PyData Sphinx Theme <https://pydata-sphinx-theme.readthedocs.io/en/stable/>`__
     following most of the Scientific Python stack projects.
-  - A version selector dropdown now let's you easily switch between documentation
+  - A version selector dropdown now lets you easily switch between documentation
     for different versions of the software.
 
 - FIFI-LS User Manual Iss. 03:
 
    - Add a description for the Narrow Line Mode (NLM) and
-     Z and Rest Wavelength Override parameters to the documentation.
+     redshift and rest wavelength override parameters to the documentation.
 
 
 1.4.2 (2026-01-30)
