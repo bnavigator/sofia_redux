@@ -12,7 +12,6 @@ data, check the ``PIPEVERS`` keyword in the FITS header to determine the
 pipeline version used.
 
 
-
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 02*

@@ -17,9 +17,8 @@
 
 - FIFI-LS User Manual Iss. 03:
 
-   - Add a description for the Narrow Line Mode (NLM) and
-     redshift and rest wavelength override parameters to the documentation.
-
+  - Add a description for the Narrow Line Mode (NLM) and redshift
+    and rest wavelength override parameters to the documentation.
 
 1.4.2 (2026-01-30)
 ==================
