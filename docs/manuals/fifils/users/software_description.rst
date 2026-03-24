@@ -391,11 +391,6 @@ Some key parameters to note are listed below.
    -  *Cutoff value*: Modify to adjust the transmission
       fraction below which the telluric-corrected data will be set to NaN.
 
-   -  *Use WV values*: Select to use water vapor values from the header
-      (keyword ``WVZ_OBS``) to select the ATRAN file to apply.  This option
-      will have no effect unless the ATRAN directory is set to a location
-      containing ATRAN files derived for different PWV values.
-
    -  *Use ECMWF WV values*: Select to source water vapor values directly from
       ECMWF satellite data, which will be subsequently scaled to FIFI-LS values.
       This requires an ECMWF directory to be specified. If unticked, the
@@ -406,6 +401,15 @@ Some key parameters to note are listed below.
       Requires the *Use ECMWF WV values* option to be ticked.
       If left blank, the pipeline will attempt to source ECMWF data from
       the DaRUS data repository.
+
+   -  *Narrow Line Mode (NLM)*: Select to use Narrow Line Mode for telluric correction.
+      A single transmission value will be used for the complete wavelength
+      range of the input data, determined from the redshift-corrected wavelength of the
+      observed spectral line, using header keywords ``RESTWAV`` and ``REDSHIFT``.
+
+   -  *(NLM) Z and Rest Wavelength Override*: Select to override automatic identification
+      of the redshift and rest wavelength for the NLM telluric correction. Values for these
+      can be manually specified in the subsequent two fields.
 
 -  **Flux Calibrate**
 

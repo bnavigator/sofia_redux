@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from sofia_redux.instruments.fifi_ls.get_atran \
-    import get_atran, clear_atran_cache, get_atran_interpolated
+    import clear_atran_cache, get_atran
 from sofia_redux.instruments.fifi_ls.get_resolution \
     import get_resolution, clear_resolution_cache
 from sofia_redux.toolkit.utilities \
@@ -19,7 +19,8 @@ __all__ = ['apply_atran', 'telluric_correct', 'wrap_telluric_correct']
 
 
 @nb.njit(cache=True, nogil=False, parallel=False, fastmath=False)
-def apply_atran_correction(wave, data, var, atran, cutoff, transmission_narrow, narrow):  # pragma: no cover
+def apply_atran_correction(wave, data, var, atran, cutoff,  # pragma: no cover
+                           transmission_narrow, narrow):
     """
     Apply an atmospheric transmission correction to the flux data.
 
@@ -97,7 +98,8 @@ def apply_atran_correction(wave, data, var, atran, cutoff, transmission_narrow, 
                     atran_store[n, k, i] = transmission_narrow
                     if transmission_narrow >= cutoff:
                         tel_corr[n, k, i] = y[k] / transmission_narrow
-                        var_corr[n, k, i] = v[k] / transmission_narrow / transmission_narrow
+                        var_corr[n, k, i] = (v[k] / transmission_narrow
+                                             / transmission_narrow)
                     else:
                         tel_corr[n, k, i] = np.nan
                         var_corr[n, k, i] = np.nan
@@ -132,8 +134,8 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
         they might not be available in older observations), but provided
         manually.
     restwav : float, optionl
-        Rest wave length of observed line for narrow line mode. Only used if hrd_ovr
-        is set
+        Rest wavelength of observed line for narrow line mode.
+        Only used if hrd_ovr is set.
     redshift : float, optionl
         Redhift z of observed line for narrow line mode. Only used if hrd_ovr
         is set
@@ -156,18 +158,20 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
 
 
     if narrow:
-        # Wavelength from header for OTF or as config parameter as keyword only in newer observations
-        # wl =  Restwavelength * (1+ redshift) --> Property of line going through the atmosphere
-        # G_WAV_[R/B] is property of instrument and is applied to detector, can vary as per grating
-        # position. Is used for resolution as this is also property of intrument
+        # Wavelength from header for OTF or as config parameter
+        # (keyword only in newer observations)
+        # wl = Restwavelength * (1 + redshift)
+        # -> Property of line going through the atmosphere
+        # G_WAV_[R/B] is property of instrument, applied to detector,
+        # can vary per grating position. Used for resolution.
         if not hdr_ovr:
             try:
                 restwav = hdul[0].header['RESTWAV']
                 redshift =  hdul[0].header['REDSHIFT']
             except KeyError:
-                raise ValueError('Missing RESTWAV and REDSHIFT keys in headers, '
-                                 'use "Z and Rest Wavelength Override" option and provide '
-                                 'values manually.')
+                raise ValueError(
+                    'Missing RESTWAV and REDSHIFT keys in headers. '
+                    'Use "Z and Rest Wavelength Override" option.')
 
         wl = restwav*(1+redshift)
         aw = atran[0]
@@ -233,16 +237,20 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
     return result
 
 
-def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
+def telluric_correct(filename, atran_dir=None, atran_file=None, cutoff=0.6,
                      skip_corr=False, write=False, outdir=None, narrow=False,
-                     hdr_ovr=True, restwav=0.0, redshift=0.0):
+                     hdr_ovr=True, restwav=0.0, redshift=0.0,
+                     use_ecmwf=True, ecmwf_dir=None, ozone_model=39,
+                     interpolated=True):
     """
     Correct spectra for atmospheric absorption features.
 
     The procedure is:
 
-        1. Identify ATRAN file to use.  Smooth it to the spectral
-           resolution of the input file.
+        1. Identify ATRAN file to use based on altitude, zenith angle,
+           and water vapor. If use_ecmwf is set, water vapor is retrieved
+           from ECMWF reanalysis data. Otherwise header values are used.
+           Smooth the ATRAN data to the spectral resolution of the input.
         2. Interpolate the atmospheric transmission data onto the wavelength
            value of each spexel. Divide the data at each point by the
            transmission value.
@@ -268,9 +276,11 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
     cutoff : float, optional
         Used as the fractional transmission below which data will
         be set to NaN. Set to 0 to keep all data.
-    use_wv : bool, optional
-        If set, water vapor values from the header will be used
-        to select the correct ATRAN file.
+    use_ecmwf : bool, optional
+        If set, water vapor values will be retrieved from ECMWF
+        reanalysis files instead of the header.
+    ecmwf_dir : str, optional
+        Path to directory containing ECMWF FITS files.
     skip_corr : bool, optional
         If set, telluric correction will not be applied, but ATRAN
         spectra will still be attached to the output file.
@@ -313,9 +323,14 @@ def telluric_correct(filename, atran_dir=None, cutoff=0.6, use_wv=False,
 
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
-    atran_data = get_atran_interpolated(hdul[0].header, resolution=resolution,
-                           atran_dir=atran_dir, use_wv=use_wv,
-                           get_unsmoothed=True)
+    atran_data = get_atran(hdul[0].header, resolution=resolution,
+                           atran_file=atran_file,
+                           atran_dir=atran_dir,
+                           get_unsmoothed=True,
+                           use_ecmwf=use_ecmwf,
+                           ecmwf_dir=ecmwf_dir,
+                           ozone_model=ozone_model,
+                           interpolated=interpolated)
     if atran_data is None or atran_data[0] is None:
         log.error("Unable to get ATRAN data")
         return
@@ -339,10 +354,12 @@ def telluric_correct_wrap_helper(_, kwargs, filename):
 
 
 def wrap_telluric_correct(files, outdir=None, allow_errors=False,
-                          atran_dir=None, cutoff=0.6, use_wv=False,
+                          atran_dir=None, atran_file=None, cutoff=0.6,
                           skip_corr=False, write=False,
                           jobs=None, narrow=False, hdr_ovr=True,
-                          redshift=0.0, restwav=0.0):
+                          redshift=0.0, restwav=0.0,
+                          use_ecmwf=True, ecmwf_dir=None, ozone_model=39,
+                          interpolated=True):
     """
     Wrapper for telluric_correct over multiple files.
 
@@ -365,9 +382,11 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
     cutoff : float, optional
         Used as the fractional transmission below which data will
         be set to NaN. Set to 0 to keep all data.
-    use_wv : bool, optional
-        If set, water vapor values from the header will be used
-        to select the correct ATRAN file.
+    use_ecmwf : bool, optional
+        If set, water vapor values will be retrieved from ECMWF
+        reanalysis files instead of the header.
+    ecmwf_dir : str, optional
+        Path to directory containing ECMWF FITS files.
     skip_corr : bool, optional
         If set, telluric correction will not be applied, but ATRAN
         spectra will still be attached to the output file.
@@ -394,9 +413,12 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
     clear_atran_cache()
 
     kwargs = {'outdir': outdir, 'write': write, 'atran_dir': atran_dir,
-              'cutoff': cutoff, 'use_wv': use_wv, 'skip_corr': skip_corr,
-              'narrow': narrow, 'hdr_ovr': hdr_ovr, 'redshift':redshift,
-              'restwav': restwav}
+              'atran_file': atran_file, 'cutoff': cutoff,
+              'skip_corr': skip_corr,
+              'narrow': narrow, 'hdr_ovr': hdr_ovr, 'redshift': redshift,
+              'restwav': restwav, 'use_ecmwf': use_ecmwf,
+              'ecmwf_dir': ecmwf_dir, 'ozone_model': ozone_model,
+              'interpolated': interpolated}
 
     output = multitask(telluric_correct_wrap_helper, files, None, kwargs,
                        jobs=jobs)

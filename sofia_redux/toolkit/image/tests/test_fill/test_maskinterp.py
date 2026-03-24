@@ -33,6 +33,9 @@ def test_expected(image):
 def test_statistical(image):
     result = maskinterp(image, func=np.nanmean, statistical=True)
     assert np.allclose(result, 1)
+    result2 = maskinterp(image, func=lambda x: np.array([np.nanmean(x)]),
+                         statistical=True)
+    assert np.allclose(result2, 1)
 
 
 def test_creep(image):

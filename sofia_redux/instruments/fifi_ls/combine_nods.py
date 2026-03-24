@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 
 from sofia_redux.instruments.fifi_ls.apply_static_flat import (calculate_flat,
                                                                get_flat)
-from sofia_redux.instruments.fifi_ls.get_atran import get_atran_interpolated
+from sofia_redux.instruments.fifi_ls.get_atran import get_atran
 from sofia_redux.instruments.fifi_ls.get_resolution import get_resolution
 from sofia_redux.instruments.fifi_ls.lambda_calibrate import wave
 from sofia_redux.instruments.fifi_ls.make_header import make_header
@@ -141,10 +141,11 @@ def _atransmission(hdul,row,hdr0, hdul0):
 
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
-    atran_data = get_atran_interpolated(
+    atran_data = get_atran(
         hdr0, resolution=resolution,
-        atran_dir=None, use_wv=True,
-        get_unsmoothed=True
+        atran_dir=None,
+        get_unsmoothed=True,
+        interpolated=True
     )
 
     if atran_data is None or atran_data[0] is None:
@@ -261,10 +262,11 @@ def _telluric_scaling(hdul, brow, hdr0, hdul0, sig_rel):
 
     # Get ATRAN data from input file or default on disk, smoothed to
     # current resolution
-    atran_data = get_atran_interpolated(
+    atran_data = get_atran(
         hdr0, resolution=resolution,
-        atran_dir=None, use_wv=True,
-        get_unsmoothed=True
+        atran_dir=None,
+        get_unsmoothed=True,
+        interpolated=True
     )
 
     if atran_data is None or atran_data[0] is None:
@@ -447,7 +449,8 @@ def _telluric_scaling(hdul, brow, hdr0, hdul0, sig_rel):
     popt_sig = np.array(popt_sig)
     popt_b_sig = np.array(popt_b_sig)
     t = np.transpose(np.array(t))
-    return popt, t, flatval, popt_b, em_opt_b, popt_sig, popt_b_sig, em_opt, w_cal
+    return (popt, t, flatval, popt_b, em_opt_b,
+            popt_sig, popt_b_sig, em_opt, w_cal)
 
 
 def classify_files(filenames, offbeam=False):
@@ -792,32 +795,55 @@ def combine_extensions(df, b_nod_method='nearest', bg_scaling=False,
                     a_hdu_hdr = arow['hdul'][a_fname].header
                     a_shape = arow['hdul'][a_fname].data.shape
                     # Perform telluric scaling
-                    med = False        # True: Takes median of factors. False: Takes curve fit params for each spaxel
-                    sig = True       # True: Sigma into curve fit. False: No sigma into curve fit
+                    # True: median of factors; False:
+                    # curve fit params per spaxel
+                    med = False
+                    # True: Sigma into curve fit; False: No sigma into curve fit
+                    sig = True
                     sig_rel = False    # True: Normed Sigma. False: STDDEV
-                    ac = False       # True: only a and c fit, False: a, b and c fit
-                    if telluric_scaling_on: 
+                    # True: only a and c fit; False: a, b and c fit
+                    ac = False
+                    if telluric_scaling_on:
                         if len(a_shape) == 3:
-                            popt1, t1 , b1_flat, popt1_b, b1_fitted_b, popt1_sig, popt1_b_sig, b1_fitted, lambda1 = \
-                                    _telluric_scaling(brow['hdul'][b_fname],brow, brow['hdul'][0].header, brow['hdul'], sig_rel)
-                            popt2, t2, b2_flat, popt2_b, b2_fitted_b, popt2_sig, popt2_b_sig, b2_fitted, lambda2 =  \
-                                    _telluric_scaling(brow2['hdul'][b_fname],brow2, brow2['hdul'][0].header, brow2['hdul'], sig_rel)
-                            ta = _atransmission(arow['hdul'][a_fname],arow, arow['hdul'][0].header, arow['hdul'])
+                            (popt1, t1, b1_flat, popt1_b, b1_fitted_b,
+                             popt1_sig, popt1_b_sig, b1_fitted,
+                             lambda1) = _telluric_scaling(
+                                brow['hdul'][b_fname], brow,
+                                brow['hdul'][0].header,
+                                brow['hdul'], sig_rel)
+                            (popt2, t2, b2_flat, popt2_b, b2_fitted_b,
+                             popt2_sig, popt2_b_sig, b2_fitted,
+                             lambda2) = _telluric_scaling(
+                                brow2['hdul'][b_fname], brow2,
+                                brow2['hdul'][0].header,
+                                brow2['hdul'], sig_rel)
+                            ta = _atransmission(
+                                arow['hdul'][a_fname], arow,
+                                arow['hdul'][0].header, arow['hdul'])
                             # reshape into data.shape (16, 25)
-                            numspexel, numspaxel = brow['hdul'][b_fname].data.shape
+                            numspexel, numspaxel = (
+                                brow['hdul'][b_fname].data.shape)
 
                             if ac:
                                 if sig:
                                     # Only a and c curve fit parameters
-                                    a1 =popt1_sig[:, 0]  # Extracts the first column (a values)
-                                    c1= popt1_sig[:, 1]  # Extracts the 2nd column (c values if no b values)
-                                    a2 =popt2_sig[:, 0]  # Extracts the first column (a values)
-                                    c2= popt2_sig[:, 1]  # Extracts the 2nd column (c values if no b values)
+                                    # First column (a values)
+                                    a1 = popt1_sig[:, 0]
+                                    # Second column (c values, no b)
+                                    c1 = popt1_sig[:, 1]
+                                    # First column (a values)
+                                    a2 = popt2_sig[:, 0]
+                                    # Second column (c values, no b)
+                                    c2 = popt2_sig[:, 1]
                                 else:
-                                    a1 =popt1[:, 0]  # Extracts the first column (a values)
-                                    c1= popt1[:, 1]  # Extracts the 2nd column (c values if no b values)
-                                    a2 =popt2[:, 0]  # Extracts the first column (a values)
-                                    c2= popt2[:, 1]  # Extracts the 2nd column (c values if no b values)
+                                    # First column (a values)
+                                    a1 = popt1[:, 0]
+                                    # Second column (c values, no b)
+                                    c1 = popt1[:, 1]
+                                    # First column (a values)
+                                    a2 = popt2[:, 0]
+                                    # Second column (c values, no b)
+                                    c2 = popt2[:, 1]
                                 if med:
                                     a1 = np.nanmedian(a1)
                                     a2 = np.nanmedian(a2)
@@ -834,16 +860,26 @@ def combine_extensions(df, b_nod_method='nearest', bg_scaling=False,
                                     c1_full= np.tile(c1, (numspexel, 1))
                                     a2_full= np.tile(a2, (numspexel, 1))
                                     c2_full= np.tile(c2, (numspexel, 1))
-                                b1_fitted = a1_full + np.multiply(c1_full,(1-t1))
-                                b2_fitted = a2_full + np.multiply(c2_full,(1-t2))
+                                b1_fitted = a1_full + np.multiply(
+                                    c1_full, (1-t1))
+                                b2_fitted = a2_full + np.multiply(
+                                    c2_full, (1-t2))
 
-                                telfac1 = 1 +  np.divide(c1_full,b1_fitted)*(t1-ta)
-                                telfac2 = 1 +  np.divide(c2_full,b2_fitted)*(t2-ta)
-                                b_flux = np.multiply(b_flux,telfac1)
-                                b_flux2 = np.multiply(brow2['hdul'][b_fname].data,telfac2)
+                                telfac1 = 1 + np.divide(
+                                    c1_full, b1_fitted) * (t1-ta)
+                                telfac2 = 1 + np.divide(
+                                    c2_full, b2_fitted) * (t2-ta)
+                                b_flux = np.multiply(b_flux, telfac1)
+                                b_flux2 = np.multiply(
+                                    brow2['hdul'][b_fname].data,
+                                    telfac2)
                                 bdata = np.array([b_flux, b_flux2])
-                                berr = np.array([np.multiply(np.sqrt(b_var),telfac1),
-                                        np.multiply(brow2['hdul'][b_sname].data,telfac2)])
+                                berr = np.array([
+                                    np.multiply(np.sqrt(b_var),
+                                                telfac1),
+                                    np.multiply(
+                                        brow2['hdul'][b_sname].data,
+                                        telfac2)])
                             else:   # a ,b and c curve fit parameters
                                 if sig:
                                     a1_b = popt1_b_sig[:, 0]
@@ -868,12 +904,18 @@ def combine_extensions(df, b_nod_method='nearest', bg_scaling=False,
                                     b2_b = np.nanmedian(b2_b)
                                     c2_b = np.nanmedian(c2_b)
 
-                                    a1_b_full= np.full((numspexel, numspaxel), a1_b)
-                                    b1_b_full= np.full((numspexel, numspaxel), b1_b)
-                                    c1_b_full= np.full((numspexel, numspaxel), c1_b)
-                                    a2_b_full= np.full((numspexel, numspaxel), a2_b)
-                                    b2_b_full= np.full((numspexel, numspaxel), b2_b)
-                                    c2_b_full= np.full((numspexel, numspaxel), c2_b)
+                                    a1_b_full = np.full(
+                                        (numspexel, numspaxel), a1_b)
+                                    b1_b_full = np.full(
+                                        (numspexel, numspaxel), b1_b)
+                                    c1_b_full = np.full(
+                                        (numspexel, numspaxel), c1_b)
+                                    a2_b_full = np.full(
+                                        (numspexel, numspaxel), a2_b)
+                                    b2_b_full = np.full(
+                                        (numspexel, numspaxel), b2_b)
+                                    c2_b_full = np.full(
+                                        (numspexel, numspaxel), c2_b)
                                 else:
 
                                     # Reshape into a 2D array (16, 25)
@@ -884,20 +926,36 @@ def combine_extensions(df, b_nod_method='nearest', bg_scaling=False,
                                     b2_b_full= np.tile(b2_b, (numspexel, 1))
                                     c2_b_full= np.tile(c2_b, (numspexel, 1))
 
-                                b1_fitted_b = a1_b_full + np.multiply(b1_b_full, lambda1) + np.multiply(c1_b_full,(1-t1))
-                                b2_fitted_b  = a2_b_full + np.multiply(b2_b_full, lambda2) + np.multiply(c2_b_full,(1-t2))
+                                b1_fitted_b = (
+                                    a1_b_full
+                                    + np.multiply(b1_b_full, lambda1)
+                                    + np.multiply(c1_b_full, (1-t1)))
+                                b2_fitted_b = (
+                                    a2_b_full
+                                    + np.multiply(b2_b_full, lambda2)
+                                    + np.multiply(c2_b_full, (1-t2)))
 
-                                telfac1_b = 1 +  np.divide(c1_b_full,b1_fitted_b)*(t1-ta)
-                                telfac2_b = 1 +  np.divide(c2_b_full,b2_fitted_b)*(t2-ta)
+                                telfac1_b = 1 + np.divide(
+                                    c1_b_full, b1_fitted_b) * (t1-ta)
+                                telfac2_b = 1 + np.divide(
+                                    c2_b_full, b2_fitted_b) * (t2-ta)
 
-                                b_flux = np.multiply(b_flux,telfac1_b)
-                                b_flux2 = np.multiply(brow2['hdul'][b_fname].data,telfac2_b)
+                                b_flux = np.multiply(b_flux, telfac1_b)
+                                b_flux2 = np.multiply(
+                                    brow2['hdul'][b_fname].data,
+                                    telfac2_b)
                                 bdata = np.array([b_flux, b_flux2])
-                                berr = np.array([np.multiply(np.sqrt(b_var),telfac1_b),
-                                        np.multiply(brow2['hdul'][b_sname].data,telfac2_b)])
-                        else:                       
-                            log.warning("Telluric scaling not available for pointed data.  \n"
-                                        "Skipping telluric scaling")
+                                berr = np.array([
+                                    np.multiply(np.sqrt(b_var),
+                                                telfac1_b),
+                                    np.multiply(
+                                        brow2['hdul'][b_sname].data,
+                                        telfac2_b)])
+                        else:
+                            log.warning(
+                                "Telluric scaling not available "
+                                "for pointed data.  \n"
+                                "Skipping telluric scaling")
                             b_flux2 = brow2['hdul'][b_fname].data
                             bdata = np.array([b_flux, b_flux2])
                             berr = np.array([np.sqrt(b_var),

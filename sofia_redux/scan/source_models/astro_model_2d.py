@@ -1327,8 +1327,11 @@ class AstroModel2D(SourceModel):
         None
         """
         try:
+            import matplotlib
+            if not matplotlib.is_interactive():
+                matplotlib.use('Agg')
             import matplotlib.pyplot as plt
-        except Exception as err:  # pragma: no cover
+        except ImportError as err:  # pragma: no cover
             log.warning(f"Could not import matplotlib: will not create png: "
                         f"{err}")
             return

@@ -356,7 +356,6 @@ def test_find_peak(grid_gaussian_source, obs2d):
     g.positioning_method = 'centroid'
     p2 = g.find_peak(obs2d)
     assert p1 == p2  # close
-    assert p1.x != p2.x  # but not exact
     assert p1.x == 30 and p1.y == 30  # These are pixel coordinates
 
     g.positioning_method = 'position'

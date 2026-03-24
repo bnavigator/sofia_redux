@@ -736,7 +736,11 @@ class FIFILSReduction(Reduction):
         skip_tell = param.get_value('skip_tell')
         cutoff = param.get_value('cutoff')
         atran_dir = param.get_value('atran_dir')
-        use_wv = param.get_value('use_wv')
+        atran_file = param.get_value('atran_file')
+        ozone_model = param.get_value('ozone_model')
+        interpolated = param.get_value('interpolated')
+        use_ecmwf = param.get_value('use_ecmwf')
+        ecmwf_dir = param.get_value('ecmwf_dir')
         narrow = param.get_value('narrow')
         hdr_ovr = param.get_value('hdr_ovr')
         restwav = param.get_value('restwav')
@@ -752,17 +756,29 @@ class FIFILSReduction(Reduction):
 
         if str(atran_dir).strip() == '':
             atran_dir = None
+        if str(ecmwf_dir).strip() == '':
+            ecmwf_dir = None
 
         if skip_tell:
             log.info('ATRAN file is attached, but no correction performed.')
 
+        if str(atran_file).strip() in ('', 'None'):
+            atran_file = None
+
         result = wrap_telluric_correct(self.input, write=False,
                                        jobs=jobs, allow_errors=True,
-                                       atran_dir=atran_dir, cutoff=cutoff,
-                                       use_wv=use_wv, skip_corr=skip_tell,
+                                       atran_dir=atran_dir,
+                                       atran_file=atran_file,
+                                       cutoff=cutoff,
+                                       skip_corr=skip_tell,
                                        narrow=narrow,
-                                       redshift=redshift, hdr_ovr=hdr_ovr,
-                                       restwav=restwav)
+                                       redshift=redshift,
+                                       hdr_ovr=hdr_ovr,
+                                       restwav=restwav,
+                                       use_ecmwf=use_ecmwf,
+                                       ecmwf_dir=ecmwf_dir,
+                                       ozone_model=ozone_model,
+                                       interpolated=interpolated)
         if not result:
             msg = 'Problem in fifi_ls.telluric_correct.'
             log.error(msg)

@@ -402,6 +402,7 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
             Type of file item to select.
         """
         pickButton = QtWidgets.QPushButton(self.groupBox)
+        pickButton.setObjectName(f'{key}_button')
         open_icon =self.style().standardIcon(
             QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton
         )
@@ -552,6 +553,22 @@ class EditParam(QtWidgets.QDialog, ui_edit_param.Ui_Dialog):
             else:
                 log.warning('Unknown widget type: {}'.format(param['wtype']))
                 continue
+
+        # If use_ecmwf is unticked the ecmwf_dir field cannot be set
+        ecmwf_cb = self.container.findChild(
+            QtWidgets.QCheckBox, 'use_ecmwf')
+        ecmwf_dir_box = self.container.findChild(
+            QtWidgets.QLineEdit, 'ecmwf_dir')
+        ecmwf_dir_btn = self.container.findChild(
+            QtWidgets.QPushButton, 'ecmwf_dir_button')
+        if ecmwf_cb is not None and ecmwf_dir_box is not None:
+            def _set_ecmwf_dir_enabled(state):
+                enabled = bool(state)
+                ecmwf_dir_box.setEnabled(enabled)
+                if ecmwf_dir_btn is not None:
+                    ecmwf_dir_btn.setEnabled(enabled)
+            ecmwf_cb.stateChanged.connect(_set_ecmwf_dir_enabled)
+            _set_ecmwf_dir_enabled(ecmwf_cb.isChecked())
 
         # adjust size to contents, then set minimum height and width
         self.adjustSize()
