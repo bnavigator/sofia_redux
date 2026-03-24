@@ -1,3 +1,9 @@
+1.5.0 (TBD)
+===========
+- FIFI-LS User Manual Iss. 04:
+
+  - Enhancements to telluric correction.
+
 1.4.2 (2026-01-30)
 ==================
 

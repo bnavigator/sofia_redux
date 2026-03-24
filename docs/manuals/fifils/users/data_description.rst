@@ -745,6 +745,8 @@ combination with the estimated line-of-sight water vapor content
 
 Using the modified SDC-ATRAN code, a set of ATRAN models appropriate for a range of altitudes,
 zenith angles, and PWV values has been generated for pipeline use, and are stored in
+the DaRUS data repository [#fn_fifi_sdcatran]_. The pipeline will attempt to retrieve these automatically,
+unless an ATRAN directry is specified, or a single ATRAN file is specified. In the
 the DaRUS data repository. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
 telluric correction step, the pipeline uses the parameter set of observed altitude,
@@ -768,6 +770,8 @@ associated error are stored in the ``FLUX`` and ``STDDEV`` extensions.
 The uncorrected cube and its associated error are stored in the
 ``UNCORRECTED_FLUX`` and ``UNCORRECTED_STDDEV`` extensions.
 
+.. [#fn_fifi_sdcatran] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=atran
+
 Water Vapor Sources
 ^^^^^^^^^^^^^^^^^^^
 
@@ -789,7 +793,7 @@ using one of two sources:
    ``use_ecmwf`` in the config file is set to True, then the PWV is sourced directly from the
    ECMWF data. The location of the ECMWF data is specified in the *ECMWF Directory* field in the GUI, or by
    the parameter ``ecmwf_dir`` in the config file. If these are left blank, the pipeline will attempt to
-   source ECMWF data from the DaRUS data repository. The pipeline identifies
+   source ECMWF data from the DaRUS data repository [#fn_fifi_ecmwf]_. The pipeline identifies
    the satellite data which corresponds to the time and latitude of the observation, reads
    the PWV value, and scales it according to the above described method. The scaled value is stored
    in the keyword ``WVZ_FIFI``.
@@ -809,6 +813,7 @@ Note that ``WVZ_STA`` and ``WVZ_END`` are legacy values from the non-functional 
 .. [#Fischer2021] \C. Fischer *et al*. 2021 PASP 133 055001, https://doi.org/10.1088/1538-3873/abf1ca
 .. [#Iserlohe2021] \C. Iserlohe *et al*. 2021 PASP 133 055002, https://doi.org/10.1088/1538-3873/abef76
 .. [#Iserlohe2022] \C. Iserlohe *et al*. 2022 PASP 134 085001, https://doi.org/10.1088/1538-3873/ac82c5
+.. [#fn_fifi_ecmwf] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=ecmwf
 
 Narrow Line Mode
 ^^^^^^^^^^^^^^^^

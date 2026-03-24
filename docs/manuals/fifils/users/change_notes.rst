@@ -12,6 +12,14 @@ data, check the ``PIPEVERS`` keyword in the FITS header to determine the
 pipeline version used.
 
 
+FIFI-LS Redux v2.11.0
+~~~~~~~~~~~~~~~~~~~~~
+*User manual: Iss. 04*
+
+- Enhancements to telluric correction, including on-the-fly retrieval of
+  ATRAN files & ECMWF water vapor data, support for new ATRAN & ECMWF
+  data formats, and preparation for a pan-instrument ATRAN retrieval code.
+
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 02*
