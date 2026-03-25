@@ -8,16 +8,17 @@ on:
   push:
     branches:
       - sdc-dev
+      - main
   pull_request:
     branches:
       - sdc-dev
+      - main
 
 jobs:
 
   check:
     name: Check Style
-    runs-on: self-hosted
-
+    runs-on: [self-hosted, ubuntu-latest]
     steps:
       - name: checkout git
         uses: actions/checkout@v4
@@ -40,7 +41,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests ${{ matrix.pyver }} ${{ matrix.toxenv }}
-    runs-on: self-hosted
+    runs-on: [self-hosted, ubuntu-latest]
     strategy:
       matrix:
         toxenv:
