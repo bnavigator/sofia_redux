@@ -3,7 +3,7 @@
 
 - Fix compatibility with NumPy 2.4
 
-  - Numba 0.64 has been released and unlocked Numpy 2.4 for us, revealing some
+  - Numba 0.64 has been released and unlocked NumPy 2.4 for us, revealing some
     issues with the handling of scalars and 0-dimensional arrays.
 
 - New home for the Redux documentation: https://redux.sofiadatacenter.de
