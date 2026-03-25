@@ -13,6 +13,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on:
       group: sofiagharunner
+      labels: self-hosted
     steps:
       - name: Prepare SSH
         env:

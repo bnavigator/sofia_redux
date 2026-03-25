@@ -74,6 +74,7 @@ all = [
 
 [project.urls]
 Homepage = "https://github.com/SOFIA-Data-Center/sofia_redux"
+Documentation = "https://redux.sofiadatacenter.de/"
 
 [project.scripts]
 redux_pipe = "sofia_redux.pipeline.sofia.sofia_pipe:main"
