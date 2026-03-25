@@ -31,7 +31,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.GHA_RUNNER_USER }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if [ -n "${DEPLOY_HOST}" ]; then
+          if [ -z "${DEPLOY_HOST}" ]; then
             echo "No secret for DEPLOY_HOST found"
             exit 1
           fi
