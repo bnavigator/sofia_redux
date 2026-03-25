@@ -1013,7 +1013,7 @@ is calculated as follows:
 
 - Spectral coverage: :math:`\Delta\lambda` = 1.21 µm
 - Median wavelength: :math:`\lambda_{\text{median}}` = 157.875 µm
-- Spectral resolution at median: :math:`R` = :math:`d\lambda/\lambda_{\text{median}}` = 1210
+- Spectral resolution at median: :math:`R` = :math:`\delta\lambda/\lambda_{\text{median}}` = 1210
 - Spectral FWHM at median: :math:`\delta\lambda` = :math:`\lambda_{\text{median}}/R` = 157.875/1210 = 0.130 µm
 - Spectral grid spacing: :math:`dw` = :math:`\delta\lambda/\text{oversample}` = 0.130/8 = 0.016 µm
 - Output spectral grid length: :math:`nw` = :math:`\Delta\lambda/dw` = 1.21/0.016 = 75.6 pixels (rounded to 76)
