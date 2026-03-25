@@ -667,7 +667,7 @@ class TestResample:
         assert 'Output spatial pixel scale: 2.0' in capt.out
         assert 'Spectral oversample: 8' in capt.out
         assert 'Spatial oversample: 5' in capt.out
-        assert result[1].data.shape == (55, 39, 47)
+        assert result[1].data.shape == (57, 39, 47)
 
         # test pixel size override
         result = resample(files, write=False, oversample=None,

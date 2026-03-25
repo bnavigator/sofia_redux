@@ -1,3 +1,10 @@
+1.5.0 (TBD)
+===========
+- FIFI-LS User Manual Iss. 04:
+
+  - Document changes to spectral/spatial resolution data file,
+    and clarified functionality of resample.
+
 1.4.3 (2026-03-25)
 ==================
 
