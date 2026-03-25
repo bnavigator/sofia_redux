@@ -21,6 +21,11 @@ FIFI-LS Redux v2.10.0
 - Final DSI data files added, including 2024 flux response curves,
   updated flat fields, bad pixel tables and wavelength calibration sheets.
 
+*User manual: Iss. 03*
+
+- Add a description for the Narrow Line Mode (NLM) and
+ redshift and rest wavelength override
+
 FIFI-LS Redux v2.9.0
 ~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 01*

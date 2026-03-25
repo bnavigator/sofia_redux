@@ -5,14 +5,15 @@ on:
     types: [closed]
     paths:
       - 'docs/**'
+      - CHANGES.rst
 
 jobs:
   cleanup-pr-docs:
-    # Can only run with secrets on merged PRs from the same repository
-    if: >
-      ${{ github.event.pull_request.merged == true
-      && github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: sofiagharunner
+    # Can only run with secrets on PRs from the same repository
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on:
+      group: sofiagharunner
+      labels: self-hosted
     steps:
       - name: Prepare SSH
         env:

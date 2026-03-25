@@ -5,12 +5,14 @@ on:
   pull_request:
     paths:
       - 'docs/**'
+      - CHANGES.rst
     types: [opened, synchronize, reopened]
   push:
     branches:
       - sdc-dev
     paths:
       - 'docs/**'
+      - CHANGES.rst
   release:
     types: [published]
 
@@ -19,6 +21,7 @@ jobs:
     name: Build and Deploy Documentation
     runs-on:
       group: sofiagharunner
+      labels: self-hosted
     # Can only run with secrets on merged PRs from the same repository
     if: >
       ${{

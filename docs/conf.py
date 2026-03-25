@@ -71,7 +71,7 @@ rst_epilog += """
 # This does not *have* to match the package name, but typically does
 project = "sofia_redux"
 author ="SOFIA Data Center"
-copyright = f"2021-2025 SOFIA-USRA, 2025–{datetime.now(tz=UTC).year}, {author}"
+copyright = f"2021-2025 SOFIA-USRA, 2025–{datetime.now(tz=UTC).year} {author}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

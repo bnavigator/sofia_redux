@@ -32,7 +32,7 @@ software team, then are published publicly at the
 Contributions and feedback are welcome via the GitHub project.
 
 For more information about installing and using this package, see
-the `online documentation <https://pages.github.tik.uni-stuttgart.de/IRS-SOFIA-Data-Center/sofia_redux/>`__,
+the `online documentation <https://redux.sofiadatacenter.de/>`__,
 or `docs/install.rst <docs/install.rst>`__ in the source distribution.
 
 License
