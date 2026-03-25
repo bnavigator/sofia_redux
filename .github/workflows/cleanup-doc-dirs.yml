@@ -19,7 +19,7 @@ jobs:
         env:
           DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
         run: |
-          if [ -n "${DEPLOY_KEY}" ]; then
+          if [ -z "${DEPLOY_KEY}" ]; then
             echo "No secret for DEPLOY_KEY found"
             exit 1
           fi
