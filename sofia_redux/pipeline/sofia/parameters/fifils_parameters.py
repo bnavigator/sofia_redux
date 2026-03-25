@@ -359,14 +359,6 @@ DEFAULT = {
                         'all automatic file selection.',
          'dtype': 'str',
          'wtype': 'pick_file'},
-        {'key': 'ozone_model',
-         'name': 'Ozone column model [deg]',
-         'value': 39,
-         'description': 'Ozone column model in degrees. '
-                        'Available values: 9, 30, 39, 43, 59. '
-                        'Currently only 39 is available via DaRUS.',
-         'dtype': 'int',
-         'wtype': 'text_box'},
         {'key': 'interpolated',
          'name': 'Interpolate between ATRAN files',
          'value': True,

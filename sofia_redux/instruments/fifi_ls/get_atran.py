@@ -346,7 +346,7 @@ def get_wv_from_ecmwf(header, ecmwf_dir=None):
         will be downloaded from DaRUS.
 
     Returns
-    ----------
+    -------
     tuple or None
         Tuple of (wvz_ecmwf, wvz_fifi, wv_formula, filename) or None
         if ECMWF data could not be retrieved.
@@ -587,8 +587,8 @@ def get_atran(header, resolution=None, atran_file=None,
     ecmwf_dir : str, optional
         Directory containing ECMWF data files, required if use_ecmwf is True.
     ozone_model : int, optional
-        Ozone column model in degrees. Available values are 9, 30, 39, 43,
-        and 59. Currently only 39 is available via DaRUS. Default is 39.
+        Ozone column model in degrees. Currently fixed at 39, which is
+        the only model available via DaRUS. Default is 39.
     interpolated : bool, optional
         If True (default), linearly interpolate between the four ATRAN
         files bracketing the observed ZA and WV. If False, use the single
