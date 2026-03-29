@@ -1,4 +1,4 @@
-name: Build Documentation
+name: Documentation
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   build-docs:
-    name: Build Documentation
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
           path: docs/_build/html
 
   deploy-docs:
-    name: Deploy Documentation
+    name: Deploy
     runs-on:
       group: sofiagharunner
       labels: self-hosted
