@@ -125,10 +125,10 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const docsUrl = `https://redux.sofiadatacenter.de/pr-${prNumber}/`;
+            const commit = context.payload.pull_request.head.sha;
             const body = [
-              "The documentation for this PR has been built and is available at:",
-              "",
-              docsUrl
+              `The documentation for this PR has been built from commit ${commit}.`,
+              `A preview of the latest build is available at ${docsUrl}.`
             ].join("\n");
             await github.rest.issues.createComment({
               owner: context.repo.owner,
