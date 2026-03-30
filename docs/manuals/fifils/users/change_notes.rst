@@ -18,7 +18,7 @@ FIFI-LS Redux v2.11.0
 
 - Enhancements to telluric correction, including on-the-fly retrieval of
   ATRAN files & ECMWF water vapor data, support for new ATRAN & ECMWF
-  data formats, and preparation for a pan-instrument ATRAN retrieval code.
+  data formats.
 
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
