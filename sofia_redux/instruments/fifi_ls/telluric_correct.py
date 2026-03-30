@@ -135,7 +135,7 @@ def apply_atran(hdul, atran, narrow=False, cutoff=0.6, skip_corr=False,
         manually.
     restwav : float, optionl
         Rest wavelength of observed line for narrow line mode.
-        Only used if hrd_ovr is set.
+        Only used if hdr_ovr is set.
     redshift : float, optionl
         Redhift z of observed line for narrow line mode. Only used if hrd_ovr
         is set
