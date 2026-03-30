@@ -741,28 +741,14 @@ reason, telluric corrections of FIFI-LS data rely on models of the
 atmospheric absorption, as provided by codes such as ATRAN, in
 combination with the estimated line-of-sight water vapor content
 (precipitable water vapor, PWV) calculated from ECMWF satellite data
-(see Fischer *et al*. 2021 [#Fischer2021]_, Iserlohe *et al*. 2021 [#Iserlohe2021]_, 2022 [#Iserlohe2022]_ for details).
+(see `Section "Water Vapor Sources" <#water-vapor-sources>`_). 
 
-.. [#Fischer2021] \C. Fischer *et al*. 2021 PASP 133 055001, https://doi.org/10.1088/1538-3873/abf1ca
-.. [#Iserlohe2021] \C. Iserlohe *et al*. 2021 PASP 133 055002, https://doi.org/10.1088/1538-3873/abef76
-.. [#Iserlohe2022] \C. Iserlohe *et al*. 2022 PASP 134 085001, https://doi.org/10.1088/1538-3873/ac82c5
-
-The satellite data is scaled to match in-flight measurements of the telluric lines
-made with FIFI-LS during the set-up period at the start of observing legs and after
-changes of altitude. Experience has shown that these provide better corrections
-than simply using the expected value for the flight altitude and airmass,
-particularly in regions with deep, sharp features (e.g. near 63 microns).
-However, changes of PWV during flight legs are not monitored and this may
-cause inaccuracies if the value changes rapidly. Currently, PWV values are inserted
-into the FIFI-LS raw data headers via the the keyword ``WVZ_OBS``. It is expected
-that in the future, the PWV values will be derived during reduction from separate
-time-resolved tables of PWV values for each FIFI-LS flight. Note that the PWV values
-contained within the header keywords ``WVZ_STA`` and ``WVZ_END`` are
-legacy values from the non-functional Water Vapor Monitor (WVM) and
-should not be used for telluric correction.
-
-A set of ATRAN models appropriate for a range of altitudes, zenith
-angles, and PWV values has been generated for pipeline use. In the
+Using the modified SDC-ATRAN code, a set of ATRAN models appropriate for a range of altitudes,
+zenith angles, and PWV values has been generated for pipeline use, and are stored in
+the DaRUS data repository [#fn_fifi_sdcatran]_. The pipeline will attempt to retrieve these automatically,
+unless an ATRAN directry is specified, or a single ATRAN file is specified. In the
+DaRUS data repository. The pipeline will attempt to retrieve these automatically,
+unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
 telluric correction step, the pipeline uses the parameter set of observed altitude,
 zenith angle, and PWV in order to select the six models which lie adjacent to the
 observation in parameter spaces. Then, the pipeline carries out a series of two-file
@@ -783,6 +769,51 @@ remaining reduction steps. The telluric-corrected cube and its
 associated error are stored in the ``FLUX`` and ``STDDEV`` extensions.
 The uncorrected cube and its associated error are stored in the
 ``UNCORRECTED_FLUX`` and ``UNCORRECTED_STDDEV`` extensions.
+
+.. [#fn_fifi_sdcatran] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=atran
+
+Water Vapor Sources
+^^^^^^^^^^^^^^^^^^^
+
+As described above, and in Fischer *et al*. 2021 [#Fischer2021]_,
+Iserlohe *et al*. 2021 [#Iserlohe2021]_, 2022 [#Iserlohe2022]_,
+the PWV values used in the calculation of ATRAN transmission profiles are derived
+from ECMWF satellite data, obtained for each FIFI-LS flight. This data is scaled to
+match in-flight measurements of the telluric lines made with FIFI-LS during the set-up
+period at the start of observing legs and after changes of altitude. Experience has shown
+that these provide better corrections than simply using the expected value for the flight
+altitude and airmass, particularly in regions with deep, sharp features (e.g. near 63 microns).
+However, changes of PWV during flight legs are not monitored and this may cause inaccuracies
+if the value changes rapidly.
+
+The PWV data used for identification of ATRAN profiles is inserted into the pipeline
+using one of two sources:
+
+   1. If the *Use ECMWF WV values* option in the Redux GUI is ticked, or the parameter
+   ``use_ecmwf`` in the config file is set to True, then the PWV is sourced directly from the
+   ECMWF data. The location of the ECMWF data is specified in the *ECMWF Directory* field in the GUI, or by
+   the parameter ``ecmwf_dir`` in the config file. If these are left blank, the pipeline will attempt to
+   source ECMWF data from the DaRUS data repository [#fn_fifi_ecmwf]_. The pipeline identifies
+   the satellite data which corresponds to the time and latitude of the observation, reads
+   the PWV value, and scales it according to the above described method. The scaled value is stored
+   in the keyword ``WVZ_FIFI``.
+
+   2. If the *Use ECMWF WV values* option in the Redux GUI is left unticked, or the parameter
+   ``use_ecmwf`` in the config file is set to False, then the PWV is sourced from the FIFI-LS headers.
+   The pipeline reads the keyword ``WVZ_OBS``, which is a pre-computed scaling of the ECMWF data.
+   Testing has shown that these values are accurate to within roughly 10% of the values derived directly
+   from the ECMWF data.
+
+The source used for a particular pipeline product can be identified with the keyword
+``WV_SRC``, which will have the value "ECMWF" or "HEADER". The actual PWV used for the
+telluric correction and selection of ATRAN profile is stored in the keyword ``WV_USED``.
+Note that ``WVZ_STA`` and ``WVZ_END`` are legacy values from the non-functional SOFIA Water Vapor Monitor
+(WVM) and should not be used for telluric correction.
+
+.. [#Fischer2021] \C. Fischer *et al*. 2021 PASP 133 055001, https://doi.org/10.1088/1538-3873/abf1ca
+.. [#Iserlohe2021] \C. Iserlohe *et al*. 2021 PASP 133 055002, https://doi.org/10.1088/1538-3873/abef76
+.. [#Iserlohe2022] \C. Iserlohe *et al*. 2022 PASP 134 085001, https://doi.org/10.1088/1538-3873/ac82c5
+.. [#fn_fifi_ecmwf] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=ecmwf
 
 Narrow Line Mode
 ^^^^^^^^^^^^^^^^

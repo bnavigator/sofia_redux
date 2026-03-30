@@ -384,17 +384,23 @@ Some key parameters to note are listed below.
    -  *Skip telluric correction*: Select to skip correcting the data for
       telluric absorption. This option is mostly used for testing.
 
-   -  *ATRAN directory*: Use this option to select a directory containing
-      ATRAN FITS files.  This must be set in order to use water vapor
-      values for telluric correction.
+   -  *ATRAN directory*: Specify the location of ATRAN transmission files.
+      If left blank, the pipeline will attempt to source ATRAN files from
+      the DaRUS data repository.
 
    -  *Cutoff value*: Modify to adjust the transmission
       fraction below which the telluric-corrected data will be set to NaN.
 
-   -  *Use WV values*: Select to use water vapor values from the header
-      (keyword ``WVZ_OBS``) to select the ATRAN file to apply.  This option
-      will have no effect unless the ATRAN directory is set to a location
-      containing ATRAN files derived for different PWV values.
+   -  *Use ECMWF WV values*: Select to source water vapor values directly from
+      ECMWF satellite data, which will be subsequently scaled to FIFI-LS values.
+      This requires an ECMWF directory to be specified. If unticked, the
+      pipeline will source water vapor values from pre-computed scaled values
+      in the FIFI-LS headers (keyword ``WVZ_OBS``).
+
+   -  *ECMWF Directory*: Specify the location of the ECMWF satellite data.
+      Requires the *Use ECMWF WV values* option to be ticked.
+      If left blank, the pipeline will attempt to source ECMWF data from
+      the DaRUS data repository.
 
    -  *Narrow Line Mode (NLM)*: Select to use Narrow Line Mode for telluric correction.
       A single transmission value will be used for the complete wavelength
