@@ -273,14 +273,12 @@ def telluric_correct(filename, atran_dir=None, atran_file=None, cutoff=0.6,
         Path to a directory containing ATRAN reference FITS files.
         If not provided, the default set of files packaged with the
         pipeline will be used.
+    atran_file : str, optional
+        Exact path to an ATRAN file to use directly. If provided, the
+        normal file selection is skipped.
     cutoff : float, optional
         Used as the fractional transmission below which data will
         be set to NaN. Set to 0 to keep all data.
-    use_ecmwf : bool, optional
-        If set, water vapor values will be retrieved from ECMWF
-        reanalysis files instead of the header.
-    ecmwf_dir : str, optional
-        Path to directory containing ECMWF FITS files.
     skip_corr : bool, optional
         If set, telluric correction will not be applied, but ATRAN
         spectra will still be attached to the output file.
@@ -292,6 +290,28 @@ def telluric_correct(filename, atran_dir=None, atran_file=None, cutoff=0.6,
     outdir : str, optional
         Directory path to write output.  If None, output files
         will be written to the same directory as the input files.
+    narrow : bool, optional
+        The telluric correction value at the rest wavelength will be
+        used for the complete cube. Only suitable for certain
+        observations.
+    hdr_ovr : bool, optional
+        If set, rest wavelength and redshift are not taken from the
+        FITS header but provided manually via `restwav` and `redshift`.
+    restwav : float, optional
+        Rest wavelength of the observed line for narrow line mode.
+        Only used if `hdr_ovr` is set.
+    redshift : float, optional
+        Redshift z of the observed line for narrow line mode.
+        Only used if `hdr_ovr` is set.
+    use_ecmwf : bool, optional
+        If set, water vapor values will be retrieved from ECMWF
+        reanalysis files instead of the header.
+    ecmwf_dir : str, optional
+        Path to directory containing ECMWF FITS files.
+    interpolated : bool, optional
+        If True (default), linearly interpolate between the four ATRAN
+        files bracketing the observed ZA and WV. If False, use the
+        single nearest-matching file.
 
     Returns
     -------
@@ -379,14 +399,12 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
         Path to a directory containing ATRAN reference FITS files.
         If not provided, the default set of files packaged with the
         pipeline will be used.
+    atran_file : str, optional
+        Exact path to an ATRAN file to use directly. If provided, the
+        normal file selection is skipped.
     cutoff : float, optional
         Used as the fractional transmission below which data will
         be set to NaN. Set to 0 to keep all data.
-    use_ecmwf : bool, optional
-        If set, water vapor values will be retrieved from ECMWF
-        reanalysis files instead of the header.
-    ecmwf_dir : str, optional
-        Path to directory containing ECMWF FITS files.
     skip_corr : bool, optional
         If set, telluric correction will not be applied, but ATRAN
         spectra will still be attached to the output file.
@@ -397,6 +415,28 @@ def wrap_telluric_correct(files, outdir=None, allow_errors=False,
         Values of 0 or 1 will result in serial processing.  A negative
         value sets jobs to `n_cpus + 1 + jobs` such that -1 would use
         all cpus, and -2 would use all but one cpu.
+    narrow : bool, optional
+        The telluric correction value at the rest wavelength will be
+        used for the complete cube. Only suitable for certain
+        observations.
+    hdr_ovr : bool, optional
+        If set, rest wavelength and redshift are not taken from the
+        FITS header but provided manually via `restwav` and `redshift`.
+    restwav : float, optional
+        Rest wavelength of the observed line for narrow line mode.
+        Only used if `hdr_ovr` is set.
+    redshift : float, optional
+        Redshift z of the observed line for narrow line mode.
+        Only used if `hdr_ovr` is set.
+    use_ecmwf : bool, optional
+        If set, water vapor values will be retrieved from ECMWF
+        reanalysis files instead of the header.
+    ecmwf_dir : str, optional
+        Path to directory containing ECMWF FITS files.
+    interpolated : bool, optional
+        If True (default), linearly interpolate between the four ATRAN
+        files bracketing the observed ZA and WV. If False, use the
+        single nearest-matching file.
 
     Returns
     -------
