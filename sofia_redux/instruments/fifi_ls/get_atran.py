@@ -541,7 +541,7 @@ def get_atran(header, resolution=None, atran_file=None,
     ATRAN files in the data/atran_files directory should be named
     according to description in https://doi.org/10.18419/DARUS-5705:
 
-        atran_sdc_[alt]K_[za]deg_[wv]pwv_[ozon]deg_2nlayer_[wmin]-[wmax]mum_bt.fits
+        atran_sdc_[alt]K_[za]deg_[wv]pwv_[ozone]deg_2nlayer_[wmin]-[wmax]mum_bt.fits
 
     "[ozon]deg" denotes the Ozone column model (9, 30, 39, 43, or 59);
     "2nlayer" (currently fixed) denotes the number of atmospheric
