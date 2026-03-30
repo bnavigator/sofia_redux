@@ -430,7 +430,7 @@ def get_wv_from_ecmwf(header, ecmwf_dir=None):
                           f'FIFI-LS WV: {wvz_fifi:.2f} '
                           f'({wv_formula})')
     except Exception as e:
-        log.debug(f'Errror reading ECMWF file {ecmwf_file}: {e}')
+        log.debug(f'Error reading ECMWF file {ecmwf_file}: {e}')
 
     if wvz_fifi is None:
         log.warning('No valid ECMWF data found for this observation')
