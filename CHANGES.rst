@@ -1,12 +1,13 @@
 1.5.0 (TBD)
 ===========
-- FIFI-LS User Manual Iss. 04:
+- FIFI-LS pipeline v2.11.0:
 
   - Document changes to spectral/spatial resolution data file,
     and clarify functionality of resample.
   - Enhanced telluric correction to automatically retrieve SDC-ATRAN
     transmission spectra and ECMWF water vapor data from the DaRUS Data Repository.
   - The pipeline now supports SDC-ATRAN and ECMWF binary table data formats.
+  - Bumped FIFI-LS User Manual from Iss. 03 to Iss. 04.
 
 - FORCAST pipeline v2.7.3:
 
