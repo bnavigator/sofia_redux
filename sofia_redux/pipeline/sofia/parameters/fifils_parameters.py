@@ -334,7 +334,7 @@ DEFAULT = {
          'dtype': 'bool',
          'wtype': 'check_box'},
          {'key': 'hdr_ovr',
-         'name': '(NLM) Z and Rest Wavelength Override',
+         'name': '(NLM) Redshift and rest wavelength override',
          'value': False,
          'description': 'If set, narrow line mode will override the redshift '
                         'and rest wavelength in FITS header with the manual '
