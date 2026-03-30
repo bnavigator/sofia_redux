@@ -543,7 +543,7 @@ def get_atran(header, resolution=None, atran_file=None,
 
         atran_sdc_[alt]K_[za]deg_[wv]pwv_[ozone]deg_2nlayer_[wmin]-[wmax]mum_bt.fits
 
-    "[ozon]deg" denotes the Ozone column model (9, 30, 39, 43, or 59);
+    "[ozone]deg" denotes the Ozone column model (9, 30, 39, 43, or 59);
     "2nlayer" (currently fixed) denotes the number of atmospheric
     layers used in ATRAN.
     The FIFI-LS files have a wavelength range of 40 to 300 microns.
