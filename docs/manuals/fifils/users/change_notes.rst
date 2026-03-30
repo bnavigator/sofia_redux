@@ -16,9 +16,17 @@ FIFI-LS Redux v2.11.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 04*
 
-- Enhancements to telluric correction, including on-the-fly retrieval of
-  ATRAN files & ECMWF water vapor data, support for new ATRAN & ECMWF
-  data formats.
+- Enhanced telluric correction to automatically retrieve SDC-ATRAN
+  transmission spectra and ECMWF water vapor data based on observational
+  timestamps. These data are stored in the DaRUS data repository as FITS
+  binary tables. Locally stored datasets are also supported, as are ATRAN
+  files in the older FITS image format.
+- Telluric correction now interpolates between ATRAN files as a default,
+  and also supports multiple Ozone column models (currently only the 39
+  degrees model is supplied).
+- Updated the spectral resolution data to a sampling of 1 µm. Documented
+  changes to the spatial resolution made in v2.10.0, and clarified the
+  functionality of resample with example calculations.
 
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~
