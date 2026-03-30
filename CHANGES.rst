@@ -6,6 +6,10 @@
     and clarify functionality of resample.
   - Enhancements to telluric correction.
 
+- General Upkeep
+
+  - Work on the automatic documentation generation and deployment for the documentation site.
+
 1.4.3 (2026-03-25)
 ==================
 
