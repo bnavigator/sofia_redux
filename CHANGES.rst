@@ -4,7 +4,9 @@
 
   - Document changes to spectral/spatial resolution data file,
     and clarify functionality of resample.
-  - Enhancements to telluric correction.
+  - Enhanced telluric correction to automatically retrieve SDC-ATRAN
+    transmission spectra and ECMWF water vapor data from the DaRUS Data Repository.
+  - The pipeline now supports SDC-ATRAN and ECMWF binary table data formats.
 
 - General Upkeep
 
