@@ -1,4 +1,4 @@
-name: Build Documentation
+name: Documentation
 
 on:
   workflow_dispatch:
@@ -17,17 +17,9 @@ on:
     types: [published]
 
 jobs:
-  deploy-docs:
-    name: Build and Deploy Documentation
-    runs-on:
-      group: sofiagharunner
-      labels: self-hosted
-    # Can only run with secrets on merged PRs from the same repository
-    if: >
-      ${{
-        github.event_name != 'pull_request' ||
-        github.event.pull_request.head.repo.full_name == github.repository
-      }}
+  build-docs:
+    name: Build
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,13 +33,42 @@ jobs:
       - name: Run tox to build docs
         run: |
           tox -e build-docs
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs-html
+          path: docs/_build/html
+
+  deploy-docs:
+    name: Deploy
+    runs-on:
+      group: sofiagharunner
+      labels: self-hosted
+    needs: build-docs
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'          
+      - name: Download docs artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docs-html
+          path: html
       - name: Prepare SSH Key
         env:
           DEPLOY_KEY: ${{ secrets.GHA_RUNNER_PRIVATE_KEY }}
         run: |
+          if [ -z "${DEPLOY_KEY}" ]; then
+            echo "No secret for DEPLOY_KEY found"
+            exit 1
+          fi        
           echo "${DEPLOY_KEY}" > id_rsa_deploy_key
           chmod 600 id_rsa_deploy_key
-      - name: Deploy documentation
+      - name: Deploy documentation to webserver
         env:
           DEPLOY_HOST: ${{ secrets.SOFIA_REDUX_DOC_HOST }}
           DEPLOY_USER: ${{ secrets.GHA_RUNNER_USER }}
@@ -57,6 +78,13 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
           echo -n "Deploying documentation"
+
+          if [ -z "${DEPLOY_HOST}" -o -z "${DEPLOY_USER}" ]; then
+            echo "No secret for DEPLOY_HOST or DEPLOY_USER found"
+            exit 1
+          fi
+
+          deploy_keyfile="$PWD/id_rsa_deploy_key"
           version="v$(python -c 'import sofia_redux; print(sofia_redux.__version__)')"
           case "$GITHUB_EVENT_NAME" in
             pull_request)
@@ -77,10 +105,8 @@ jobs:
               exit 1
               ;;
           esac
-          echo " to ${target_dir}"
-          deploy_keyfile="$PWD/id_rsa_deploy_key"
-          cd docs/_build
           mv html ${target_dir}
+          echo " to ${target_dir}"
           # Note: the key for the user on the remote host has rrsync restricted to /var/www/redux,
           # so the deployment is relative to that directory.
           rsync -avz --delete \
@@ -93,20 +119,16 @@ jobs:
               ${link} "${DEPLOY_USER}@${DEPLOY_HOST}:${link}"
           fi
       - name: Comment PR with docs URL
-        if: >
-          ${{
-            github.event_name == 'pull_request' &&
-            github.event.pull_request.head.repo.full_name == github.repository
-          }}
+        if: github.event.pull_request != null
         uses: actions/github-script@v7
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
             const docsUrl = `https://redux.sofiadatacenter.de/pr-${prNumber}/`;
+            const commit = context.payload.pull_request.head.sha;
             const body = [
-              "The documentation for this PR has been built and is available at:",
-              "",
-              docsUrl
+              `The documentation for this PR has been built from commit ${commit}.`,
+              `A preview of the latest build is available at ${docsUrl}.`
             ].join("\n");
             await github.rest.issues.createComment({
               owner: context.repo.owner,
