@@ -14,13 +14,14 @@
     specifically the
     `rename of column names <https://photutils.readthedocs.io/en/stable/whats_new/3.0.html#deprecated-table-column-names>`__.
     This is a breaking change, thus the minimum required version of Photutils
-    has been updated to 3.0. In accordance with that, minimum versions of other
-    libraries also have been bumped, including Astropy 6.1.4, NumPy 2.0 and SciPy 1.13.
+    has been updated to 3.0.
 
 - General Upkeep
 
   - Work on the automatic documentation generation and deployment for the
     documentation site.
+  - As a consequence of the Photutils 3.0 bump, minimum versions of other
+    libraries also have been updated, including Astropy 6.1.4 and NumPy 2.1
 
 1.4.3 (2026-03-25)
 ==================
