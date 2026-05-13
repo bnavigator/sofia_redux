@@ -79,15 +79,15 @@ class PeakFinder(object):
             return
         elif None in [self.chopdist, self.noddist]:
             return
-        elif 'xcentroid' not in table.columns or \
-                'ycentroid' not in table.columns:
+        elif 'x_centroid' not in table.columns or \
+                'y_centroid' not in table.columns:
             return
         dist = np.sqrt((self.chopdist ** 2) + (self.noddist ** 2))
-        x0, y0 = table['xcentroid'], table['ycentroid']
+        x0, y0 = table['x_centroid'], table['y_centroid']
         valid = [False] * len(table)
         for idx, row in enumerate(table):
-            dx = x0 - row['xcentroid']
-            dy = y0 - row['ycentroid']
+            dx = x0 - row['x_centroid']
+            dy = y0 - row['y_centroid']
             dr = np.sqrt((dx ** 2) + (dy ** 2))
             dchop = abs(dr - self.chopdist)
             dnod = abs(dr - self.noddist)
@@ -196,7 +196,7 @@ class PeakFinder(object):
 
         remove_rows = []
         for idx, row in enumerate(table):
-            x, y = row['xcentroid'], row['ycentroid']
+            x, y = row['x_centroid'], row['y_centroid']
             if (self.ncut < x < xmax) and (self.ncut < y < ymax):
                 bxmin = int(np.floor(x - self.ncut))
                 bxmax = int(np.ceil(x + self.ncut))
@@ -230,8 +230,8 @@ class PeakFinder(object):
                 if flip:
                     g.amplitude *= -1
 
-                row['xcentroid'] = g.x_mean.value
-                row['ycentroid'] = g.y_mean.value
+                row['x_centroid'] = g.x_mean.value
+                row['y_centroid'] = g.y_mean.value
                 row['flux'] = g.amplitude.value
 
                 if self.positive:
@@ -242,8 +242,8 @@ class PeakFinder(object):
             table.remove_row(idx)
 
     def findpeaks(self):
-        columns = ['id', 'xcentroid', 'ycentroid', 'sharpness',
-                   'roundness1', 'roundness2', 'npix', 'sky',
+        columns = ['id', 'x_centroid', 'y_centroid', 'sharpness',
+                   'roundness1', 'roundness2', 'n_pixels', 'sky',
                    'peak', 'flux', 'mag']
         self.frame = DataFrame(index=range(self.npeaks), columns=columns)
         self.frame['id'] = self.frame['id'].fillna(-1)
@@ -283,8 +283,8 @@ class PeakFinder(object):
                 log.error("Matching peaks could not be found")
                 return
             dtable = tables[1].copy()
-            dtable['xcentroid'] -= tables[0]['xcentroid']
-            dtable['ycentroid'] -= tables[0]['ycentroid']
+            dtable['x_centroid'] -= tables[0]['x_centroid']
+            dtable['y_centroid'] -= tables[0]['y_centroid']
         else:
             dtable = tables[0].copy()
 
@@ -297,7 +297,7 @@ class PeakFinder(object):
             .astype(dtable_frame[common_columns].dtypes,
                    errors='ignore')
             .rename(columns={
-                    'xcentroid': 'x', 'ycentroid': 'y', 'flux': fluxcol}))
+                    'x_centroid': 'x', 'y_centroid': 'y', 'flux': fluxcol}))
         cols = ['x', 'y', 'sharpness', 'roundness2',
                 'peak', fluxcol]
         self.print('\n' + self.frame[cols].to_string(

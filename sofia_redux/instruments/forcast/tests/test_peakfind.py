@@ -77,14 +77,14 @@ class TestPeakfind(object):
         pf.chopdist = None
         pf.chopnod_sort(inp)
         assert table is not inp
-        assert np.allclose(table['ycentroid'], inp['ycentroid'])
+        assert np.allclose(table['y_centroid'], inp['y_centroid'])
         pf.chopdist = 80.
 
         # missing centroid
-        inp.remove_column('xcentroid')
-        assert 'xcentroid' not in inp.columns
+        inp.remove_column('x_centroid')
+        assert 'x_centroid' not in inp.columns
         pf.chopnod_sort(inp)
-        assert np.allclose(table['ycentroid'], inp['ycentroid'])
+        assert np.allclose(table['y_centroid'], inp['y_centroid'])
 
         # bad input to findpeaks
 

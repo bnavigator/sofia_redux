@@ -8,9 +8,19 @@
     transmission spectra and ECMWF water vapor data from the DaRUS Data Repository.
   - The pipeline now supports SDC-ATRAN and ECMWF binary table data formats.
 
+- FORCAST pipeline v2.7.3:
+
+  - Maintain compatibility with Photutils 3.0 in the FORCAST peak finding code,
+    specifically the
+    `rename of column names <https://photutils.readthedocs.io/en/stable/whats_new/3.0.html#deprecated-table-column-names>`__.
+    This is a breaking change, thus the minimum required version of Photutils
+    has been updated to 3.0. In accordance with that, minimum versions of other
+    libraries also have been bumped, including Astropy 6.1.4, NumPy 2.0 and SciPy 1.13.
+
 - General Upkeep
 
-  - Work on the automatic documentation generation and deployment for the documentation site.
+  - Work on the automatic documentation generation and deployment for the
+    documentation site.
 
 1.4.3 (2026-03-25)
 ==================
