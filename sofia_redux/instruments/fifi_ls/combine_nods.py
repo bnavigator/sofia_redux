@@ -633,9 +633,9 @@ def combine_extensions(df, b_nod_method='nearest', bg_scaling=False,
 
     For the 'interpolate' option for B nod combination for non-OTF data, the
     time of interpolation is taken to be the middle of the current grating
-    position for the A nod, as determined by the DATE_OBS, C_CHOPLN and C_CYC_B/R
-    keywords. For OTF data, the time is interpolated between RAMPSTRT
-    and RAMPEND times in the extension header, for each ramp.
+    position for the A nod, as determined by the DATE_OBS, C_CHOPLN, C_CYC_B,
+    and C_CYC_R keywords. For OTF data, the time is interpolated between
+    RAMPSTRT and RAMPEND times in the extension header, for each ramp.
 
     Parameters
     ----------
