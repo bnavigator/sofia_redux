@@ -85,6 +85,9 @@ pipecal_applyphot = "sofia_redux.calibration.pipecal_applyphot:main"
 hawc_calibration = "sofia_redux.calibration.standard_model.hawc_calibration:main"
 eospec = "sofia_redux.visualization.controller:main"
 
+[tool.setuptools]
+packages = ["sofia_redux"]
+
 [tool.setuptools.package-data]
 "sofia_redux.calibration" = [
     "data/*",
