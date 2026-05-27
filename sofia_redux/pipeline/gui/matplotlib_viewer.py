@@ -4,7 +4,7 @@
 import warnings
 
 from astropy import log
-from matplotlib.cm import get_cmap
+from matplotlib import colormaps
 from matplotlib.figure import Figure
 import matplotlib.style as mplstyle
 import numpy as np
@@ -174,7 +174,7 @@ class MatplotlibPlot(QtWidgets.QDialog):
                 kwargs = {}
             if 'colormap' in kwargs:
                 colormap = kwargs.pop('colormap')
-                cmap = get_cmap(colormap)
+                cmap = colormaps[colormap]
                 if cmap.N < 100:
                     n = cmap.N
                 else:

@@ -9,7 +9,7 @@ from astropy.wcs import WCS
 
 from matplotlib.backends.backend_agg \
     import FigureCanvasAgg as FigureCanvas
-from matplotlib.cm import get_cmap
+from matplotlib import colormaps
 from matplotlib.figure import Figure
 from matplotlib.offsetbox import AnchoredOffsetbox, AuxTransformBox
 from matplotlib.patches import Ellipse
@@ -273,7 +273,7 @@ def make_image(filename, extension=0, colormap='viridis', scale=None,
             major /= pixscale
             minor /= pixscale
             log.debug(f'Beam major, minor, angle: {major} {minor} {angle}')
-            face = get_cmap(colormap)(1.0)
+            face = colormaps[colormap](1.0)
             aux_tr_box = AuxTransformBox(ax.transData)
             ellipse = Ellipse(xy=(0,0), width=minor, height=major, angle=angle,
                               facecolor=face, edgecolor='black', linewidth=2)
@@ -390,7 +390,7 @@ def make_spectral_plot(axis, wavelength, spectral_flux,
         do_error = True
 
     # plot flux and error
-    color = get_cmap(colormap)(color_index)
+    color = colormaps[colormap](color_index)
     axis.set_prop_cycle('color', color)
     if labels:
         lines_display = []
