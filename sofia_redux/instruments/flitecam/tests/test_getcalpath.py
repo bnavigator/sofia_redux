@@ -131,7 +131,8 @@ class TestGetcalpath(object):
     def test_missing_linfile(self, capsys, mocker, tmpdir):
         # mock a missing linearity file
         import sofia_redux.instruments.flitecam.getcalpath as gcp
-        mocker.patch.object(gcp, 'DATA_URL', f'file:///{str(tmpdir)}/')
+        mocker.patch.object(gcp, 'get_file_from_darus',
+                            side_effect=FileNotFoundError('test'))
         mocker.patch('os.path.dirname', return_value=str(tmpdir))
         pathcal = str(tmpdir.join('data'))
         os.makedirs(pathcal)
@@ -143,7 +144,7 @@ class TestGetcalpath(object):
         capt = capsys.readouterr()
 
         assert 'File lin.fits could not be downloaded' in capt.err
-        assert str(tmpdir) in capt.err
+        assert gcp.DARUS_DOI in capt.err
         assert result['linfile'] == 'lin.fits'
 
     def test_modes(self):
@@ -321,7 +322,8 @@ class TestGetcalpath(object):
         assert 'Problem reading resolution' in capsys.readouterr().err
 
         # mock a missing file
-        mocker.patch.object(gcp, 'DATA_URL', f'file:///{str(tmpdir)}/')
+        mocker.patch.object(gcp, 'get_file_from_darus',
+                            side_effect=FileNotFoundError('test'))
         result = {'spectel': 'FLT_B3_J', 'slit': 'FLT_SS20',
                   'dateobs': 99999999}
         os.remove(cfile)
@@ -330,15 +332,16 @@ class TestGetcalpath(object):
         capt = capsys.readouterr()
 
         assert 'File mask.fits could not be downloaded' in capt.err
-        assert str(tmpdir) in capt.err
+        assert gcp.DARUS_DOI in capt.err
         assert result['maskfile'] == 'mask.fits'
 
-    def test_download_cache(self, mocker, tmpdir, capsys):
+    def test_download_cache(self, mocker, capsys):
         import sofia_redux.instruments.flitecam.getcalpath as gcp
-        mocker.patch.object(gcp, 'DATA_URL', f'file:///{str(tmpdir)}/')
+        # mock DaRUS lookup raising: returns basename and warns
+        mocker.patch.object(gcp, 'get_file_from_darus',
+                            side_effect=FileNotFoundError('test'))
 
-        # direct test for missing file: returns basename and warns
         assert gcp._download_cache_file('test_file.fits') == 'test_file.fits'
         capt = capsys.readouterr()
         assert 'File test_file.fits could not be downloaded' in capt.err
-        assert str(tmpdir) in capt.err
+        assert gcp.DARUS_DOI in capt.err

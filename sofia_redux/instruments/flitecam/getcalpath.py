@@ -4,17 +4,16 @@ from collections import OrderedDict
 import os
 
 from astropy import log
-from astropy.utils.data import download_file
 import pandas
 
 from sofia_redux.instruments import flitecam as fdrp
+from sofia_redux.toolkit.utilities.darus import get_file_from_darus
 
 __all__ = ['getcalpath']
 
-# back up download URL for non-source installs
-# TODO: Change to a public SOFIA Data Center URL when available
-# ghtik#IRS-SOFIA-Data-Center/sofia_redux#77
-DATA_URL = 'https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/FLITECAM/'
+# DaRUS dataset holding FLITECAM reference files.
+# https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-6126
+DARUS_DOI = '10.18419/DARUS-6126'
 
 
 def getcalpath(header):
@@ -231,14 +230,13 @@ def _get_grism_cal(pathcal, result):
 
 def _download_cache_file(filename):
     basename = os.path.basename(filename)
-    url = f'{DATA_URL}{basename}'
-
     try:
-        cache_file = download_file(url, cache=True, pkgname='sofia_redux')
-    except (OSError, KeyError):
+        cache_file = get_file_from_darus(DARUS_DOI, basename)
+    except Exception:
         # return basename only if file can't be downloaded;
         # pipeline will issue clearer errors later
         cache_file = basename
-        log.warning(f'File {cache_file} could not be downloaded from {url}')
+        log.warning(f'File {cache_file} could not be downloaded from DaRUS '
+                    f'dataset {DARUS_DOI}')
 
     return cache_file

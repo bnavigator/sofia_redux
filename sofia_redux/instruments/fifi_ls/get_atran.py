@@ -6,13 +6,12 @@ from pathlib import Path
 from astropy import log
 from astropy.io import fits
 from astropy.time import Time
-from astropy.utils.data import download_file
 import numpy as np
-import requests
 
 from sofia_redux.instruments import fifi_ls
 from sofia_redux.instruments.fifi_ls.get_resolution import get_resolution
 from sofia_redux.toolkit.utilities import goodfile, gethdul, hdinsert
+from sofia_redux.toolkit.utilities.darus import get_file_from_darus
 from sofia_redux.spectroscopy.smoothres import smoothres
 
 
@@ -25,7 +24,6 @@ __ecmwf_cache = {}
 
 
 # doi per altitude
-DARUS_URL_BASE = "https://darus.uni-stuttgart.de"
 ATRAN_DATASETS = {
     35: "10.18419/DARUS-5705",
     36: "10.18419/DARUS-5707",
@@ -39,8 +37,6 @@ ATRAN_DATASETS = {
     44: "10.18419/DARUS-5715",
     45: "10.18419/DARUS-5716",
 }
-# cache for list of files in each DaRUS dataset, keyed by dataset DOI
-__darus_files_in_ds = {}
 
 PWV_DOI = "10.18419/DARUS-5728"
 
@@ -230,43 +226,6 @@ def get_atran_data(filename, resolution, atran_dir=None):
     store_atran_in_cache(localpath, resolution,
                          atranfile, wave, unsmoothed, smoothed)
     return (atranfile, wave, unsmoothed, smoothed)
-
-
-def get_file_from_darus(doi, filename):
-    """Download a file from a DaRUS dataset by DOI and filename.
-
-    Parameters
-    ----------
-    doi : str
-        DOI of the DaRUS dataset.
-    filename : str
-        Name of the file to be downloaded
-
-    Returns
-    -------
-    str
-        Local path to the downloaded file
-
-    """
-    global __darus_files_in_ds
-    if __darus_files_in_ds.get(doi) is None:
-        r = requests.get(f'{DARUS_URL_BASE}/api/datasets/:persistentId',
-                         params={'persistentId': f'doi:{doi}'})
-        r.raise_for_status()
-        __darus_files_in_ds[doi] = r.json()['data']['latestVersion']['files']
-    local_file = None
-    for file in __darus_files_in_ds[doi]:
-        if file['label'] != filename:
-            continue
-        fid = file['dataFile']['id']
-        download_url = f'{DARUS_URL_BASE}/api/access/datafile/{fid}'
-        local_file = download_file(download_url,
-                                   cache=True, pkgname="sofia_redux")
-        break
-    if local_file is None:
-        raise FileNotFoundError(
-            f'{filename} not found in DaRUS dataset {doi}')
-    return local_file
 
 
 def get_atran_from_darus(altitude, filename):
