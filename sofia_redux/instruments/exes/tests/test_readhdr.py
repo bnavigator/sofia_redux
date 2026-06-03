@@ -323,12 +323,13 @@ class TestReadHdr(object):
         cfg = tmpdir.join('data', 'caldefault.dat')
         cfg.write("22.0504 bpm.fits dark.fits lin.fits\n")
 
-        # mock missing local files
-        mocker.patch.object(rh, 'DATA_URL', f'file:///{str(tmpdir)}/')
+        # mock missing local files: DaRUS lookup raises
+        mocker.patch.object(rh, 'get_file_from_darus',
+                            side_effect=FileNotFoundError('test'))
         rh._add_configuration_files(header)
         capt = capsys.readouterr()
         assert capt.err.count('could not be downloaded') == 3
-        assert str(tmpdir) in capt.err
+        assert rh.DARUS_DOI in capt.err
         assert header['DRKFILE'] == 'dark.fits'
         assert header['BPM'] == 'bpm.fits'
         assert header['LINFILE'] == 'lin.fits'
@@ -367,11 +368,12 @@ class TestReadHdr(object):
         assert 'wrong type' in capsys.readouterr().err
         assert new_header['ALTI_STA'] == 'UNKNOWN'
 
-    def test_download_cache(self, mocker, tmpdir, capsys):
-        mocker.patch.object(rh, 'DATA_URL', f'file:///{str(tmpdir)}/')
+    def test_download_cache(self, mocker, capsys):
+        # mock DaRUS lookup raising; returns basename and warns
+        mocker.patch.object(rh, 'get_file_from_darus',
+                            side_effect=FileNotFoundError('test'))
 
-        # direct test for missing file: returns basename and warns
         assert rh._download_cache_file('test_file.fits') == 'test_file.fits'
         capt = capsys.readouterr()
         assert 'File test_file.fits could not be downloaded' in capt.err
-        assert str(tmpdir) in capt.err
+        assert rh.DARUS_DOI in capt.err

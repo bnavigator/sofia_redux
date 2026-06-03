@@ -6,22 +6,21 @@ import re
 from astropy import log
 from astropy.io.fits.header import Header
 from astropy.time import Time
-from astropy.utils.data import download_file
 import numpy as np
 import pandas as pd
 
 from sofia_redux.instruments import exes
 from sofia_redux.instruments.exes.utils import \
     set_elapsed_time, parse_central_wavenumber
+from sofia_redux.toolkit.utilities.darus import get_file_from_darus
 from sofia_redux.toolkit.utilities.fits import hdinsert
 from sofia_redux.toolkit.utilities.func import goodfile, robust_bool
 
 __all__ = ['readhdr']
 
-# back up download URL for non-source installs
-# TODO: Change to a public SOFIA Data Center URL when available
-# ghtik#IRS-SOFIA-Data-Center/sofia_redux#77
-DATA_URL = 'https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/EXES/'
+# DaRUS dataset holding EXES reference files (BPM, lincoeff, dark).
+# https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-5981
+DARUS_DOI = '10.18419/DARUS-5981'
 
 
 def readhdr(header, check_header=True,
@@ -622,14 +621,15 @@ def _add_configuration_files(header):
 
 def _download_cache_file(filename):
     basename = os.path.basename(filename)
-    url = f'{DATA_URL}{basename}'
-
     try:
-        cache_file = download_file(url, cache=True, pkgname='sofia_redux')
-    except (OSError, KeyError):
-        # return basename only if file can't be downloaded;
-        # pipeline will issue clearer errors later
+        cache_file = get_file_from_darus(DARUS_DOI, basename)
+    except OSError:
+        # OSError covers the expected exceptions: HTTPError if the DaRUS
+        # request fails and FileNotFoundError if the file is not in the dataset,
+        # or download_file fails. Return basename only if the file
+        # can't be downloaded; pipeline will issue clearer errors later.
         cache_file = basename
-        log.warning(f'File {cache_file} could not be downloaded from {url}')
+        log.warning(f'File {cache_file} could not be downloaded from DaRUS '
+                    f'dataset {DARUS_DOI}')
 
     return cache_file
