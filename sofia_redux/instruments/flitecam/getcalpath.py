@@ -150,7 +150,7 @@ def getcalpath(header):
                 result[f] = expected
             else:
                 # for public distributions, it may need
-                # to be downloaded from S3
+                # to be downloaded from DaRUS
                 result[f] = _download_cache_file(row[f])
 
     # Read additional grism defaults into result
@@ -216,7 +216,7 @@ def _get_grism_cal(pathcal, result):
                 result[f] = expected
             else:
                 # for public distributions, it may need
-                # to be downloaded from S3
+                # to be downloaded from DaRUS
                 result[f] = _download_cache_file(row[f])
         elif f in ['waveshift', 'resolution'] and f in row and row[f] != '.':
             try:
