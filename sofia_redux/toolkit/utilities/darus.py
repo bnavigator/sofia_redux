@@ -1,14 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Download files from DaRUS (data.uni-stuttgart.de).
+"""Download files from DaRUS (darus.uni-stuttgart.de).
 
 DaRUS is the data repository at the University of Stuttgart where the
 SOFIA pipeline's reference files (ATRAN, ECMWF PWV, EXES and FLITECAM
 calibration files, ...) are hosted. Each instrument's files have their
 own dataset, identified by a unique DOI.
-
-The public entry point is :func:`get_file_from_darus`.
 """
-
 from astropy.utils.data import download_file
 import requests
 
@@ -24,7 +21,9 @@ def get_file_from_darus(doi, filename):
     """Download a file from a DaRUS dataset by DOI and filename.
 
     The downloaded file is stored in astropy's on-disk download cache
-    (``~/.astropy/cache/download/...``).
+    for the sofia_redux package. See
+    https://docs.astropy.org/en/stable/utils/data.html
+    how to find and configure the cache location.
 
     Parameters
     ----------
