@@ -16,6 +16,24 @@
     This is a breaking change, thus the minimum required version of Photutils
     has been updated to 3.0.
 
+- EXES pipeline v3.1.0:
+
+  - Download and cache bad pixel masks and dark files from DaRUS if not
+    provided locally. Some of these files have been hosted in the Git
+    repository but were not included in the published PyPI packages. While the
+    README files directed the user to download directly from Github, the
+    pipeline had functionality to download missing files from IRSA. However,
+    the
+    `IRSA Dataset <https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/EXES/>`__
+    is not complete. The new
+    `SOFIA Redux EXES pipeline reference files <https://doi.org/10.18419/DARUS-5981>__`
+    dataset at DaRUS contains the misssing files, so we removed them from the
+    code repository.
+
+- FLITECAM pipeline v2.1.0:
+
+  - Download and cache calibration files from DaRUS instead of IRSA.
+
 - General Upkeep
 
   - Work on the automatic documentation generation and deployment for the
