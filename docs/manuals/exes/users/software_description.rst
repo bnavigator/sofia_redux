@@ -95,9 +95,19 @@ Source Code Installation
 The source code for the EXES pipeline maintained by the SOFIA Data
 Center (SDC) team can be obtained directly from the
 external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
-This repository contains all needed configuration
-files, auxiliary files, and Python code to run the pipeline on EXES
+This repository contains the configuration
+files and Python code to run the pipeline on EXES
 data in any observation mode.
+
+The code automatically downloads and caches auxiliary data files
+such as bad pixel masks, reset dark files, and nonlinearity
+correction coefficients from the
+`SOFIA Redux EXES pipeline reference files <https://doi.org/10.18419/DARUS-5981>`__
+dataset at DaRUS. Most of these files are additionally available at
+`IRSA <https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/EXES/>`__
+and can be placed manually into the respective directories
+of `sofia_redux/instruments/exes/data/`, if on-the-fly downloading and caching
+is not desired.
 
 After obtaining the source code, install the package with
 the command::

@@ -22,6 +22,7 @@ BEAMTIME     N    0.0      float   .      .      .
 BNU_T        N    -9999.   float   .      .      .
 BOUNCE       N    0.0      float   .      .      .
 BPM          N    UNKNOWN  string  .      .      .
+BPMN         N    UNKNOWN  string  .      .      .
 BRL          N    -9999.   float   .      .      .
 CARDMODE     N    BLKSKY   string  .      .      NONE|BLK|SKY|SHINY|BLKSKY|BLKSHINY|BLKOBJ|OBJ
 CHOPPING     N    F        bool    .      .      .
@@ -40,6 +41,7 @@ DETSEC       N    UNKNOWN  string  .      .      .
 DETSIZE      N    UNKNOWN  string  .      .      .
 DITHER       N    F        bool    .      .      .
 DRKFILE      N    UNKNOWN  string  .      .      .
+DRKFILEN     N    UNKNOWN  string  .      .      .
 DTHINDEX     N    -9999    int     .      .      .
 DTHNPOS      N    -9999    int     .      .      .
 DTHOFFS      N    -9999.   float   .      .      .
@@ -80,6 +82,7 @@ LASTREW      N    UNKNOWN  string  .      .      .
 LAT_STA      N    -9999.   float   .      .      .
 LAT_END      N    -9999.   float   .      .      .
 LINFILE      N    UNKNOWN  string  .      .      .
+LINFILEN     N    UNKNOWN  string  .      .      .
 LO_LIM       N    0.0      float   .      .      .
 LON_STA      N    -9999.   float   .      .      .
 LON_END      N    -9999.   float   .      .      .
