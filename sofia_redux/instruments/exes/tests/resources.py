@@ -7,9 +7,10 @@ from astropy.modeling.models import Gaussian1D
 from astropy.stats import gaussian_fwhm_to_sigma
 import numpy as np
 
-from sofia_redux.instruments.exes.readhdr import readhdr
+from sofia_redux.instruments.exes.readhdr import readhdr, _download_cache_file
 from sofia_redux.instruments.exes.makeflat import makeflat
 from sofia_redux.toolkit.image.adjust import rotate
+from sofia_redux.toolkit.utilities.func import goodfile
 
 
 def low_header(filenum=1, coadded=False):
@@ -171,10 +172,8 @@ def raw_low_nod_on(coadded=False, use_dark=True, filenum=2, dy=40):
         mask = fits.ImageHDU(data=mask, name='MASK')
         hdul = fits.HDUList([primary, error, mask])
     else:
-        dark_file = os.path.join(header['DATAPATH'], 'dark',
-                                 'dark_2015.02.13.fits')
-        if use_dark and os.path.isfile(dark_file):
-            dark = fits.open(dark_file)
+        if use_dark:
+            dark = fits.open(get_dark_file(header['DATAPATH']))
             read_pattern = dark[0].data[0]
             dark.close()
         else:
@@ -247,10 +246,8 @@ def raw_low_flat(coadded=False, use_dark=True, filenum=1):
         mask = fits.ImageHDU(data=mask, name='MASK')
         hdul = fits.HDUList([primary, error, mask])
     else:
-        dark_file = os.path.join(header['DATAPATH'], 'dark',
-                                 'dark_2015.02.13.fits')
-        if use_dark and os.path.isfile(dark_file):
-            dark = fits.open(dark_file)
+        if use_dark:
+            dark = fits.open(get_dark_file(header['DATAPATH']))
             read_pattern = dark[0].data[0]
             dark.close()
         else:
@@ -388,10 +385,8 @@ def raw_high_low_nod_off(coadded=False, use_dark=True, filenum=6,
         mask = fits.ImageHDU(data=mask, name='MASK')
         hdul = fits.HDUList([primary, error, mask])
     else:
-        dark_file = os.path.join(header['DATAPATH'], 'dark',
-                                 'dark_2015.02.13.fits')
-        if use_dark and os.path.isfile(dark_file):
-            dark = fits.open(dark_file)
+        if use_dark:
+            dark = fits.open(get_dark_file(header['DATAPATH']))
             read_pattern = dark[0].data[0]
             dark.close()
         else:
@@ -508,10 +503,8 @@ def raw_high_low_flat(coadded=False, use_dark=True, filenum=5,
         mask = fits.ImageHDU(data=mask, name='MASK')
         hdul = fits.HDUList([primary, error, mask])
     else:
-        dark_file = os.path.join(header['DATAPATH'], 'dark',
-                                 'dark_2015.02.13.fits')
-        if use_dark and os.path.isfile(dark_file):
-            dark = fits.open(dark_file)
+        if use_dark:
+            dark = fits.open(get_dark_file(header['DATAPATH']))
             read_pattern = dark[0].data[0]
             dark.close()
         else:
@@ -680,3 +673,12 @@ def nodsub_hdul(mode='low', do_flat=True):
                 hdul[0].header[key] = flat[0].header[key]
 
     return hdul
+
+def get_dark_file(datapath):
+    darkfile = 'dark_2015.02.13.fits'
+    filepath = os.path.join(datapath, 'dark', darkfile)
+    if goodfile(filepath, verbose=False):
+        return filepath
+    else:
+        return _download_cache_file(darkfile)
+
