@@ -598,26 +598,20 @@ def _add_configuration_files(header):
     df['date'] = df['date'].apply(float)
     row = df[df['date'] > header['fdate']].iloc[0]
 
-    bpmfile = os.path.join(datapath, 'bpm', row['bpmfile'])
-    if goodfile(bpmfile, verbose=True):
-        # standard cal path for source distribution
-        header['BPM'] = bpmfile
-    else:
-        # retrieve remotely if needed
-        header['BPM'] = _download_cache_file(row['bpmfile'])
 
-    linfile = os.path.join(datapath, 'lincoeff', row['linfile'])
-    if goodfile(linfile, verbose=True):
-        header['LINFILE'] = linfile
-    else:
-        header['LINFILE'] = _download_cache_file(row['linfile'])
-
-    darkfile = os.path.join(datapath, 'dark', row['darkfile'])
-    if goodfile(darkfile, verbose=True):
-        header['DRKFILE'] = darkfile
-    else:
-        header['DRKFILE'] = _download_cache_file(row['darkfile'])
-
+    # These files are on DaRUS but can be placed into the
+    # datapath manually. If they are not there, remain silent and
+    # download.
+    for datadir, rowkey, headerkey in [
+        ('bpm', 'bpmfile', 'BPM'),
+        ('lincoeff', 'linfile', 'LINFILE'),
+        ('dark', 'darkfile', 'DRKFILE'),
+    ]:
+        datafile = os.path.join(datapath, datadir, row[rowkey])
+        if goodfile(datafile, verbose=False):
+            header[headerkey] = datafile
+        else:
+            header[headerkey] = _download_cache_file(row[rowkey])
 
 def _download_cache_file(filename):
     basename = os.path.basename(filename)
