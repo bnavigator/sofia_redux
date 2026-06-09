@@ -617,6 +617,7 @@ def _download_cache_file(filename):
     basename = os.path.basename(filename)
     try:
         cache_file = get_file_from_darus(DARUS_DOI, basename)
+        log.info(f"Using {basename} from cache at {cache_file}")
     except OSError:
         # OSError covers the expected exceptions: HTTPError if the DaRUS
         # request fails and FileNotFoundError if the file is not in the dataset,
