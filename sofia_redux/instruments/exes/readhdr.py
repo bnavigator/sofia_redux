@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from sofia_redux.instruments import exes
+from sofia_redux.instruments.exes.data import DARUS_DOI
 from sofia_redux.instruments.exes.utils import \
     set_elapsed_time, parse_central_wavenumber
 from sofia_redux.toolkit.utilities.darus import get_file_from_darus
@@ -17,10 +18,6 @@ from sofia_redux.toolkit.utilities.fits import hdinsert
 from sofia_redux.toolkit.utilities.func import goodfile, robust_bool
 
 __all__ = ['readhdr']
-
-# DaRUS dataset holding EXES reference files (BPM, lincoeff, dark).
-# https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-5981
-DARUS_DOI = '10.18419/DARUS-5981'
 
 
 def readhdr(header, check_header=True,
@@ -612,6 +609,7 @@ def _add_configuration_files(header):
             header[headerkey] = datafile
         else:
             header[headerkey] = _download_cache_file(row[rowkey])
+        header[headerkey + 'N' ] = row[rowkey]
 
 def _download_cache_file(filename):
     basename = os.path.basename(filename)
