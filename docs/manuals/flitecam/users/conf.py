@@ -34,7 +34,7 @@ from pathlib import Path
 from tomllib import load as toml_load
 
 try:
-    from sphinx_astropy.conf.v1 import *  # noqa
+    from sphinx_astropy.conf.v2 import *  # noqa
 except ImportError:
     print('ERROR: the documentation requires the sphinx-astropy package to be installed')
     sys.exit(1)
@@ -71,8 +71,8 @@ rst_epilog += """
 # -- Project information ------------------------------------------------------
 
 # NASA document number and revision
-docnumber = 'SCI-US-HBK-OP10-2004'
-docrev = 'B'
+docnumber = 'SDC-MAN-0006'
+issue = '01'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']
@@ -85,7 +85,7 @@ copyright = '{0}, {1}'.format(
 # built documents.
 
 package = docnumber
-version = 'Rev. %s' % docrev
+version = 'Iss. %s' % issue
 release = ': %s %s' % (package, version)
 
 
@@ -97,7 +97,7 @@ release = ': %s %s' % (package, version)
 latex_documents = [('users',
                     'flitecam_users.tex',
                     "FLITECAM Redux User's Manual",
-                    "M. Clarke, W. Vacca, E. Chambers, S. Shenoy",
+                    r"From Iss. 01: A. Bryant\and\large{Until Rev. B: M. Clarke, W. Vacca, E. Chambers, S. Shenoy}",
                     'howto')]
 
 # Fix environment error, make one-sided document,
@@ -114,11 +114,11 @@ latex_elements = {
 \usepackage{fancyhdr}
 \fancypagestyle{normal}{
 \fancyhf{}
-\fancyhead[R]{%s\\Rev. %s}
+\fancyhead[R]{%s\\Iss. %s}
 \fancyfoot[C]{\textbf{VERIFY THAT THIS IS THE CORRECT REVISION BEFORE USE}\\\thepage}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
-''' % (docnumber, docrev),
+''' % (docnumber, issue),
 }
 
 # number figures for manuals
