@@ -20,7 +20,7 @@ EXES Redux v3.1.0 (2026-06-09)
 - Removed files from the data module directory in the source repository and
   PyPI distribution files: Bad pixel masks, reset dark files,
   and nonlinearity correction coefficients are now downloaded and cached
-  from the SDC Astronomy Dataverse at DaRUS
+  from the SDC Astronomy Dataverse at DaRUS.
 - Added header keywords BPMN, DRKFILEN, LINFILEN recording the basename
   of used calibration files as downloaded files from the cache don not
   have a recognizable filename.

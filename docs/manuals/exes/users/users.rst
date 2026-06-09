@@ -9,6 +9,11 @@ EXES Redux User's Manual
 Introduction
 ============
 
+The SOFIA Data Center (SDC) is the successor to the SOFIA Science Mission Operations
+Center (SMO) in maintaining the EXES Redux User’s Manual. The SMO managed the
+manual under the document number 'SCI-US-HBK-OP10-2005', up to revision E. With
+SDC as the new maintainer, the document number has changed to SDC-MAN-0005.
+
 The SI Pipeline Users Manual (OP10) is intended for use by both SOFIA
 Data Center staff during data processing and analysis, and
 also as a reference for General Investigators (GIs) and archive users to
