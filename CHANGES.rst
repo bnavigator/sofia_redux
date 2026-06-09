@@ -26,7 +26,7 @@
     the
     `IRSA Dataset <https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/EXES/>`__
     is not complete. The new
-    `SOFIA Redux EXES pipeline reference files <https://doi.org/10.18419/DARUS-5981>__`
+    `SOFIA Redux EXES pipeline reference files <https://doi.org/10.18419/DARUS-5981>`__
     dataset at DaRUS contains the misssing files, so we removed them from the
     code repository.
 
