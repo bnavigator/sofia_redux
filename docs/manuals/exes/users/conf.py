@@ -97,7 +97,7 @@ release = ': %s %s' % (package, version)
 latex_documents = [('users',
                     'exes_users.tex',
                     "EXES Redux User's Manual",
-                    r"From Iss. 01: A. Bryant\and\large{Until Rev. E: M. Clarke, W. Vacca}",
+                    r"From Iss. 01: A. Bryant, B. Greiner \and\large{Until Rev. E: M. Clarke, W. Vacca}",
                     'howto')]
 
 # Fix environment error, make one-sided document,

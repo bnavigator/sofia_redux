@@ -97,7 +97,7 @@ release = ': %s %s' % (package, version)
 latex_documents = [('users',
                     'flitecam_users.tex',
                     "FLITECAM Redux User's Manual",
-                    r"From Iss. 01: A. Bryant\and\large{Until Rev. B: M. Clarke, W. Vacca, E. Chambers, S. Shenoy}",
+                    r"From Iss. 01: A. Bryant, B. Greiner \and\large{Until Rev. B: M. Clarke, W. Vacca, E. Chambers, S. Shenoy}",
                     'howto')]
 
 # Fix environment error, make one-sided document,
