@@ -32,7 +32,7 @@
 
 - FLITECAM pipeline v2.1.0:
 
-  - Download and cache auxilary calibration files from the
+  - Download and cache auxiliary calibration files from the
     `SOFIA Redux FLITECAM pipeline reference files <https://doi.org/10.18419/DARUS-6126>`__
     dataset at DaRUS instead of
     `IRSA <https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/FLITECAM/>`__.

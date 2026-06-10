@@ -91,12 +91,12 @@ to the pipeline algorithms.
 External Requirements
 ~~~~~~~~~~~~~~~~~~~~~
 
-To run the pipeline for any mode, Python 3.8 or
+To run the pipeline for any mode, Python 3.11 or
 higher is required, as well as the following packages: numpy, scipy,
 matplotlib, pandas, astropy, configobj, numba, bottleneck, joblib,
 and photutils.
 Some display functions for the graphical user interface (GUI)
-additionally require the PyQt5, pyds9, and regions packages.
+additionally require the PyQt6, ds9samp, and regions packages.
 All required external packages are available to install via
 PyPI.  See the `pyproject.toml` distributed with `sofia_redux`
 for up-to-date version dependencies.
@@ -105,8 +105,7 @@ Running the pipeline interactively also requires an installation of
 SAO DS9 for FITS image display. See http://ds9.si.edu/ for download
 and installation instructions.  The *ds9* executable
 must be available in the PATH environment variable for the pyds9
-interface to be able to find and control it.  Please note that pyds9
-is not available on the Windows platform.
+interface to be able to find and control it.
 
 Source Code Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,9 +113,19 @@ Source Code Installation
 The source code for the FLITECAM pipeline maintained by the SOFIA Data
 Center (SDC)  team can be obtained directly from the
 external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
-This repository contains all needed configuration
-files, auxiliary files, and Python code to run the pipeline on FLITECAM
+This repository contains the configuration
+files and Python code to run the pipeline on FLITECAM
 data in any observation mode.
+
+The code automatically downloads and caches auxiliary data files
+such as nonlinearity correction coefficients, spectroscopic order
+masks, and wavelength calibration files from the
+`SOFIA Redux FLITECAM pipeline reference files <https://doi.org/10.18419/DARUS-6126>`__
+dataset at DaRUS. Most of these files are additionally available at
+`IRSA <https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/FLITECAM/>`__.
+They can be downloaded manually and placed into the respective directories
+of `sofia_redux/instruments/flitecam/data/`, if on-the-fly downloading and caching
+is not desired.
 
 After obtaining the source code, install the package with
 the command::
