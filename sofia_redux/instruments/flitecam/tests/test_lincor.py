@@ -8,14 +8,19 @@ import pytest
 
 import sofia_redux.instruments.flitecam as fdrp
 import sofia_redux.instruments.flitecam.lincor as u
+from  sofia_redux.instruments.flitecam.getcalpath import DARUS_DOI
 from sofia_redux.instruments.flitecam.tests.resources import raw_testdata
-
+from sofia_redux.toolkit.utilities.darus import get_file_from_darus
+from sofia_redux.toolkit.utilities.func import goodfile
 
 @pytest.fixture(scope='function')
 def linfile():
     pth = os.path.join(os.path.dirname(fdrp.__file__),
                        'data', 'linearity_files')
-    linfile = os.path.join(pth, 'flitecam_lc_coeffs.fits')
+    lc_coeffs_file = 'flitecam_lc_coeffs.fits'
+    linfile = os.path.join(pth, lc_coeffs_file)
+    if not goodfile(linfile):
+        linfile = get_file_from_darus(DARUS_DOI, lc_coeffs_file)
     return linfile
 
 
