@@ -8,6 +8,7 @@ import pandas
 
 from sofia_redux.instruments import flitecam as fdrp
 from sofia_redux.toolkit.utilities.darus import get_file_from_darus
+from sofia_redux.toolkit.utilities.func import goodfile
 
 __all__ = ['getcalpath']
 
@@ -143,11 +144,11 @@ def getcalpath(header):
     row = table[table.index == table.index.min()].sort_index().iloc[0]
     for f in calcols:
         if f.endswith('file') and f in row and row[f] != '.':
-            # for source distributions, the file should be in
-            # the standard calpath
-            expected = os.path.join(path, row[f])
-            if os.path.isfile(expected):
-                result[f] = expected
+            # get it from the local data directory if placed there manually
+            localdatafile = os.path.join(path, row[f])
+            if goodfile(localdatafile):
+                result[f] = localdatafile
+                log.info(f"Using {row[f]} from {path}")
             else:
                 # for public distributions, it may need
                 # to be downloaded from DaRUS
@@ -211,9 +212,10 @@ def _get_grism_cal(pathcal, result):
         if f.endswith('file') and f in row and row[f] != '.':
             # for source distributions, the file should be in
             # the standard calpath
-            expected = os.path.join(pathcal, row[f])
-            if os.path.isfile(expected):
-                result[f] = expected
+            localdatafile = os.path.join(pathcal, row[f])
+            if goodfile(localdatafile):
+                result[f] = localdatafile
+                log.info(f"Using {row[f]} from {pathcal}")
             else:
                 # for public distributions, it may need
                 # to be downloaded from DaRUS
@@ -232,6 +234,7 @@ def _download_cache_file(filename):
     basename = os.path.basename(filename)
     try:
         cache_file = get_file_from_darus(DARUS_DOI, basename)
+        log.info(f"Using {filename} cached as {cache_file}")
     except OSError:
         # OSError covers the expected exceptions: HTTPError if the DaRUS
         # request fails, FileNotFoundError if the file is not in the dataset,
