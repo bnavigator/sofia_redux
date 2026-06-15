@@ -884,7 +884,9 @@ def test_get_comment_unit():
     assert utils.get_comment_unit('a bad format (degree') is None
     assert utils.get_comment_unit('this is not (a unit)') is None
 
-
+# Flaky numba induced astropy units error?
+# ghtik#IRS-SOFIA-Data-Center/sofia_redux#131)
+@pytest.mark.flaky(reruns=2)
 def test_safe_sidereal_time():
     from astropy.utils.iers import iers
     from astropy.utils.data import get_pkg_data_filename

@@ -120,6 +120,12 @@ packages = ["sofia_redux"]
     "log.conf"
 ]
 "sofia_redux.visualization.models.tests" = ["data/*"]
+"sofia_redux.instruments.exes" = [
+    "data/*",
+    "data/*/*",
+    "data/*/*/*",
+    "data/*/*/*/*"
+]
 "sofia_redux.instruments.fifi_ls" = [
     "data/*",
     "data/*/*",

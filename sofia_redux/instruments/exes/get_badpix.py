@@ -5,9 +5,10 @@ import os
 from astropy import log
 import numpy as np
 
-from sofia_redux.toolkit.utilities.fits import getdata, goodfile
 from sofia_redux.instruments.exes import data as data_module
 from sofia_redux.instruments.exes import utils
+from sofia_redux.toolkit.utilities.fits import getdata, goodfile
+from sofia_redux.toolkit.utilities.darus import get_file_from_darus
 
 __all__ = ['get_badpix']
 
@@ -52,9 +53,15 @@ def get_badpix(header, clip_reference=False, apply_detsec=False):
         mask = getdata(bpm).astype('int')
     else:
         datapath = os.path.dirname(data_module.__file__)
-        bpm = os.path.join(datapath, 'bpm', bpm)
-        if goodfile(bpm):
-            mask = getdata(bpm).astype('int')
+        bpmpath = os.path.join(datapath, 'bpm', bpm)
+        if goodfile(bpmpath):
+            bpm = bpmpath
+        else:
+            try:
+                bpm = get_file_from_darus(data_module.DARUS_DOI, bpm)
+            except FileNotFoundError:
+                return None
+        mask = getdata(bpm).astype('int')
     if mask is None:
         return
 

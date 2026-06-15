@@ -15,6 +15,15 @@ that was processed with this pipeline.
 For previously processed data, check the PIPEVERS keyword in the
 FITS header to determine the pipeline version used.
 
+FLITECAM Redux v2.1.0 (2026-06-09)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*User manual: Iss. 01*
+
+- Maintainer changed from USRA to SDC. Removed notes about formal documentation
+  no longer available.
+- Nonlinearity correction coefficients, spectroscopic order masks, and wavelength
+  calibration files are now downloaded and cached from the SDC Astronomy Dataverse
+  at DaRUS instead of the PIPELINE_REFERENCE directory at IRSA.
 
 FLITECAM Redux v2.0.0 (2021-09-24)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

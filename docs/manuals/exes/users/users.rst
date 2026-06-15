@@ -9,8 +9,13 @@ EXES Redux User's Manual
 Introduction
 ============
 
+The SOFIA Data Center (SDC) is the successor to the SOFIA Science Mission Operations
+Center (SMO) in maintaining the EXES Redux User’s Manual. The SMO managed the
+manual under the document number 'SCI-US-HBK-OP10-2005', up to revision E. With
+SDC as the new maintainer, the document number has changed to SDC-MAN-0005.
+
 The SI Pipeline Users Manual (OP10) is intended for use by both SOFIA
-Science Center staff during routine data processing and analysis, and
+Data Center staff during data processing and analysis, and
 also as a reference for General Investigators (GIs) and archive users to
 understand how the data in which they are interested was processed. This
 manual is intended to provide all the needed information to execute the
@@ -19,14 +24,7 @@ quality of the resulting products. It will also provide a description of
 the algorithms used by the pipeline and both the final and intermediate
 data products.
 
-A description of the current pipeline capabilities, testing results,
-known issues, and installation procedures are documented in the SI
-Pipeline Software Version Description Document (SVDD, SW06, DOCREF). The
-overall Verification and Validation (V&V) approach can be found in the
-Data Processing System V&V Plan (SV01-2232). Both documents can be
-obtained from the SOFIA document library in Windchill.
-
-This manual applies to EXES Redux version 3.0.0.
+This manual applies to EXES Redux version 3.1.0.
 
 .. include:: data_description.rst
 
@@ -34,6 +32,6 @@ This manual applies to EXES Redux version 3.0.0.
 
 .. _exes_change_notes:
 
-Appendix B: Change notes for the EXES pipeline
+Appendix C: Change notes for the EXES pipeline
 ==============================================
 .. include:: change_notes.rst

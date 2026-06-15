@@ -69,60 +69,21 @@ algorithms specific to EXES, with supporting libraries from the
 modules.  The `pipeline` module provides interactive and batch interfaces
 to the pipeline algorithms.
 
-External Requirements
-~~~~~~~~~~~~~~~~~~~~~
+.. |inst| replace:: EXES
+.. include:: ../../external-reqs-src-install.rst
 
-To run the pipeline for any mode, Python 3.8 or
-higher is required, as well as the following packages: numpy, scipy,
-matplotlib, pandas, astropy, configobj, numba, bottleneck, joblib,
-and photutils.
-Some display functions for the graphical user interface (GUI)
-additionally require the PyQt5, pyds9, and regions packages.
-All required external packages are available to install via
-PyPI.  See the `pyproject.toml` distributed with `sofia_redux`
-for up-to-date version dependencies.
+Auxiliary data files
+--------------------
 
-Running the pipeline interactively also requires an installation of
-SAO DS9 for FITS image display. See http://ds9.si.edu/ for download
-and installation instructions.  The *ds9* executable
-must be available in the PATH environment variable for the pyds9
-interface to be able to find and control it.  Please note that pyds9
-is not available on the Windows platform.
-
-Source Code Installation
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The source code for the EXES pipeline maintained by the SOFIA Data
-Center (SDC) team can be obtained directly from the
-external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
-This repository contains all needed configuration
-files, auxiliary files, and Python code to run the pipeline on EXES
-data in any observation mode.
-
-After obtaining the source code, install the package with
-the command::
-
-    pip install .
-
-from the top-level directory.
-
-Alternately, a development installation may be performed from inside the
-directory with the command::
-
-    pip install -e .
-
-
-After installation, the top-level pipeline interface commands should
-be available in the PATH.  Typing::
-
-    redux
-
-from the command line should launch the GUI interface, and::
-
-    redux_pipe -h
-
-should display a brief help message for the command line interface.
-
+The code automatically downloads and caches auxiliary data files
+such as bad pixel masks, reset dark files, and nonlinearity
+correction coefficients from the
+`SOFIA Redux EXES pipeline reference files <https://doi.org/10.18419/DARUS-5981>`__
+dataset at DaRUS. Most of these files are additionally available at
+`IRSA <https://irsa.ipac.caltech.edu/data/SOFIA/PIPELINE_REFERENCE/EXES/>`__
+and can be placed manually into the respective directories
+of `sofia_redux/instruments/exes/data/`, if on-the-fly downloading and caching
+is not desired.
 
 Configuration
 -------------

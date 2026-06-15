@@ -151,6 +151,9 @@ class TestHorizontalFrames(object):
         assert offset.y == 5
         m1.assert_called_once()
 
+    # Flaky numba induced astropy units error?
+    # ghtik#IRS-SOFIA-Data-Center/sofia_redux#131)
+    @pytest.mark.flaky(reruns=2)
     def test_parallactic_angle(self, validated_frames):
 
         angle = validated_frames.get_parallactic_angle()
