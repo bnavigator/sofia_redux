@@ -243,7 +243,10 @@ Fit Ramps
 
 The flux measured in each spatial and spectral pixel is reconstructed
 from the readout frames by fitting a line to the voltage ramps. The
-slope of the line corresponds to the flux value.
+slope of the line corresponds to the flux value. The resulting output
+is represented in :numref:`fifi_ramps_fit`, for an example symmetric-chop-nod
+observation of M82 around [CII] 158 µm. This observation will be the basis of
+all subsequent figures in this section.
 
 Before fitting a line to a ramp, some likely bad frames are removed from
 the data. The grating values (in the 26\ :sup:`th` spaxel position), the
@@ -983,8 +986,11 @@ Resample
 Finally, the pipeline resamples the flux for each spatial and spectral pixel
 onto a regular 3D grid (right ascension, declination, and wavelength).
 This step combines the spatial information from all input
-nod-combined dither positions into a single output map.  See
-:numref:`fifi_resample_algorithm` for an overview of the resampling algorithm.
+nod-combined dither positions into a single output map. See
+:numref:`fifi_resample_algorithm` for a visual representation of the resampling algorithm.
+The following sections will outline the details of the resampling process,
+which can be entirely automated based on keywords in the input files.
+Nevertheless, several optional parameters and modes exist, which will also be described.
 
 .. figure:: images/fifi_resample_algorithm.png
    :alt: Resampling algorithm
@@ -1009,15 +1015,11 @@ observed sets the range of the output grid.
 The spacing of the output grid in the wavelength dimension (:math:`dw`) is set
 by the desired oversampling. By default, in the wavelength dimension, the
 pipeline samples the average expected spectral FWHM for the observation
-(:numref:`fifi_spatial_res`) with 8 output pixels.
-
-The spacing in the spatial dimensions (:math:`dx`) is fixed for each channel
-at 1.5 arcseconds in the BLUE and 3.0 arcseconds in the RED. These values
-are chosen to ensure an oversampling of the spatial FWHM by at least a
-factor of three.
+(:numref:`fifi_spatial_res`) with 8 output pixels. The wavelength
+pixel size and/or oversampling factor can be specified by the user if desired.
 
 For example, for the RED observation in the figures above, covering a wavelength range
-of 157.27 - 158.48 µm, with a standard spectral oversample factor of 8, the spectral grid
+of 157.27 - 158.48 µm, with a default spectral oversample factor of 8, the spectral grid
 is calculated as follows:
 
 - Spectral coverage: :math:`\Delta\lambda` = 1.21 µm
@@ -1027,7 +1029,13 @@ is calculated as follows:
 - Spectral grid spacing: :math:`dw` = :math:`\delta\lambda/\text{oversample}` = 0.130/8 = 0.016 µm
 - Output spectral grid length: :math:`nw` = :math:`\Delta\lambda/dw` = 1.21/0.016 = 75.6 pixels (rounded to 76)
 
-If using the standard spatial scale (thus ignoring any custom spatial oversampling),
+The spacing in the spatial dimensions (:math:`dx`) is fixed for each channel
+at 1.5 arcseconds in the BLUE and 3.0 arcseconds in the RED. These values
+are chosen to ensure an oversampling of the spatial FWHM by at least a
+factor of three. Similarly to wavelength, the spatial pixel size and/or
+oversample factor can also be specified by the user.
+
+If using the default spatial scale and oversample, for the same RED observation,
 the spatial grid is calculated as follows:
 
 - Standard red spatial scale: :math:`dx` = 3.0"
@@ -1040,12 +1048,12 @@ the spatial grid is calculated as follows:
 
 The full output cube then is 33 x 27 x 76 (:math:`nx` x :math:`ny` x :math:`nw`).
 
-For the case that an oversampling factor is specified, with no standard spatial scale,
+For the case that a spatial oversample factor is specified, with no specified spatial scale,
 the spatial grid is calculated from the fixed fit window FWHM, rather than the
 wavelength-dependent spatial FWHM. This is based on historical experience, where
 decoupling the spatial grid from observed wavelength greatly simplifies data analysis.
 The difference between these two values is exemplified in table :ref:`fifi_spatial_res`.
-The spatial grid is calculated as follows:
+The spatial grid is hence calculated as follows:
 
 - Desired oversampling of spatial FWHM: :math:`oversample_{xy}` = 5.0
 - Window FWHM at median wavelength: :math:`\theta_{window}` = 10.0"
@@ -1112,7 +1120,7 @@ FWHM in the wavelength dimension, and 3 times the spatial FWHM in the
 spatial dimensions. For the purposes of this fit, the window size is not
 based on the actual wavelength-dependent FWHM as shown in the Table, but
 rather a fixed channel-specific value. This allows for direct control of
-the spatial fit window through the oversample factor. A larger fit window is typically
+the spatial fit window through the oversample factor. A larger spatial fit window is typically
 necessary than for the spectral grid, since the observation setup
 usually allows more oversampling in wavelength than in space.
 
@@ -1164,7 +1172,8 @@ telluric-corrected cube is resampled using the wavelengths corrected for
 barycentric motion, and the uncorrected cube is resampled using the
 original wavelength calibration. The spectra from the uncorrected cube
 will appear slightly shifted with respect to the spectra from the
-telluric-corrected cube.
+telluric-corrected cube. If the user has no interest in the uncorrected cube,
+then its resampling can be skipped, which saves some computation time.
 
 Detector Coordinates
 ^^^^^^^^^^^^^^^^^^^^

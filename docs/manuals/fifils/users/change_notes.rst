@@ -45,7 +45,7 @@ FIFI-LS Redux v2.10.0
 *User manual: Iss. 03*
 
 - Add a description for the Narrow Line Mode (NLM) and
- redshift and rest wavelength override
+  redshift and rest wavelength override
 
 FIFI-LS Redux v2.9.0
 ~~~~~~~~~~~~~~~~~~~~

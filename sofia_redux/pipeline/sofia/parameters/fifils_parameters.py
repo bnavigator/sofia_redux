@@ -334,16 +334,17 @@ DEFAULT = {
          'dtype': 'bool',
          'wtype': 'check_box'},
          {'key': 'hdr_ovr',
-         'name': '(NLM) Z and Rest Wavelength Override',
+         'name': '(NLM) Redshift and rest wavelength override',
          'value': False,
-         'description': 'If set, redshift and rest wavelenght do not exist in '
-                        'FITS header and have to be provided manually',
+         'description': 'If set, narrow line mode will override the redshift '
+                        'and rest wavelength in FITS header with the manual '
+                        'entries below',
          'dtype': 'bool',
          'wtype': 'check_box'},
          {'key': 'restwav',
          'name': '(NLM) Rest wavelength [µm]',
          'value': 0.0,
-         'description': 'Rest wavelenght of target for narrow line mode',
+         'description': 'Rest wavelength of target for narrow line mode',
          'dtype': 'float',
          'wtype': 'text_box'},
          {'key': 'redshift',

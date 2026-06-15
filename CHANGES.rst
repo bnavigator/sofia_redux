@@ -1,6 +1,6 @@
 1.5.0 (TBD)
 ===========
-- FIFI-LS User Manual Iss. 04:
+- FIFI-LS pipeline v2.11.0:
 
   - Document changes to spectral/spatial resolution data file,
     and clarify functionality of resample.
@@ -11,6 +11,7 @@
     flux calibration procedure.
   - As part of the new flux calibration, systematic errors are now stored
     in their own dedicated FITS extension, separate from the statistical errors.
+  - Bumped FIFI-LS User Manual from Iss. 03 to Iss. 04.
 
 - FORCAST pipeline v2.7.3:
 

@@ -69,58 +69,8 @@ interactive photometry routines in the interactive interface.  The `scan`
 module provides support for additional processing tasks specific to on-the-fly
 mapping modes.
 
-External Requirements
-~~~~~~~~~~~~~~~~~~~~~
-
-To run the pipeline for any mode, Python 3.8 or
-higher is required, as well as the following packages: numpy, scipy,
-matplotlib, pandas, astropy, configobj, numba, bottleneck, joblib,
-and astropy-helpers.
-Some display functions for the graphical user interface (GUI)
-additionally require the PyQt5, pyds9, photutils, and dill packages.
-All required external packages are available to install via
-PyPI.  See the `pyproject.toml` distributed with `sofia_redux`
-for up-to-date version dependencies.
-
-Running the pipeline interactively also requires an installation of
-SAO DS9 for FITS image display. See http://ds9.si.edu/ for download
-and installation instructions.  The *ds9* executable
-must be available in the PATH environment variable for the pyds9
-interface to be able to find and control it.
-
-Source Code Installation
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The source code for the FIFI-LS pipeline maintained by the SOFIA Data
-Center (SDC) team can be obtained directly from the
-external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
-This repository contains all needed configuration
-files, auxiliary files, and Python code to run the pipeline on FIFI-LS
-data in any observation mode.
-
-After obtaining the source code, install the four Python libraries with
-the command::
-
-    pip install .
-
-from the top-level directory.
-
-Alternately, a development installation may be performed from inside the
-directory with the command::
-
-    pip install -e .
-
-
-After installation, the top-level pipeline interface commands should
-be available in the PATH.  Typing::
-
-    redux
-
-from the command line should launch the GUI interface, and::
-
-    redux_pipe -h
-
-should display a brief help message for the command line interface.
+.. |inst| replace:: FIFI-LS
+.. include:: ../../external-reqs-src-install.rst
 
 Configuration
 -------------
@@ -165,11 +115,14 @@ Auxiliary Files
 ~~~~~~~~~~~~~~~
 
 In order to complete a standard reduction, the pipeline requires a number
-of auxiliary files to be on disk, in standard locations within the
-*fifi_ls/data* package directory.  These files may be overridden in custom
-reductions, using input parameters for the relevant pipeline steps.  See
+of auxiliary files. Most of these are included within the software package
+provided via PyPI, stored in the *sofia_redux/instruments/fifi_ls/data* directory. 
+Others, namely the SDC-ATRAN models and ECMWF water vapor data, are stored on the
+DaRUS data repository, and are automatically accessed by the pipeline as needed.
+Most auxiliary files can be overridden by the user with local files as needed,
+with the use of input parameters for the relevant pipeline steps. See
 :numref:`fifi_auxfiles` for a table of all commonly used types of auxiliary
-files.
+FIFI-LS files.
 
 .. _fifi_auxfiles:
 .. table:: Auxiliary files used by FIFI-LS reductions
@@ -189,7 +142,9 @@ files.
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
    | Resolution             | ASCII      | Telluric Correct, Resample  | Contains the expected spectral resolution and fit window FWHM for all modes |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
-   | ATRAN                  | FITS       | Telluric Correct            | Contains an unsmoothed atmospheric transmission model spectrum              |
+   | SDC-ATRAN              | FITS       | Telluric Correct            | Contains an unsmoothed atmospheric transmission model spectrum              |
+   +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
+   | ECMWF WV Data          | FITS       | Telluric Correct            | Contains atmopsheric water vapor measurements from ECMWF satellite data     |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
    | Response               | FITS       | Flux Calibrate              | Contains an instrumental response spectrum                                  |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
