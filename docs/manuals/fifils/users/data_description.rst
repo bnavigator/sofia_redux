@@ -859,22 +859,19 @@ for the time of each specific observation. To date, observations of Mars
 have been used as the primary flux calibration source. Predicted total
 fluxes for Mars across the FIFI-LS passband at the specific UT dates of
 the observations have been generated using the model of Lellouch and
-Amri [#fn_fifi_mars]_. Predicted fluxes at several frequencies have been computed
-and these have then been fit with blackbody curves to derive values at a
-large number of wavelength points. The deviations of the fits from the
-input predictions are much less than 1%. After the models have been
+Amri [#fn_fifi_mars]_. These fluxes are computed at every wavelength-time
+tuple of the input FIFI-LS datapoints, i.e. every wavelength slice. After the models have been
 generated, the telluric-corrected spectra of the standards, in units of
 ADU/s/Hz, are divided by the theoretical spectra, in Jy. The results are
-smoothed and then fit with a polynomial to derive response functions
-(ADU/s/Hz/Jy) that can then used to flux calibrate the telluric-corrected
+smoothed and then fit with a radial basis function to derive response curves in units of
+ADU/s/Hz/Jy that can then be used to flux calibrate the telluric-corrected
 spectra of other astronomical sources (see :numref:`fifi_response`).
 
-
-
-
-The pipeline stores a set of response functions for each channel and
-dichroic value. To perform flux calibration, it selects the correct
-response function for each input observation, interpolates the response
+The pipeline stores a set of response curves for each combination of
+red dichroic (D105, D130), blue order filter position (B1, B2) and blue filter version (v1, v2),
+for a total of 12 files (red curves do not depend on the blue order filter position).
+To perform flux calibration, it selects the correct
+response curve for each input observation, interpolates the response
 onto the wavelengths of each spexel, and divides the flux by the
 response value to convert it to physical units (Jy/pixel). From this point on,
 the data products are considered to be Level 3 (FITS keyword
@@ -882,86 +879,67 @@ the data products are considered to be Level 3 (FITS keyword
 attached to the FITS file as a 25 x (16 \* N\ :sub:`scan`) data table in the
 first FITS extension (column ``RESPONSE``). Flux calibration is applied to
 both the telluric-corrected cube and the uncorrected cube. The estimated
-systematic error in the flux calibration is recorded in the ``CALERR``
-keyword in the FITS header, as an average fractional error. Fadda *et al*. 2023 [#Fadda2023]_ estimate
-a flux calibration accuracy of about 5-10% (``CALERR`` :math:`\leq` 0.1) [#fn_fifi_calerr]_. This estimate will likely be revised
-as part of the upcoming SDC flux calibration update.
+systematic error in the flux calibration is recorded in the 2nd (1-relative)
+row of the original response file as an absolute value, and also as a relative
+value in a dedicated extension (``RELATIVE_RESPONSE_ERROR``). The latter is propagated into
+the pipeline separately from the statistical flux error, emerging after resampling as the ``CAL_ERROR``
+extension [#fn_fifi_calerr]_.
 
-.. [#fn_fifi_mars] See http://www.lesia.obspm.fr/perso/emmanuel-lellouch/mars/index.php
-.. [#Fadda2023] \D. Fadda *et al*. 2023 ApJ 166 237, https://doi.org/10.3847/1538-3881/acffb4
+To-date, several iterations of response curves have been generated, based on
+different flux calibration methods. An outline of the major iterations is
+presented in Appendix B. Manual selection of response curves is supported within
+the Redux GUI via the *Response file* field, or in the config file via the ``response_file``
+parameter. Users may view the available historical response curves within
+*sofia_redux/sofia_redux/instruments/fifi_ls/data/response_files/*,
+for which the calibration dates are specified in the filenames (note: the subfolder v1_filters refers to
+responses for data observed prior to the end of 2017 with the old filter version,
+v2 is for data from 2018 onwards observed with the new filter version).
+The filenames for the major flux calibration iterations overviewed in Appendix B
+are as follows:
+
++-----------------+-------------------------------------------------------------------------+
+| Calibration     | Filename Scheme                                                         |
++=================+=========================================================================+
+| SDC             | *Response_{channel}_{dichroic}_{filter}_20260512{filter version}.fits*  |
++-----------------+-------------------------------------------------------------------------+
+| DSI             | *Response_{channel}_{dichroic}_{filter}_20240416{filter version}.fits*  |
++-----------------+-------------------------------------------------------------------------+
+| USRA            | *Response_{channel}_{dichroic}_{filter}_20230505{filter version}.fits*  |
++-----------------+-------------------------------------------------------------------------+
+
+
+Users may also choose to modify the lookup table *response_default.txt* within the
+above directory, pointing to the older response curves if desired. For reference,
+the response curve used in reduction of data products is specified in the FITS header
+keyword ``RSPNFILE``.
+
+.. [#fn_fifi_mars] See https://lira.obspm.fr/perso/emmanuel-lellouch/mars/index.php
 .. [#fn_fifi_calerr]
-   Earlier versions of this pipeline (prior to v1.3.2) propagated
-   the systematic error on the flux calibration in the ``STDDEV``
-   and ``ERROR`` arrays in the output products.  As of v1.3.2, the
-   calibration error is only propagated in the FITS header keyword
-   ``CALERR``.
+   Prior to FIFI-LS Redux v1.3.2, the systematic error on the flux
+   calibration was propagated in the ``STDDEV`` and ``ERROR`` arrays
+   in the output products. After v1.3.2 and prior to v2.11.0, the calibration error
+   was only propagated in the FITS header keyword ``CALERR`` as a mean calibration error
+   over the entire observed wavelength range. As of
+   v2.11.0, the calibration error is also propagated into its own ``CAL_ERROR`` extension,
+   after resampling, as an absolute value. The ``RELATIVE_RESPONSE_ERROR`` extension
+   contains a 2-dimensional array of the wavelength-varying calibration error values for
+   each spaxel, and is interpolated onto the spectral axis of each spaxel after resampling.
+   Consequently in the resample data product, it is converted to a 1-d array since the
+   spaxels then have a common spectral axis.
 
 .. figure:: images/fifi_response.png
    :alt: Response calculation
    :name: fifi_response
    :height: 800
 
-   Response fits overplotted on telluric-corrected data, with model
-   spectra divided out.  Data shown was taken in 2015-2019 for
-   the blue channel order 2, blue channel order 1, and red channel.
-   Plots on the left are from an older filter set;
-   plots on the right are for data taken with an updated
-   filter set.
-
-"DSI" Response Curve Update
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-From v2.10.0 onwards, the pipeline uses response curves generated at the
-Deutsches SOFIA Institut (DSI) in 2024. These response curves deviate from
-those of prior versions, and will result in differences in the absolute flux
-of data products.
-
-The main differences arise from changes in how the FIFI-LS-measured
-Mars flux images are sampled and compared to the Mars model fluxes. The prior
-approach attempted to fit the FIFI-LS spatial PSF to the Mars disk and then
-integrate the fitted flux distribution to derive a total flux. The benefit of
-this approach is that the loss of flux which "falls" off of the FIFI-LS field of
-view (relevant at low Mars separations) is counteracted. However, this approach
-suffers from the highly undersampled Mars disk, and therefore the 2-dimensional
-Gaussian fit is potentially unreliable.
-
-The 2024 DSI approach instead identifies the centre of Mars via the brightest pixel,
-and sums all flux within a static aperture around that pixel. This better captures
-the true measured flux, albeit without correcting for flux lost outside of the
-FIFI-LS field of view. Additionally, flightwise atmospheric calibration factors
-that are applied to the prior calibration have been removed in post-filter change
-response curves. The pre-filter change response curves remain the same as before,
-except those for the B2 filters, which have been scaled from their post-filter change
-counterparts. This corrects for artefacts in the response curves, and also extends
-response coverage for the [OIII] 52 micron line in the old filter configuration.
-
-In the near future, the SOFIA Data Center (SDC) will release an updated flux
-calibration which will encorporate a more robust image resampling and flux
-extraction method, along with a fully time & wavelength-resolved Mars model.
-For this reason, a comprehensive test of the relative robustnesses of the DSI
-and 2023 responses has not been carried out, however fluxes in data products may
-deviate between versions by up to 30%. :numref:`fifi_fadda_dsi_response_comparison` displays
-the difference between the two response versions for all FIFI-LS filter configurations.
-A more detailed investigation will be provided in future documentation of the SDC
-flux calibration.
-
-Manual selection of response curves is supported within the Redux GUI via the *Response file*
-field, or in the config file via the ``response_file`` parameter. Users may view
-the available historical response curves within
-*sofia_redux/sofia_redux/instruments/fifi_ls/data/response_files/*,
-for which the calibration dates are specified in the filenames (note: v1 refers to
-responses for data observed prior to the end of 2017, v2 is for data from 2018 onwards).
-Users may also choose to modify the lookup table *response_default.txt* within the
-above directory, pointing to the older response curves if desired. For reference,
-the response curve used in reduction of data products is specified in the FITS header
-keyword ``RSPNFILE``.
-
-.. figure:: images/fifi_fadda_dsi_response_comparison.png
-   :alt: Fadda DSI response comparison
-   :name: fifi_fadda_dsi_response_comparison
-   :height: 800
-
-   Comparison of Fadda et al. 2023 (orange) and DSI 2024 (blue) response curves
-   for all FIFI-LS filter configurations.
+   Response curve fits overplotted on telluric-corrected data divided by
+   modelled Mars fluxes, for all channel/dichoric/order configurations.
+   Upper 2 panels are for post-filter change data, lower 2 panels for
+   pre-filter change data (also indicated by the dates on the plots).
+   The SDC-derived response curves are indicated by golden lines, and
+   their respective fit errors with shaded gold regions. The previous two
+   iterations of response curves are indicated by silver and bronze lines.
+   See Appendix B for more information.
 
 Correct Wave Shift
 ~~~~~~~~~~~~~~~~~~
@@ -1223,11 +1201,13 @@ yet been fully tested and optimized for FIFI-LS data.
 Output Data
 ^^^^^^^^^^^
 The pipeline stores the resampled data as a 3D FITS image extension
-with extension name ``FLUX``. The associated error is stored in a
-separate extension, with the name ``ERROR``. The non-telluric-corrected
-cubes are stored in ``UNCORRECTED_FLUX`` and ``UNCORRECTED_ERROR`` extensions,
-respectively. The output wavelengths, x and y offsets, and RA and Dec
-coordinates are stored in ``WAVELENGTH``, ``X``, ``Y``, ``RA---TAN``, and ``DEC--TAN``
+with extension name ``FLUX``. The associated statistical and systematic (calibration) errors
+are stored separately in their own extensions, named ``ERROR`` and ``CAL_ERROR``, respectively.
+The systematic error is not resampled, but rather interpolated onto the spectral axis
+of each resampled spaxel, and thus stored as an absolute systematic error on the flux.
+The non-telluric-corrected cubes are stored in ``UNCORRECTED_FLUX``, ``UNCORRECTED_ERROR``
+and ``UNCORRECTED_CAL_ERROR`` extensions, respectively. The output wavelengths, x and y offsets,
+and RA and Dec coordinates are stored in ``WAVELENGTH``, ``X``, ``Y``, ``RA---TAN``, and ``DEC--TAN``
 extensions.
 
 For reference, a model of the atmospheric
@@ -1248,13 +1228,19 @@ extensions:
 
 -  ``FLUX``: The *nx* x *ny* x *nw* cube of flux values.
 
--  ``ERROR``: The associated error values on the flux (also *nx* x *ny* x
+-  ``ERROR``: The associated statistical error values on the flux (also *nx* x *ny* x
+   *nw*).
+
+-  ``CAL_ERROR``: The associated systematic (calibration) error values on the flux (also *nx* x *ny* x
    *nw*).
 
 -  ``UNCORRECTED_FLUX``: The *nx* x *ny* x *nw* cube of flux values that
    have not been corrected for atmospheric transmission.
 
--  ``UNCORRECTED_ERROR``: The associated error values on the uncorrected
+-  ``UNCORRECTED_ERROR``: The associated statistical error values on the uncorrected
+   flux (also *nx* x *ny* x *nw*).
+
+-  ``UNCORRECTED_CAL_ERROR``: The associated systematic (calibration) error values on the uncorrected
    flux (also *nx* x *ny* x *nw*).
 
 -  ``WAVELENGTH``: The wavelength values associated with each plane of the
@@ -1276,9 +1262,12 @@ extensions:
 
 -  ``RESPONSE``: The instrumental response curve (*nw*).
 
+-  ``RELATIVE_RESPONSE_ERROR``: The wavelength-dependent calibration error on the response curve,
+   as a relative value on the flux (*nw*).
+
 -  ``EXPOSURE_MAP``: The exposure map (*nx* x *ny* x *nw*).
 
--  ``UNSMOOTHED\_TRANSMISSION``: The unsmoothed atmospheric transmission
+-  ``UNSMOOTHED_TRANSMISSION``: The unsmoothed atmospheric transmission
    model (N\ :sub:`trans` x 2).
 
 
@@ -1410,24 +1399,27 @@ separately from the FITS file products.
     |             |                           |                  |               |           || LAMBDA, XS, YS, RA, DEC,                 |
     |             |                           |                  |               |           || ATRAN, UNSMOOTHED_ATRAN                  |
     +-------------+---------------------------+------------------+---------------+-----------+-------------------------------------------+
-    || Flux       || *flux\_calibrated*       || LEVEL\_3        || CAL          || Y        || 12 image extensions:                     |
+    || Flux       || *flux\_calibrated*       || LEVEL\_3        || CAL          || Y        || 14 image extensions:                     |
     || Calibrate  |                           |                  |               |           || FLUX, STDDEV, UNCORRECTED\_FLUX,         |
     |             |                           |                  |               |           || UNCORRECTED\_STDDEV,                     |
     |             |                           |                  |               |           || LAMBDA, XS, YS, RA, DEC, ATRAN,          |
-    |             |                           |                  |               |           || RESPONSE, UNSMOOTHED_ATRAN               |
+    |             |                           |                  |               |           || RESPONSE, RELATIVE_RESPONSE_ERROR,       |
+    |             |                           |                  |               |           || UNSMOOTHED_ATRAN                         |
     +-------------+---------------------------+------------------+---------------+-----------+-------------------------------------------+
-    || Correct    || *wavelength\_shifted*    || LEVEL\_3        || WSH          || N        || 13 image extensions:                     |
+    || Correct    || *wavelength\_shifted*    || LEVEL\_3        || WSH          || N        || 14 image extensions:                     |
     || Wave       |                           |                  |               |           || FLUX, STDDEV, UNCORRECTED\_FLUX,         |
     || Shift      |                           |                  |               |           || UNCORRECTED\_STDDEV,                     |
-    |             |                           |                  |               |           || LAMBDA, UNCORRECTED_LAMBDA,              |
-    |             |                           |                  |               |           || XS, YS, RA, DEC, ATRAN,                  |
-    |             |                           |                  |               |           || RESPONSE, UNSMOOTHED_ATRAN               |
+    |             |                           |                  |               |           || LAMBDA, XS, YS, RA, DEC, ATRAN,          |
+    |             |                           |                  |               |           || RESPONSE, RELATIVE_RESPONSE_ERROR,       |
+    |             |                           |                  |               |           || UNSMOOTHED_ATRAN                         |
     +-------------+---------------------------+------------------+---------------+-----------+-------------------------------------------+
-    || Spatial    || *resampled*              || LEVEL\_4        || WXY          || Y        || 13 image extensions:                     |
-    || Resample   |                           |                  |               |           || FLUX, ERROR,                             |
+    || Spatial    || *resampled*              || LEVEL\_4        || WXY          || Y        || 16 image extensions:                     |
+    || Resample   |                           |                  |               |           || FLUX, ERROR, CAL_ERROR,                  |
     |             |                           |                  |               |           || UNCORRECTED\_FLUX, UNCORRECTED\_ERROR,   |
-    |             |                           |                  |               |           || WAVELENGTH, X, Y, RA---TAN, DEC--TAN,    |
-    |             |                           |                  |               |           || TRANSMISSION, RESPONSE, EXPOSURE\_MAP,   |
+    |             |                           |                  |               |           || UNCORRECTED\_CAL_ERROR, WAVELENGTH       |
+    |             |                           |                  |               |           || X, Y, RA\-\-\-TAN, DEC\-\-TAN,           |
+    |             |                           |                  |               |           || TRANSMISSION, RESPONSE,                  |
+    |             |                           |                  |               |           || RELATIVE_RESPONSE_ERROR, EXPOSURE\_MAP,  |
     |             |                           |                  |               |           || UNSMOOTHED\_TRANSMISSION                 |
     +-------------+---------------------------+------------------+---------------+-----------+-------------------------------------------+
 

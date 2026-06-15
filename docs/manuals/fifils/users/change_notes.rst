@@ -27,6 +27,11 @@ FIFI-LS Redux v2.11.0
 - Updated the spectral resolution data to a sampling of 1 µm. Documented
   changes to the spatial resolution made in v2.10.0, and clarified the
   functionality of resample with example calculations.
+- Implemented SDC-derived flux response curves, based upon an updated
+  flux calibration procedure, utilising datasets reduced with the aforementioned
+  telluric correction improvements.
+- As part of the new flux calibration, systematic errors are now stored
+  in their own dedicated FITS extension, separate from the statistical errors.
 
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~

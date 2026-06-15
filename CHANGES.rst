@@ -7,6 +7,10 @@
   - Enhanced telluric correction to automatically retrieve SDC-ATRAN
     transmission spectra and ECMWF water vapor data from the DaRUS Data Repository.
   - The pipeline now supports SDC-ATRAN and ECMWF binary table data formats.
+  - Implemented SDC-derived flux response curves, based on an updated
+    flux calibration procedure.
+  - As part of the new flux calibration, systematic errors are now stored
+    in their own dedicated FITS extension, separate from the statistical errors.
 
 - FORCAST pipeline v2.7.3:
 

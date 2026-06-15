@@ -28,6 +28,13 @@ def apply_response(hdul, response):
     Returns
     -------
     fits.HDUList
+
+    Notes
+    -----
+    Uncertainties of the measured flux (statistical error) and the response
+    curve (systematic error) are propagated separately. The measurement error is
+    saved to the 'STDDEV' extension, and the relative calibration error is saved
+    to the 'RELATIVE_RESPONSE_ERROR' extension.
     """
     wave = np.asarray(hdul['LAMBDA'].data, dtype=float)
     data = np.asarray(hdul['FLUX'].data, dtype=float)
@@ -42,6 +49,7 @@ def apply_response(hdul, response):
     resp_corr = np.full(shape, np.nan, dtype=float)
     var_corr = np.full(shape, np.nan, dtype=float)
     resp_store = np.full_like(wave, np.nan, dtype=float)
+    rel_resp_err_store = np.full_like(wave, np.nan, dtype=float)
 
     if udata is not None:
         var_uncorr = np.full(shape, np.nan, dtype=float)
@@ -52,11 +60,14 @@ def apply_response(hdul, response):
     for i in range(25):
         iresp = np.interp(wave[:, i], response[0], response[1],
                           left=np.nan, right=np.nan)
+        iresp_err = np.interp(wave[:, i], response[0], response[2],
+                              left=np.nan, right=np.nan)
         if np.isnan(iresp).all():
             continue
         resp_corr[..., i] = data[..., i] / iresp
         var_corr[..., i] = var[..., i] / (iresp ** 2)
         resp_store[:, i] = iresp
+        rel_resp_err_store[:, i] = iresp_err / iresp
 
         # propagate uncorrected data if present
         if udata is not None:
@@ -114,6 +125,8 @@ def apply_response(hdul, response):
     exthdr['BUNIT'] = ('adu/(Hz s Jy)', 'Data units')
     result.append(fits.ImageHDU(resp_store, header=exthdr,
                                 name='RESPONSE'))
+    result.append(fits.ImageHDU(rel_resp_err_store, header=exthdr,
+                                name='RELATIVE_RESPONSE_ERROR'))
     if 'UNSMOOTHED_ATRAN' in hdul:
         result.append(hdul['UNSMOOTHED_ATRAN'].copy())
     return result
