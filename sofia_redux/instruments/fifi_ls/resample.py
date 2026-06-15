@@ -1661,10 +1661,14 @@ def make_hdul(combined, grid_info, append_weights=False):
     try:
         resp = np.interp(w_out, response[0], response[1],
                          left=np.nan, right=np.nan)
+        rel_resp_err = np.interp(w_out, response[0], response[2] / response[1],
+                                 left=np.nan, right=np.nan)
     except (ValueError, TypeError, IndexError):
         log.error('Problem in interpolation.  '
                   'Setting RESPONSE to 1.0.')
         resp = np.full(w_out.shape, 1.0)
+        rel_resp_err = np.zeros(w_out.shape)
+    rel_resp_err_grid = rel_resp_err.reshape(len(rel_resp_err),1,1)
 
     # Add the spectral keys to primehead
     hdinsert(primehead, 'RESOLUN', resolution)
@@ -1676,12 +1680,17 @@ def make_hdul(combined, grid_info, append_weights=False):
                               name='FLUX', header=exthdr))
     hdul.append(fits.ImageHDU(data=combined['GRID_ERROR'],
                               name='ERROR', header=exthdr))
+    hdul.append(fits.ImageHDU(data=combined['GRID_FLUX'] * rel_resp_err_grid,
+                              name='CAL_ERROR', header=exthdr))
 
     if 'GRID_UNCORRECTED_FLUX' in combined:
         hdul.append(fits.ImageHDU(data=combined['GRID_UNCORRECTED_FLUX'],
                                   name='UNCORRECTED_FLUX', header=exthdr))
         hdul.append(fits.ImageHDU(data=combined['GRID_UNCORRECTED_ERROR'],
                                   name='UNCORRECTED_ERROR', header=exthdr))
+        hdul.append(fits.ImageHDU(data=combined['GRID_UNCORRECTED_FLUX']
+                                  * rel_resp_err_grid,
+                                  name='UNCORRECTED_CAL_ERROR', header=exthdr))
 
     hdinsert(exthdr_1d, 'BUNIT', 'um', comment='Data units')
     hdul.append(fits.ImageHDU(data=w_out, name='WAVELENGTH',
@@ -1702,6 +1711,9 @@ def make_hdul(combined, grid_info, append_weights=False):
                               header=exthdr_1d))
     exthdr_1d['BUNIT'] = 'adu/(s Hz Jy)'
     hdul.append(fits.ImageHDU(data=resp, name='RESPONSE',
+                              header=exthdr_1d))
+    exthdr_1d['BUNIT'] = ''
+    hdul.append(fits.ImageHDU(data=rel_resp_err, name='RELATIVE_RESPONSE_ERROR',
                               header=exthdr_1d))
 
     exthdr['BUNIT'] = ''

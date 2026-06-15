@@ -737,8 +737,8 @@ class TestFIFILSReduction(object):
         red = pickle.loads(red_copy)
         # modify input data x-width to smoke test plot adjustment
         new_cube = np.pad(red.input[0][1].data, ((0, 0), (0, 0), (100, 100)))
-        red.input[0][3].data = new_cube
         red.input[0][4].data = new_cube
+        red.input[0][5].data = new_cube
         param = red.get_parameter_set(step_index=idx)
         param.set_value('extension', 'UNCORRECTED_FLUX')
         red.step()

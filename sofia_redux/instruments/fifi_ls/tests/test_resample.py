@@ -152,11 +152,11 @@ class TestResample:
         for i in range(len(rsmp)):
             if i == 0:
                 continue
-            elif i == 2 or i == 4:
+            elif i == 2 or i == 5:
                 # error sum should be higher for interp data
                 assert np.nanmedian(interp[i].data
                                     ) > np.nanmedian(rsmp[i].data)
-            elif i in [5, 6, 7, 8, 9, 10, 11]:
+            elif i in [7, 8, 9, 10, 11, 12, 13, 14]:
                 # same for x, y, w, transmission, response, exposure map
                 assert np.allclose(rsmp[i].data, interp[i].data)
             else:
@@ -183,7 +183,7 @@ class TestResample:
             if i == 0:
                 # first extension is empty
                 continue
-            elif i < 5:
+            elif i < 7:
                 # data shape is the same for flux and errors
                 assert rsmp[i].data.shape == adapt[i].data.shape
             else:
@@ -444,13 +444,19 @@ class TestResample:
         default = make_hdul(combined, grid_info)
         assert isinstance(default, fits.HDUList)
 
-        # check bunit in all extensions, assuming
+        # check name and bunit in all extensions, assuming
         # all extensions are present
-        expected = ['Jy/pixel', 'Jy/pixel', 'Jy/pixel', 'Jy/pixel',
-                    'Jy/pixel', 'um', 'degree', 'degree', '', 'adu/(s Hz Jy)',
-                    '', '']
+        expected_name = [None, 'FLUX', 'ERROR', 'CAL_ERROR',
+            'UNCORRECTED_FLUX', 'UNCORRECTED_ERROR', 'UNCORRECTED_CAL_ERROR',
+            'WAVELENGTH', 'RA---TAN', 'DEC--TAN', 'TRANSMISSION', 'RESPONSE',
+            'RELATIVE_RESPONSE_ERROR', 'EXPOSURE_MAP', 'UNSMOOTHED_TRANSMISSION'
+            ]
+        expected_unit = ['Jy/pixel', 'Jy/pixel', 'Jy/pixel', 'Jy/pixel',
+            'Jy/pixel', 'Jy/pixel', 'Jy/pixel', 'um', 'degree', 'degree', '',
+            'adu/(s Hz Jy)', '', '', '']
         for i, ext in enumerate(default):
-            assert ext.header.get('BUNIT') == expected[i]
+            assert ext.header.get('EXTNAME') == expected_name[i]
+            assert ext.header.get('BUNIT') == expected_unit[i]
 
         # check spexlwid in primary -- should match cdelt3
         assert np.allclose(default[0].header['SPEXLWID'],
