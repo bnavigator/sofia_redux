@@ -267,10 +267,15 @@ class TestReadHdr(object):
     def test_add_configuration_files(self, mocker, tmpdir):
         header = fits.Header()
         header['FDATE'] = 0.0
+        # this is the first data line of caldefault.dat reordered
+        expected = ['bpm_2015.02.06_right.fits',
+                    'EXES_nlcoefs_7_20150703.fits',
+                    'dark_2015.02.13.fits']
         rh._add_configuration_files(header)
 
-        for key in ['BPM', 'LINFILE', 'DRKFILE']:
+        for i, key in enumerate(['BPM', 'LINFILE', 'DRKFILE']):
             assert os.path.isfile(header[key])
+            assert header[key + 'N'] == expected[i]
 
         # check that fdate at boundary gets the correct values
         mocker.patch.object(rh, 'goodfile', return_value=True)

@@ -154,24 +154,16 @@ or sofia_redux/instruments/flitecam/data/grism/standard_models.
 
 FLITECAM and EXES auxiliary data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The default auxiliary calibration and reference data for FLITECAM and
-EXES reductions are too large to be included in the software packages
-provided via PyPI.
+The FLITECAM and EXES pipelines rely upon a number of auxiliary data files.
+For FLITECAM, these include nonlinearity correction coefficients,
+spectroscopic order masks, and wavelength calibration files. For EXES,
+these are bad pixel masks, reset dark files, and nonlinearity correction coefficients.
 
-These files are provided in full in the
-`source distribution <https://github.com/SOFIA-Data-Center/sofia_redux>`__ of
-this package.  Since they are required for most data reductions for these
-instruments, they may also be automatically downloaded as needed for
-non-source installations.  Downloaded calibration
-files are cached for later use in a '.sofia_redux' directory in the user's
-home directory. For offline pipeline reductions, the source installation
-is recommended.
-
-For FLITECAM, the data provided in this manner includes nonlinearity
-correction coefficients, spectroscopic order masks, and wavelength
-calibration files.  For EXES, the large data files are bad pixel masks,
-reset dark files, and nonlinearity correction coefficients.
-
+These datasets are too large to be included in the software packages
+provided via PyPI; therefore, they are stored in the DaRUS data repository, and
+will be automatically retrieved by the pipeline as needed. Downloaded files
+are stored in astropy's on-disk download cache for the sofia_redux package. See
+https://docs.astropy.org/en/stable/utils/data.html for how to find and configure the cache location.
 
 Troubleshooting
 ---------------

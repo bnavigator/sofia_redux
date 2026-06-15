@@ -11,6 +11,21 @@ v3.0.0 and later were implemented in Python.  For previously processed data,
 check the PIPEVERS keyword in the FITS header to determine the pipeline
 version used.
 
+EXES Redux v3.1.0 (2026-06-09)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*User manual: Iss. 01*
+
+- Maintainer changed from USRA to SDC. Removed notes about formal documentation
+  no longer available.
+- Removed files from the data module directory in the source repository and
+  PyPI distribution files: Bad pixel masks, reset dark files,
+  and nonlinearity correction coefficients are now downloaded and cached
+  from the SDC Astronomy Dataverse at DaRUS.
+- Added header keywords BPMN, DRKFILEN, LINFILEN recording the basename
+  of used calibration files as downloaded files from the cache do not
+  have a recognizable filename.
+
+
 EXES Redux v3.0.0 (2022-12-13)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *User manual: Rev. E*

@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
 import re
+from pathlib import Path
 
 from astropy import log
 from astropy.io import fits
@@ -177,7 +178,9 @@ def get_reset_dark(header):
     darkfile = str(header.get('DRKFILE', 'UNKNOWN'))
     if not goodfile(darkfile, verbose=False):
         raise ValueError(f'Cannot open dark file {darkfile}')
-    log.info(f'Using reset dark file {darkfile}')
+    darkfilename = str(header.get('DRKFILEN', 'UNKNOWN'))
+    log.info(f'Using reset dark file {darkfilename} from '
+             f'{Path(darkfile).parent}')
     dark = getdata(darkfile)
 
     # Take the shortest dark frame as the 'bias'

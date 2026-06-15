@@ -6,19 +6,30 @@ import os
 import pytest
 
 from sofia_redux.instruments.exes import lincor
+from sofia_redux.instruments.exes import data as exes_data
+from sofia_redux.toolkit.utilities.fits import goodfile
+from sofia_redux.toolkit.utilities.darus import get_file_from_darus
 
 
 @pytest.fixture
 def header():
-    datadir = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                           'data')
-    darkfile = os.path.join(datadir, 'dark', 'dark_2015.02.13.fits')
-    linfile = os.path.join(datadir, 'lincoeff', 'EXES_nlcoefs_7_20150703.fits')
+    datadir = os.path.dirname(exes_data.__file__)
+    darkfilename = 'dark_2015.02.13.fits'
+    darkfile = os.path.join(datadir, 'dark', )
+    if not goodfile(darkfile):
+        darkfile = get_file_from_darus(exes_data.DARUS_DOI, darkfilename)
+    linfilename = 'EXES_nlcoefs_7_20150703.fits'
+    linfile = os.path.join(datadir, 'lincoeff', linfilename)
+    if not goodfile(linfile):
+        linfile = get_file_from_darus(exes_data.DARUS_DOI, linfilename)
+
     header = fits.Header()
     header['NSPAT'] = 1024
     header['NSPEC'] = 1024
     header['DRKFILE'] = darkfile
+    header['DRKFILEN'] = darkfilename
     header['LINFILE'] = linfile
+    header['LINFILEN'] = linfilename
     return header
 
 
