@@ -32,6 +32,6 @@ This manual applies to EXES Redux version 3.1.0.
 
 .. _exes_change_notes:
 
-Appendix B: Change notes for the EXES pipeline
+Appendix C: Change notes for the EXES pipeline
 ==============================================
 .. include:: change_notes.rst
