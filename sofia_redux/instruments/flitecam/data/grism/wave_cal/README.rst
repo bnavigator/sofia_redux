@@ -3,7 +3,7 @@ in the first plane of the image array and spatial calibration data in
 the second plane.
 
 Note that the default files are not included in the source repository of this
-package, or in the sdists and wheels from PyPI or GitHub.
+package, nor in the sdists and wheels from PyPI or GitHub.
 They may be downloaded separately, if desired, from the
 `SOFIA Redux EXES pipeline reference files <https://doi.org/10.18419/DARUS-6126>__`
 dataset at the SOFIA Data Center Astronomy Dataverse or from the

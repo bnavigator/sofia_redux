@@ -23,7 +23,7 @@ def get_file_from_darus(doi, filename):
     The downloaded file is stored in astropy's on-disk download cache
     for the sofia_redux package. See
     https://docs.astropy.org/en/stable/utils/data.html
-    how to find and configure the cache location.
+    for information on how to find and configure the cache location.
 
     Parameters
     ----------

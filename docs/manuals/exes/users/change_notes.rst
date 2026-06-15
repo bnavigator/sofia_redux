@@ -22,7 +22,7 @@ EXES Redux v3.1.0 (2026-06-09)
   and nonlinearity correction coefficients are now downloaded and cached
   from the SDC Astronomy Dataverse at DaRUS.
 - Added header keywords BPMN, DRKFILEN, LINFILEN recording the basename
-  of used calibration files as downloaded files from the cache don not
+  of used calibration files as downloaded files from the cache do not
   have a recognizable filename.
 
 
