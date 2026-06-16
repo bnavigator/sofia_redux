@@ -1,4 +1,6 @@
 
+.. _fifi_section_level1_grouping:
+
 Grouping LEVEL\_1 data for processing
 =====================================
 
@@ -43,9 +45,12 @@ files to be reduced together (see :numref:`fifi_grouping`).
     | **AOR-ID (optional)**   | STR               | Exact                   |
     +-------------------------+-------------------+-------------------------+
 
+.. _fifi_section_configuration_and_execution:
 
 Configuration and execution
 ===========================
+
+.. _fifi_subsection_installation:
 
 Installation
 ------------
@@ -72,6 +77,8 @@ mapping modes.
 .. |inst| replace:: FIFI-LS
 .. include:: ../../external-reqs-src-install.rst
 
+.. _fifi_subsection_configuration:
+
 Configuration
 -------------
 
@@ -79,20 +86,24 @@ For FIFI-LS algorithms, default parameter values are defined by the
 Redux object that interfaces to them. These values may be overridden
 manually for each step, while running in interactive mode. They may also
 be overridden by an input parameter file, in INI format, in either
-interactive or automatic mode. See Appendix A for an example of an input
-parameter file, which contains the current defaults for all parameters.
+interactive or automatic mode. See :ref:`fifi_appendix_sample_config_file`
+for an example of an input parameter config file, which contains the current
+defaults for all parameters.
 
 Requirements for input header keywords are also specified in a
-configuration file, called *headerdef.dat*, located in the *fifi_ls/data*
+header definition file, called *headerdef.dat*, located in the
+*sofia_redux/instruments/fifils/data/header\_info/*
 package directory. This table lists the keyword name, whether it is a
 value required to be present in the input headers, its default value,
 the data type of the value, and any requirements on the value range
 (minimum value, maximum value, or enumerated value). The table also
 defines how keywords from multiple input files should be combined for a
 single output file (e.g. take the first value, take the sum,
-string-concatenate, etc.). A sample of this configuration file is also
-given in Appendix A. All keywords present in the table will be written
-to output files produced by the FIFI-LS Redux pipeline.
+string-concatenate, etc.). A sample of this header definition file is
+given in :ref:`fifi_appendix_sample_headerdef_file`. All keywords present
+in the table will be written to output files produced by the FIFI-LS Redux pipeline.
+
+.. _fifi_subsection_input_data:
 
 Input data
 ----------
@@ -100,27 +111,29 @@ Input data
 Redux takes as input raw FIFI-LS FITS data files, which contain unsigned
 tables. The number of frames per raw data cube depends on the readout
 mode used to acquire the data. The FITS headers contain data acquisition
-and observation parameters and, combined with the pipeline configuration
+and observation parameters and, combined with the parameter config
 files, comprise the information necessary to complete all steps of the
 data reduction process. Some critical keywords are required to be
-present in the raw data in order to perform a robust reduction (see Appendix A).
+present in the raw data in order to perform a robust reduction (see :ref:`fifi_appendix_sample_headerdef_file`).
 Raw data of older heritage may lack these keywords, and therefore it is recommended
 to use only data taken from the latest IRSA archive. In the future this will
 be superceded by the SDC's Virtual Observatory-based archive.
 
 It is assumed that, prior to reduction, the input data have been correctly
-grouped according to the criteria outlined in the Grouping section above.
+grouped according to the criteria outlined in the section :ref:`fifi_grouping` above.
 Redux considers all input files in a reduction to be science files that are
 part of a single homogeneous reduction group, to be reduced together with the
 same parameters. Some guards are in place to ensure the intercompatability of
 input files, but this does not cover all possible permutations.
+
+.. _fifi_subsubsection_auxiliary_files:
 
 Auxiliary Files
 ~~~~~~~~~~~~~~~
 
 In order to complete a standard reduction, the pipeline requires a number
 of auxiliary files. Most of these are included within the software package
-provided via PyPI, stored in the *sofia_redux/instruments/fifi_ls/data* directory. 
+provided via PyPI, stored in the *sofia_redux/instruments/fifils/data* directory. 
 Others, namely the SDC-ATRAN models and ECMWF water vapor data, are stored on the
 DaRUS data repository, and are automatically accessed by the pipeline as needed.
 Most auxiliary files can be overridden by the user with local files as needed,
@@ -230,6 +243,8 @@ FIFI-LS files.
 
    QAD FITS header viewer.
 
+.. _fifi_subsection_reduction_object:
+
 FIFI-LS Reduction
 -----------------
 
@@ -257,7 +272,7 @@ Some key parameters to note are listed below.
       slopes. Set higher to reject fewer ramps, lower to reject more.
 
    -  *Bad pixel file*: By default, the pipeline looks
-      up a bad pixel mask in *fifi-ls/data/badpix\_files*. To override
+      up a bad pixel mask in *sofia_redux/instruments/fifils/data/badpix\_files*. To override
       the default mask, use this parameter to select a different text
       file. The file must be an ASCII table with two columns: the spaxel
       number (1-25, numbered left to right in displayed array), and the
@@ -584,6 +599,8 @@ Some key parameters to note are listed below.
       added to the lower-right of the image as a semi-transparent watermark.
 
 
+.. _fifi_section_data_quality_assessment:
+
 Data quality assessment
 =======================
 
@@ -615,14 +632,17 @@ for approaching quality assessment for FIFI-LS data.
    atmospheric transmission. If there are such discontinuities, the
    wavelength resampling may need to be redone with modified parameters.
 
-Appendix A: Sample configuration files
-======================================
+.. _fifi_appendix_sample_config_file:
 
-The below is a sample FIFI-LS Redux parameter override file in INI format.
-If present, the parameter value overrides the
-default defined by the FIFI-LS reduction object. If not present, the
-default value will be used. The parameters displayed here are the
-current default values.
+Appendix A: Sample parameter config file
+========================================
+
+The below is a sample FIFI-LS Redux parameter config file in INI format.
+If a value for any parameter is present, it will override the
+corresponding default defined by the FIFI-LS reduction object. If not present, the
+default value will be used - the sole exception is ``xy_pixel_size``, which is
+computed at runtime based on the detector channel of the input data. The parameters
+displayed here are the current default values.
 
 .. include:: include/redux_param.cfg
    :literal:
@@ -631,19 +651,28 @@ current default values.
 
     \clearpage
 
-Sample FIFI-LS configuration file, located in
-*fifi-ls/data/header\_info/headerdef.dat*. Values marked with a Y in the
-*reqd?* column are keywords required to be present in input data. They
-must meet the type and range requirements listed for grouping and data
-reduction to be successful.
+.. _fifi_appendix_sample_headerdef_file:
+
+Appendix B: Sample header definition file
+=========================================
+
+Below is a sample FIFI-LS header definition file, located in
+*sofia_redux/instruments/fifils/data/header\_info/headerdef.dat*.
+Values marked with a Y in the *reqd?* column are keywords required
+to be present in input data. They must meet the type and range requirements
+listed for grouping and data reduction to be successful. A similar file
+*sofia_redux/instruments/fifils/data/header\_info/headerdef_asy.dat* is used
+for asymmetric reduction modes - the number and type of keywords is identical.
 
 .. include:: include/headerdef.dat
    :literal:
 
-Appendix B: Flux Calibration History
+.. _fifi_appendix_fluxcal_history:
+
+Appendix C: Flux Calibration History
 ====================================
 
-As described in the Reduction Algorithms section, the flux calibration
+As described in the section :ref:`fifi_subsection_reduction_algorithms`, the flux calibration
 response curves are generated from comparisons of FIFI-LS Mars Observations
 with a time-resolved Mars flux model. Over the years, this procedure has been
 refined and reprocessed using newer pipeline versions, resulting in a number
