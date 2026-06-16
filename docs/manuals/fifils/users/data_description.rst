@@ -1250,9 +1250,9 @@ In this case, it may be beneficial to apply an iterative correction to the
 detector gain and noise.  For OTF data, the FIFI-LS pipeline provides this
 correction as an optional scan reduction step, just prior to resampling.
 The iterative scan reduction algorithm is described at length in the
-`HAWC+ pipeline user's manual <https://sofia-usra.github.io/sofia_redux/manuals/hawc/users/users.html#scan-reduction-algorithms>`__
+`HAWC+ pipeline user's manual <https://redux.sofiadatacenter.de/stable/manuals/hawc/users/users.html#scan-reduction-algorithms>`__
 and in the software documentation for the
-`sofia_redux.scan module <https://sofia-usra.github.io/sofia_redux/sofia_redux/scan/index.html>`__.
+`sofia_redux.scan module <https://redux.sofiadatacenter.de/stable/sofia_redux/scan/index.html>`__.
 
 At this time, this feature should be considered experimental.  The scan
 algorithms have a number of complex, interlinked parameters that have not

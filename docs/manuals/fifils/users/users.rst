@@ -28,6 +28,8 @@ This manual applies to FIFI-LS Redux version 2.10.0.
 
 .. include:: software_description.rst
 
+.. _fifi_appendix_change_notes:
+
 Appendix D: Change notes for the FIFI-LS pipeline
 =================================================
 .. include:: change_notes.rst
