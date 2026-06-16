@@ -103,13 +103,17 @@ mode used to acquire the data. The FITS headers contain data acquisition
 and observation parameters and, combined with the pipeline configuration
 files, comprise the information necessary to complete all steps of the
 data reduction process. Some critical keywords are required to be
-present in the raw data in order to perform a successful grouping,
-reduction, and ingestion into the SOFIA archive (see Appendix A).
+present in the raw data in order to perform a robust reduction (see Appendix A).
+Raw data of older heritage may lack these keywords, and therefore it is recommended
+to use only data taken from the latest IRSA archive. In the future this will
+be superceded by the SDC's Virtual Observatory-based archive.
 
-It is assumed that the input data have been successfully grouped before
-beginning reduction: Redux considers all input files in a reduction to
-be science files that are part of a single homogeneous reduction group,
-to be reduced together with the same parameters.
+It is assumed that, prior to reduction, the input data have been correctly
+grouped according to the criteria outlined in the Grouping section above.
+Redux considers all input files in a reduction to be science files that are
+part of a single homogeneous reduction group, to be reduced together with the
+same parameters. Some guards are in place to ensure the intercompatability of
+input files, but this does not cover all possible permutations.
 
 Auxiliary Files
 ~~~~~~~~~~~~~~~
