@@ -1,9 +1,12 @@
+.. _pipe_automatic_mode:
+
 Automatic Mode Execution
 ------------------------
 
-The DPS pipeline infrastructure runs a pipeline on previously-defined
-reduction groups as a fully-automatic black box. To do so, it creates an
-input manifest (*infiles.txt*) that contains relative paths to the input
+The Redux pipeline infrastructure is capable of fully automated batch
+reductions, with much of the same functionality as in the manual mode
+(:ref:`pipe_manual_mode`). For this, it requires an input manifest
+(*infiles.txt*) that contains relative paths to the input
 files (one per line). The command-line interface to the
 pipeline is run as::
 
@@ -29,8 +32,9 @@ through the calibration step of the pipeline::
 To customize batch reductions from the command line, the *redux_pipe* interface
 accepts a configuration file on the command line.  This file may contain
 any subset of the full configuration file, specifying any non-default
-parameters for pipeline steps.  An output directory for pipeline products
-and the terminal log level may also be set on the command line.
+parameters for pipeline steps.  An example configuration file for each instrument
+is shown in their respective user manuals, as an appendix. An output directory
+for pipeline products and the terminal log level may also be set on the command line.
 
 The full set of optional command-line parameters accepted by the *redux_pipe*
 interface are::
@@ -43,6 +47,8 @@ interface are::
     -l LOGLEVEL, --loglevel LOGLEVEL
                           Log level.
 
+
+.. _pipe_manual_mode:
 
 Manual Mode Execution
 ---------------------
