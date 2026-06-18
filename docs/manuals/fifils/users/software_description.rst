@@ -92,7 +92,7 @@ defaults for all parameters.
 
 Requirements for input header keywords are also specified in a
 header definition file, called *headerdef.dat*, located in the
-*sofia_redux/instruments/fifils/data/header\_info/*
+*sofia_redux/instruments/fifi_ls/data/header\_info/*
 package directory. This table lists the keyword name, whether it is a
 value required to be present in the input headers, its default value,
 the data type of the value, and any requirements on the value range
@@ -133,7 +133,7 @@ Auxiliary Files
 
 In order to complete a standard reduction, the pipeline requires a number
 of auxiliary files. Most of these are included within the software package
-provided via PyPI, stored in the *sofia_redux/instruments/fifils/data* directory. 
+provided via PyPI, stored in the *sofia_redux/instruments/fifi_ls/data* directory. 
 Others, namely the SDC-ATRAN models and ECMWF water vapor data, are stored on the
 DaRUS data repository, and are automatically accessed by the pipeline as needed.
 Most auxiliary files can be overridden by the user with local files as needed,
@@ -272,7 +272,7 @@ Some key parameters to note are listed below.
       slopes. Set higher to reject fewer ramps, lower to reject more.
 
    -  *Bad pixel file*: By default, the pipeline looks
-      up a bad pixel mask in *sofia_redux/instruments/fifils/data/badpix\_files*. To override
+      up a bad pixel mask in *sofia_redux/instruments/fifi_ls/data/badpix\_files*. To override
       the default mask, use this parameter to select a different text
       file. The file must be an ASCII table with two columns: the spaxel
       number (1-25, numbered left to right in displayed array), and the
@@ -657,11 +657,11 @@ Appendix B: Sample header definition file
 =========================================
 
 Below is a sample FIFI-LS header definition file, located in
-*sofia_redux/instruments/fifils/data/header\_info/headerdef.dat*.
+*sofia_redux/instruments/fifi_ls/data/header\_info/headerdef.dat*.
 Values marked with a Y in the *reqd?* column are keywords required
 to be present in input data. They must meet the type and range requirements
 listed for grouping and data reduction to be successful. A similar file
-*sofia_redux/instruments/fifils/data/header\_info/headerdef_asy.dat* is used
+*sofia_redux/instruments/fifi_ls/data/header\_info/headerdef_asy.dat* is used
 for asymmetric reduction modes - the number and type of keywords is identical.
 
 .. include:: include/headerdef.dat
