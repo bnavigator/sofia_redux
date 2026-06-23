@@ -416,13 +416,13 @@ the ``telluric_scaling`` parameter in the config file is set to True, then tellu
 scaling will be performed during nod combination. This mode should be used only for
 On-the-fly (OTF) or Total Power (TP) observations, where no chopping has been performed.
 It corrects for differences in the emission properties of the atmosphere between
-A- and B-nod positions with large zenith angle offsets, particularly when the atmospheric
+A- and B nod positions with large zenith angle offsets, particularly when the atmospheric
 profiles contain strong telluric features such as absorption lines.
 
-The mode essentially runs a self-contained reduction of B-nod spectra, and fits a
+The mode essentially runs a self-contained reduction of B nod spectra, and fits a
 background emission spectrum to each spaxel. The coefficients of this fit are used to
-compute a telluric correction factor function, which is used to scale the total off-nod flux,
-such that it now has the emittive properties at the zenith angle of the A-nod position.
+compute a telluric correction factor function, which is used to scale the total B nod flux,
+such that it now has the emittive properties at the zenith angle of the A nod position.
 Following this, the nod subtraction routine proceeds as normal. Note that the robustness
 of this method is heavily influenced by the form of the atmospheric spectrum, and the
 ability to isolate the different background components. For a more robust and generalised
@@ -441,12 +441,12 @@ If the "Scale flux with backgrounds" option in the Redux GUI is ticked, or if th
 will be performed during nod combination. This mode should be used only for On-the-fly (OTF)
 or Total Power (TP) observations, where no chopping has been performed. Similar to the above
 described telluric scaling method, it corrects for differences in the atmospheric properties
-between A- and B-nod positions with large zenith angle offsets. The key difference is that background
+between A- and B nod positions with large zenith angle offsets. The key difference is that background
 scaling is for the case where the atmospheric profile is relatively linear and devoid of strong telluric
 features. This makes a fit to the background emission spectrum unfeasible, since the telluric background
 component cannot be reliably isolated from the non-telluric (instrument + telescope) background component.
-Instead, the B-nod flux is scaled by the ratio of the A- and B-nod backgrounds
-(as defined in the ``subtract_chops`` step), prior to the regular subtraction from the A-nod flux.
+Instead, the B nod flux is scaled by the ratio of the A- and B nod backgrounds
+(as defined in the ``subtract_chops`` step), prior to the regular subtraction from the A nod flux.
 
 .. figure:: images/fifi_nods_combined.png
    :alt: Nods combined

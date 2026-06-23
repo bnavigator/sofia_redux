@@ -317,11 +317,11 @@ Some key parameters to note are listed below.
       remain the same, so use with caution.  This option is mostly
       used for testing purposes.
 
-   -  *Scale flux with backgrounds*: If set, the B-nod fluxes are scaled by the ratio between
-      A- and B-nod backgrounds, prior to being subtracted from the A-nod fluxes (OTF and TP modes only).
+   -  *Scale flux with backgrounds*: If set, the B nod fluxes are scaled by the ratio between
+      A- and B nod backgrounds, prior to being subtracted from the A nod fluxes (OTF and TP modes only).
 
-   -  *Perform telluric scaling*: If set, the telluric profiles of B-nods are scaled to match the
-      atmospheric properties at the zenith angle of their corresponding A-nods (OTF and TP modes only).
+   -  *Perform telluric scaling*: If set, the telluric profiles of B nods are scaled to match the
+      atmospheric properties at the zenith angle of their corresponding A nods (OTF and TP modes only).
 
 -  **Spatial Calibrate**
 
