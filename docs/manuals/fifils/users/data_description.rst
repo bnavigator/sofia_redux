@@ -1,4 +1,6 @@
 
+.. _fifi_section_obsmodes:
+
 SI Observing Modes Supported
 ============================
 
@@ -89,8 +91,12 @@ These additional grating scans effectively increase the wavelength
 coverage of the observation.  Note, however, that grating scans are not
 used with the OTF mode, due to the continuous telescope motion.
 
+.. _fifi_section_algorithm_description:
+
 Algorithm Description
 =====================
+
+.. _fifi_subsection_steps_overview:
 
 Overview of Data Reduction Steps
 --------------------------------
@@ -107,11 +113,15 @@ showing how these algorithms fit together.
    overview of the steps and the white box contains the actual steps
    carried out.
 
+.. _fifi_subsection_reduction_algorithms:
+
 Reduction Algorithms
 --------------------
 
 The following subsections detail each of the data reduction pipeline
 steps outlined in the flowchart above.
+
+.. _fifi_step_split_grating_and_chop:
 
 Split Grating and Chop
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -238,6 +248,8 @@ identified using the ``OTFSTART`` and ``TRK_DRTN`` header keywords.  These
 readouts are flagged in the ``SCANPOS`` table for removal from consideration
 in later pipeline steps.
 
+.. _fifi_step_fit_ramps:
+
 Fit Ramps
 ~~~~~~~~~
 
@@ -300,6 +312,8 @@ are either known bad detector pixels, or pixels for which the ramp fits
 did not have sufficient signal-to-noise. These pixels will be ignored in
 all further reduction steps.
 
+.. _fifi_substep_pointing_discard:
+
 Pointing Discard
 ^^^^^^^^^^^^^^^^
 
@@ -312,6 +326,8 @@ set to NaN and discarded from further analysis. This is done to mitigate the
 risk of low-quality data influencing the final product. Note that this feature
 is currently non-functional as pointing quality flags are intended to be added
 to FIFI-LS data in a future SDC release.
+
+.. _fifi_substep_use_complete_ramps:
 
 Use Complete Ramps
 ^^^^^^^^^^^^^^^^^^
@@ -336,6 +352,8 @@ minimum ramp length of 2 will be used.
    The spectral dimension runs along the y-axis. The data was taken in
    symmetric chopping mode.
 
+.. _fifi_step_subtract_chops:
+
 Subtract Chops
 ~~~~~~~~~~~~~~
 
@@ -356,6 +374,8 @@ files. In total power mode, no chop subtraction is performed.
 
    The same flux array as in :numref:`fifi_ramps_fit`, with the
    corresponding chop 1 subtracted.
+
+.. _fifi_step_combine_nods:
 
 Combine Nods
 ~~~~~~~~~~~~
@@ -386,6 +406,8 @@ This pipeline step produces an output file for each input A nod file,
 containing the chop- and nod-combined flux and error values for each
 grating scan.
 
+.. _fifi_substep_telluric_scaling:
+
 Telluric Scaling
 ^^^^^^^^^^^^^^^^
 
@@ -394,13 +416,13 @@ the ``telluric_scaling`` parameter in the config file is set to True, then tellu
 scaling will be performed during nod combination. This mode should be used only for
 On-the-fly (OTF) or Total Power (TP) observations, where no chopping has been performed.
 It corrects for differences in the emission properties of the atmosphere between
-A- and B-nod positions with large zenith angle offsets, particularly when the atmospheric
+A- and B nod positions with large zenith angle offsets, particularly when the atmospheric
 profiles contain strong telluric features such as absorption lines.
 
-The mode essentially runs a self-contained reduction of B-nod spectra, and fits a
+The mode essentially runs a self-contained reduction of B nod spectra, and fits a
 background emission spectrum to each spaxel. The coefficients of this fit are used to
-compute a telluric correction factor function, which is used to scale the total off-nod flux,
-such that it now has the emittive properties at the zenith angle of the A-nod position.
+compute a telluric correction factor function, which is used to scale the total B nod flux,
+such that it now has the emittive properties at the zenith angle of the A nod position.
 Following this, the nod subtraction routine proceeds as normal. Note that the robustness
 of this method is heavily influenced by the form of the atmospheric spectrum, and the
 ability to isolate the different background components. For a more robust and generalised
@@ -408,6 +430,8 @@ method to scale atmospheric spectra at different zenith angles, refer to the bac
 method below. Further description of telluric scaling can be found in Fischer *et al*. 2025 [#Fischer2025]_
 
 .. [#Fischer2025] \C. Fischer *et al*. 2025 PASP 137 075002, https://doi.org/10.1088/1538-3873/adeec5
+
+.. _fifi_substep_background_scaling:
 
 Background Scaling
 ^^^^^^^^^^^^^^^^^^
@@ -417,12 +441,12 @@ If the "Scale flux with backgrounds" option in the Redux GUI is ticked, or if th
 will be performed during nod combination. This mode should be used only for On-the-fly (OTF)
 or Total Power (TP) observations, where no chopping has been performed. Similar to the above
 described telluric scaling method, it corrects for differences in the atmospheric properties
-between A- and B-nod positions with large zenith angle offsets. The key difference is that background
+between A- and B nod positions with large zenith angle offsets. The key difference is that background
 scaling is for the case where the atmospheric profile is relatively linear and devoid of strong telluric
 features. This makes a fit to the background emission spectrum unfeasible, since the telluric background
 component cannot be reliably isolated from the non-telluric (instrument + telescope) background component.
-Instead, the B-nod flux is scaled by the ratio of the A- and B-nod backgrounds
-(as defined in the ``subtract_chops`` step), prior to the regular subtraction from the A-nod flux.
+Instead, the B nod flux is scaled by the ratio of the A- and B nod backgrounds
+(as defined in the ``subtract_chops`` step), prior to the regular subtraction from the A nod flux.
 
 .. figure:: images/fifi_nods_combined.png
    :alt: Nods combined
@@ -430,6 +454,8 @@ Instead, the B-nod flux is scaled by the ratio of the A- and B-nod backgrounds
 
    The chop-subtracted symmetric mode nod A flux array, with the
    corresponding nod B added.
+
+.. _fifi_step_wavelength_calibrate:
 
 Wavelength Calibrate
 ~~~~~~~~~~~~~~~~~~~~
@@ -589,6 +615,8 @@ The wavelength values calculated by the pipeline for each pixel are stored in
 a new 25 x 16 array in an image extension for each grating scan (extension name
 ``LAMBDA_Gi`` for grating scan *i*).
 
+.. _fifi_step_spatial_calibrate:
+
 Spatial Calibrate
 ~~~~~~~~~~~~~~~~~
 
@@ -653,6 +681,7 @@ which has dimensions 25 x 16 x N\ :sub:`ramp`, such that the ``XS_Gi``,
 ``YS_Gi``, ``RA_Gi``, and ``DEC_Gi``, extensions have dimensions
 25 x 1 x N\ :sub:`ramp`.
 
+.. _fifi_step_apply_flat:
 
 Apply Flat
 ~~~~~~~~~~
@@ -678,6 +707,8 @@ extensions.
    :name: fifi_flat_applied
 
    The flat-corrected flux array.
+
+.. _fifi_step_combine_grating_scans:
 
 Combine Grating Scans
 ~~~~~~~~~~~~~~~~~~~~~
@@ -724,6 +755,7 @@ array has dimensions 25 x 16.
 
    The full 25 x 32 flux array, after combining two grating scans.
 
+.. _fifi_step_telluric_correct:
 
 Telluric Correct
 ~~~~~~~~~~~~~~~~
@@ -744,12 +776,12 @@ reason, telluric corrections of FIFI-LS data rely on models of the
 atmospheric absorption, as provided by codes such as ATRAN, in
 combination with the estimated line-of-sight water vapor content
 (precipitable water vapor, PWV) calculated from ECMWF satellite data
-(see `Section "Water Vapor Sources" <#water-vapor-sources>`_). 
+(see section :ref:`fifi_substep_wv_sources`). 
 
 Using the modified SDC-ATRAN code, a set of ATRAN models appropriate for a range of altitudes,
 zenith angles, and PWV values has been generated for pipeline use, and are stored in
 the DaRUS data repository [#fn_fifi_sdcatran]_. The pipeline will attempt to retrieve these automatically,
-unless an ATRAN directry is specified, or a single ATRAN file is specified. In the
+unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
 DaRUS data repository. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
 telluric correction step, the pipeline uses the parameter set of observed altitude,
@@ -774,6 +806,8 @@ The uncorrected cube and its associated error are stored in the
 ``UNCORRECTED_FLUX`` and ``UNCORRECTED_STDDEV`` extensions.
 
 .. [#fn_fifi_sdcatran] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=atran
+
+.. _fifi_substep_wv_sources:
 
 Water Vapor Sources
 ^^^^^^^^^^^^^^^^^^^
@@ -818,6 +852,8 @@ Note that ``WVZ_STA`` and ``WVZ_END`` are legacy values from the non-functional 
 .. [#Iserlohe2022] \C. Iserlohe *et al*. 2022 PASP 134 085001, https://doi.org/10.1088/1538-3873/ac82c5
 .. [#fn_fifi_ecmwf] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=ecmwf
 
+.. _fifi_substep_narrow_line_mode:
+
 Narrow Line Mode
 ^^^^^^^^^^^^^^^^
 
@@ -844,6 +880,8 @@ observed spectral line.
    The telluric-corrected flux array. Some pixels are set to NaN due to
    poor atmospheric transmission at those wavelengths.  The cutoff
    level was set to 80% for this observation, for illustrative purposes.
+
+.. _fifi_step_flux_calibrate:
 
 Flux Calibrate
 ~~~~~~~~~~~~~~
@@ -890,15 +928,15 @@ extension [#fn_fifi_calerr]_.
 
 To-date, several iterations of response curves have been generated, based on
 different flux calibration methods. An outline of the major iterations is
-presented in Appendix B. Manual selection of response curves is supported within
+presented in :ref:`fifi_appendix_fluxcal_history`. Manual selection of response curves is supported within
 the Redux GUI via the *Response file* field, or in the config file via the ``response_file``
 parameter. Users may view the available historical response curves within
-*sofia_redux/sofia_redux/instruments/fifi_ls/data/response_files/*,
+*sofia_redux/instruments/fifi_ls/data/response_files/*,
 for which the calibration dates are specified in the filenames (note: the subfolder v1_filters refers to
 responses for data observed prior to the end of 2017 with the old filter version,
 v2 is for data from 2018 onwards observed with the new filter version).
-The filenames for the major flux calibration iterations overviewed in Appendix B
-are as follows:
+The filenames for the major flux calibration iterations overviewed in
+:ref:`fifi_appendix_fluxcal_history` are as follows:
 
 +-----------------+-------------------------------------------------------------------------+
 | Calibration     | Filename Scheme                                                         |
@@ -942,7 +980,9 @@ keyword ``RSPNFILE``.
    The SDC-derived response curves are indicated by golden lines, and
    their respective fit errors with shaded gold regions. The previous two
    iterations of response curves are indicated by silver and bronze lines.
-   See Appendix B for more information.
+   See :ref:`fifi_appendix_fluxcal_history` for more information.
+
+.. _fifi_step_correct_wave_shift:
 
 Correct Wave Shift
 ~~~~~~~~~~~~~~~~~~
@@ -980,6 +1020,8 @@ is not applied to the wavelength calibration. [#fn_fifi_waveshift]_
    The summed barycentric and LSR radial velocity was stored as the
    ``BARYSHFT`` value.
 
+.. _fifi_step_resample:
+
 Resample
 ~~~~~~~~
 
@@ -1001,6 +1043,7 @@ Nevertheless, several optional parameters and modes exist, which will also be de
    regular grid by fitting data points in a local cloud with a low-order
    polynomial function.
 
+.. _fifi_substep_grid_size:
 
 Grid Size
 ^^^^^^^^^
@@ -1110,7 +1153,9 @@ arcseconds\ :sup:`2` for RED).
    +---------------+----------------+--------------------------------+--------------------+----------------------+
    | Red           |   200          |     1678                       |  19.6              | 10.0                 |
    +---------------+----------------+--------------------------------+--------------------+----------------------+
-   
+
+.. _fifi_substep_resample_algorithm:
+
 Algorithm
 ^^^^^^^^^
 For each pixel in the 3D output grid, the resampling algorithm finds
@@ -1164,6 +1209,8 @@ for each input observation onto the output grid.  The exposure map may
 not exactly match the valid data locations in the flux cube, since additional
 flagging and pixel rejection occurs during the resampling algorithms.
 
+.. _fifi_substep_uncorrected_cube:
+
 Uncorrected Flux Cube
 ^^^^^^^^^^^^^^^^^^^^^
 Both the telluric-corrected and the uncorrected flux cubes are resampled
@@ -1174,6 +1221,8 @@ original wavelength calibration. The spectra from the uncorrected cube
 will appear slightly shifted with respect to the spectra from the
 telluric-corrected cube. If the user has no interest in the uncorrected cube,
 then its resampling can be skipped, which saves some computation time.
+
+.. _fifi_substep_detector_coordinates:
 
 Detector Coordinates
 ^^^^^^^^^^^^^^^^^^^^
@@ -1187,6 +1236,8 @@ of the sky coordinates (from ``RA`` and ``DEC`` extensions) to generate the outp
 For all other sources, detector coordinates may optionally be used instead of
 sky coordinates if desired.
 
+.. _fifi_substep_additional_processing:
+
 Additional Scan Processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 For OTF data, the standard sky subtraction and flat correction algorithms
@@ -1199,13 +1250,15 @@ In this case, it may be beneficial to apply an iterative correction to the
 detector gain and noise.  For OTF data, the FIFI-LS pipeline provides this
 correction as an optional scan reduction step, just prior to resampling.
 The iterative scan reduction algorithm is described at length in the
-`HAWC+ pipeline user's manual <https://sofia-usra.github.io/sofia_redux/manuals/hawc/users/users.html#scan-reduction-algorithms>`__
+`HAWC+ pipeline user's manual <https://redux.sofiadatacenter.de/stable/manuals/hawc/users/users.html#scan-reduction-algorithms>`__
 and in the software documentation for the
-`sofia_redux.scan module <https://sofia-usra.github.io/sofia_redux/sofia_redux/scan/index.html>`__.
+`sofia_redux.scan module <https://redux.sofiadatacenter.de/stable/sofia_redux/scan/index.html>`__.
 
 At this time, this feature should be considered experimental.  The scan
 algorithms have a number of complex, interlinked parameters that have not
 yet been fully tested and optimized for FIFI-LS data.
+
+.. _fifi_substep_output_data:
 
 Output Data
 ^^^^^^^^^^^
@@ -1319,6 +1372,8 @@ extensions:
 .. raw:: latex
 
     \clearpage
+
+.. _fifi_section_data_products:
 
 Data products
 =============
