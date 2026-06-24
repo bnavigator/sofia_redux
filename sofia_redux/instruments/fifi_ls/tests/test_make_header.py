@@ -394,7 +394,7 @@ class TestMakeHeader:
         table = u.get_keyword_values(headers[0], headers, nodstyle)
         u.update_basehead(basehead, table, headers)
 
-        expected = '%i-%i' % (n, (n ** 2) - 1)
+        expected = '%i-%i-%i' % (n, (n - 1) * n, n**2 - 1)
         assert basehead['FILENUM'] == expected
 
         # test filenum combo -- only one found

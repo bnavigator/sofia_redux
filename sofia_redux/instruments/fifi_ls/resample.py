@@ -1508,12 +1508,15 @@ def make_hdul(combined, grid_info, append_weights=False):
     fits.HDUList
     """
     primehead = combined['PRIMEHEAD']
+    filenum = primehead.get('FILENUM', 'UNK')
+    if filenum != 'UNK' and len(filenum.split('-')) > 1:
+        filenum = filenum.split('-')[0] + '-' + filenum.split('-')[-1]
+    hdinsert(primehead, 'FILENUM', filenum)
     outname = os.path.basename(primehead.get('FILENAME', 'UNKNOWN'))
     outname, _ = os.path.splitext(outname)
     for repl in ['SCM', 'TEL', 'CAL', 'WSH']:
         outname = outname.replace(repl, 'WXY')
-    outname = f"{'_'.join(outname.split('_')[:-1])}_" \
-              f"{primehead.get('FILENUM', 'UNK')}.fits"
+    outname = f"{'_'.join(outname.split('_')[:-1])}_{filenum}.fits"
     hdinsert(primehead, 'FILENAME', outname)
     hdinsert(primehead, 'NAXIS', 0)
     hdinsert(primehead, 'PRODTYPE', 'resampled')

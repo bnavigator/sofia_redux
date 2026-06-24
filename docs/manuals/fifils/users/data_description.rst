@@ -1339,6 +1339,17 @@ the input file. FN1-FN2 is used if there are multiple input files for a
 single output file, where FN1 is the file number of the first input file
 and FN2 is the file number of the last input file.
 
+The exception to this scheme is when the option for interpolation of
+B nods is used. Here, output products from combine nods, up to and excluding
+resample, are appended with three file numbers, i.e.:
+
+*FILENAME = F####\_FI\_IFS\_AOR-ID\_CHANNEL\_Type\_FN1-FN2-FN3.fits*,
+
+where FN1 and FN3 are the two B nods used for interpolation, and FN2 is
+the A nod from which the synthetic, interpolated B nod is subtracted.
+At the resample step, the above scheme with two file numbers is restored, since
+resampling typically involves combining many nod cycles.
+
 Pipeline Products
 -----------------
 

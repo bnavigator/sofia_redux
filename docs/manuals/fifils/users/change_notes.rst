@@ -32,6 +32,9 @@ FIFI-LS Redux v2.11.0
   telluric correction improvements.
 - As part of the new flux calibration, systematic errors are now stored
   in their own dedicated FITS extension, separate from the statistical errors.
+- Fixed a major issue in the B nod interpolation option of the combine nods step.
+  As part of this fix, the filename format of some intermediate data products
+  has been changed.
 
 FIFI-LS Redux v2.10.0
 ~~~~~~~~~~~~~~~~~~~~~

@@ -11,6 +11,7 @@
     flux calibration procedure.
   - As part of the new flux calibration, systematic errors are now stored
     in their own dedicated FITS extension, separate from the statistical errors.
+  - Fixed a major issue in the B nod interpolation option of the combine nods step.
   - Bumped FIFI-LS User Manual from Iss. 03 to Iss. 04.
 
 - FORCAST pipeline v2.7.3:

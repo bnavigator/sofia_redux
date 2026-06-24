@@ -464,7 +464,10 @@ def update_basehead(basehead, table, headers):
         filenums = natural_sort(list(np.unique(filenums)))
         filenums = [f for f in filenums if valid_num(f)]
 
-        if len(filenums) > 1:
+        if len(filenums) > 2:
+            filenum = filenums[0].strip() + '-' + filenums[-2].strip() + '-' + \
+                filenums[-1].strip()
+        elif len(filenums) == 2:
             filenum = filenums[0].strip() +  '-' + filenums[-1].strip()
         elif len(filenums) == 1:
             filenum = filenums[0].strip()
