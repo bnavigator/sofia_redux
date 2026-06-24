@@ -684,7 +684,7 @@ of flux calibration generation are described.
 Fadda *et al*. 2023 [#Fadda2023]_ describes in detail the first major update to
 the flux calibration procedure since the release of Redux (details of prior calibrations
 are spurious and will not be documented here). This update was developed and implemented
-at the Universities Space Research Association (USRA) in 2023, and was used for FIFI-LS
+by the Universities Space Research Association (USRA) in 2023, and was used for FIFI-LS
 Redux versions 2.0.0 through 2.9.0.
 
 This approach used mostly Mars as a calibrator, supplemented in the blue channel by a small
@@ -711,7 +711,10 @@ were introduced to scale the flightwise response curves to a common median. As d
 :numref:`fifi_fadda_fluxcal_factors`, this scaling is quite successful in minimising the
 significant flightwise scatter in the derived response datapoints. However, similar to the
 telluric correction factors, these factors introduce further systematic variation to the
-flux calibration process.
+flux calibration process. At this time, the origin of these residual variations between flights
+can possibly be understood as responsivity changes of the detector system that have not yet been
+characterized, or related to any other systematic effect. Therefore, it is preferable to
+avoid using such factors, until the cause of the scatter has been identified.
 
 Third, the data reduction process utilises the standard Redux resample algorithm, which includes
 a 3-dimensional interpolation onto an even spatial-spectral grid. Spatial interpolation of the
@@ -786,7 +789,7 @@ tables.
 During development, much effort was made to attempt to identify and mitigate
 sources of scatter in the response datapoints, both between flights, and within individual
 flights, without the use of flightwise scaling factors. As shown in :numref:`fifi_response_scatter`,
-the scatter largely remains, however the resulting response curves indeed show some variation
+the scatter largely remains, however the resulting response curves indeed show some deviation
 from the previous two approaches. Nevertheless, thanks to the use of flux-preserving spatial-spectral
 resampling and the updated Mars model, these SDC response curves are expected to be
 more robust than prior versions. Remaining response scatter is propagated into the Redux
