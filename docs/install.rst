@@ -72,8 +72,8 @@ Atmospheric models
 ~~~~~~~~~~~~~~~~~~
 For optimal telluric correction, FORCAST, FLITECAM, and FIFI-LS spectroscopic
 reductions require a library of FITS files, containing model atmospheric
-transmission spectra, derived from the
-`ATRAN model <https://atran.arc.nasa.gov/cgi-bin/atran/atran.cgi>`__.
+transmission spectra, derived from the Steve Lord's ATRAN model
+`(bibcode: 1992nstc.rept.....L) <https://ntrs.nasa.gov/citations/19930010877>`__.
 
 The EXES pipeline does not use ATRAN models for telluric correction, but it
 does attach a reference atmospheric model at a matching altitude and zenith
