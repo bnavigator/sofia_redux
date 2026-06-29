@@ -16,7 +16,7 @@ FIFI-LS Redux v2.11.0
 ~~~~~~~~~~~~~~~~~~~~~
 *User manual: Iss. 04*
 
-- Enhanced telluric correction to automatically retrieve SDC-ATRAN
+- Enhanced telluric correction to automatically retrieve ATRAN_SDC
   transmission spectra and ECMWF water vapor data based on observational
   timestamps. These data are stored in the DaRUS data repository as FITS
   binary tables. Locally stored datasets are also supported, as are ATRAN

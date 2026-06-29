@@ -778,9 +778,9 @@ combination with the estimated line-of-sight water vapor content
 (precipitable water vapor, PWV) calculated from ECMWF satellite data
 (see section :ref:`fifi_substep_wv_sources`). 
 
-Using the modified SDC-ATRAN code, a set of ATRAN models appropriate for a range of altitudes,
+Using the modified ATRAN_SDC code, a set of ATRAN models appropriate for a range of altitudes,
 zenith angles, and PWV values has been generated for pipeline use, and are stored in
-the DaRUS data repository [#fn_fifi_sdcatran]_. The pipeline will attempt to retrieve these automatically,
+the DaRUS data repository [#fn_fifi_atransdc]_. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
 DaRUS data repository. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
@@ -805,7 +805,7 @@ associated error are stored in the ``FLUX`` and ``STDDEV`` extensions.
 The uncorrected cube and its associated error are stored in the
 ``UNCORRECTED_FLUX`` and ``UNCORRECTED_STDDEV`` extensions.
 
-.. [#fn_fifi_sdcatran] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=atran
+.. [#fn_fifi_atransdc] https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad/?q=atran
 
 .. _fifi_substep_wv_sources:
 
