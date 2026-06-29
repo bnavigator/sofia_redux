@@ -134,7 +134,7 @@ Auxiliary Files
 In order to complete a standard reduction, the pipeline requires a number
 of auxiliary files. Most of these are included within the software package
 provided via PyPI, stored in the *sofia_redux/instruments/fifi_ls/data* directory. 
-Others, namely the SDC-ATRAN models and ECMWF water vapor data, are stored on the
+Others, namely the ATRAN_SDC models and ECMWF water vapor data, are stored on the
 DaRUS data repository, and are automatically accessed by the pipeline as needed.
 Most auxiliary files can be overridden by the user with local files as needed,
 with the use of input parameters for the relevant pipeline steps. See
@@ -159,7 +159,7 @@ FIFI-LS files.
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
    | Resolution             | ASCII      | Telluric Correct, Resample  | Contains the expected spectral resolution and fit window FWHM for all modes |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
-   | SDC-ATRAN              | FITS       | Telluric Correct            | Contains an unsmoothed atmospheric transmission model spectrum              |
+   | ATRAN_SDC              | FITS       | Telluric Correct            | Contains an unsmoothed atmospheric transmission model spectrum              |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+
    | ECMWF WV Data          | FITS       | Telluric Correct            | Contains atmopsheric water vapor measurements from ECMWF satellite data     |
    +------------------------+------------+-----------------------------+-----------------------------------------------------------------------------+

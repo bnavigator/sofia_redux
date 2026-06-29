@@ -72,8 +72,8 @@ Atmospheric models
 ~~~~~~~~~~~~~~~~~~
 For optimal telluric correction, FORCAST, FLITECAM, and FIFI-LS spectroscopic
 reductions require a library of FITS files, containing model atmospheric
-transmission spectra, derived from the
-`ATRAN model <https://atran.arc.nasa.gov/cgi-bin/atran/atran.cgi>`__.
+transmission spectra, derived from the Steve Lord's ATRAN model
+`(bibcode: 1992nstc.rept.....L) <https://ntrs.nasa.gov/citations/19930010877>`__.
 
 The EXES pipeline does not use ATRAN models for telluric correction, but it
 does attach a reference atmospheric model at a matching altitude and zenith
@@ -99,12 +99,12 @@ from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
 
 - FIFI-LS:
 
-  For FIFI-LS, modified SDC-ATRAN models, parameterized by water vapor, are stored in the DaRUS data repository.
+  For FIFI-LS, modified ATRAN_SDC models, parameterized by water vapor, are stored in the DaRUS data repository.
   The Pipeline will attempt to retrieve these automatically, however they can also be downloaded and stored locally, and specified
   as an input ATRAN directory. ECMWF water vapor data are also stored in DaRUS, and can also either be automatically retrieved
   by the pipeline, or downloaded and locally stored. See the user manual for details.
   
-  - SDC-ATRAN models, organized by flight altitude
+  - ATRAN_SDC models, organized by flight altitude
 
     - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad?q=atran&types=datasets>`__
     - Size: 3.6 GB
