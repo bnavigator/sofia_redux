@@ -782,8 +782,6 @@ Using the modified ATRAN_SDC code, a set of ATRAN models appropriate for a range
 zenith angles, and PWV values has been generated for pipeline use, and are stored in
 the DaRUS data repository [#fn_fifi_atransdc]_. The pipeline will attempt to retrieve these automatically,
 unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
-DaRUS data repository. The pipeline will attempt to retrieve these automatically,
-unless an ATRAN directory is specified, or a single ATRAN file is specified. In the
 telluric correction step, the pipeline uses the parameter set of observed altitude,
 zenith angle, and PWV in order to select the six models which lie adjacent to the
 observation in parameter spaces. Then, the pipeline carries out a series of two-file
