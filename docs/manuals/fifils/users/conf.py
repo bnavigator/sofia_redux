@@ -97,7 +97,7 @@ release = ': %s %s' % (package, version)
 latex_documents = [('users',
                     'fifils_users.tex',
                     "FIFI-LS Redux User's Manual",
-                    r"""From Iss. 01: B. Knieling\and\large{Until Rev. L: M. Clarke, W. Vacca, D. Fadda, R. Minchin, E. Chambers}""",
+                    r"""From Iss. 01: A. Bryant, B. Knieling\and\large{Until Rev. L: M. Clarke, W. Vacca, D. Fadda, R. Minchin, E. Chambers}""",
                     'howto')]
 
 # Fix environment error, make one-sided document,
