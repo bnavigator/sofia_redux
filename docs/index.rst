@@ -13,7 +13,6 @@ User and Developer Documentation
   :maxdepth: 2
 
   sofia_redux/index
-  manuals/index
 
 Project Details
 ---------------
