@@ -128,7 +128,6 @@ latex_elements = {
 \pagestyle{plain}
 \setcounter{tocdepth}{2}
 \usepackage{chngcntr}
-\setcounter{part}{1}
 \counterwithin{section}{part}
 \counterwithin{subsection}{section}
 \counterwithin{subsubsection}{subsection}
