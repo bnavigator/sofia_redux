@@ -194,16 +194,7 @@ def earthvelocity(ra, dec, time, equinox='J2000', frame='FK5',
         vhelio = icrs.dot(vhelio).to('km/s')
     else:
         # more accurate version including relativistic effects
-        try:
-            vhelio = sc.radial_velocity_correction(kind=center).to('km/s')
-        except ValueError as err:
-            log.warning('Error encountered in radial velocity correction; '
-                        'attempting offline calculation.')
-            log.debug(f'Error from astropy: {str(err)}')
-            log.warning('Correction value may not be accurate.')
-            from astropy.utils.iers import iers
-            with iers.conf.set_temp('auto_max_age', None):
-                vhelio = sc.radial_velocity_correction(kind=center).to('km/s')
+        vhelio = sc.radial_velocity_correction(kind=center).to('km/s')
 
     vlsr = cartesian_lsr(definition=definition)
     vsun = icrs.dot(vlsr).to('km/s')
