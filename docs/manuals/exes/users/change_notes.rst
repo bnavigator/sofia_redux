@@ -11,8 +11,8 @@ v3.0.0 and later were implemented in Python.  For previously processed data,
 check the PIPEVERS keyword in the FITS header to determine the pipeline
 version used.
 
-EXES Redux v3.1.0 (2026-06-09)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v3.1.0 (2026-06-09)
+
 *User manual: Iss. 01*
 
 - Maintainer changed from USRA to SDC. Removed notes about formal documentation
@@ -26,8 +26,8 @@ EXES Redux v3.1.0 (2026-06-09)
   have a recognizable filename.
 
 
-EXES Redux v3.0.0 (2022-12-13)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v3.0.0 (2022-12-13)
+
 *User manual: Rev. E*
 
 - Full reimplementation of the IDL pipeline into Python 3.
@@ -57,8 +57,8 @@ EXES Redux v3.0.0 (2022-12-13)
   respectively.
 
 
-EXES Redux v2.2.0 (2022-04-06)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v2.2.0 (2022-04-06)
+
 *User manual: Rev. D*
 
 - Added HRR and DETROT to distortion correction parameters in configuration
@@ -67,8 +67,8 @@ EXES Redux v2.2.0 (2022-04-06)
   case where a single valid integration remains after tossing bad ones.
 
 
-EXES Redux v2.1.0 (2021-11-22)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v2.1.0 (2021-11-22)
+
 *User manual: Rev. C*
 
 - Designated separate product names and types for sky spectra to avoid
@@ -79,8 +79,8 @@ EXES Redux v2.1.0 (2021-11-22)
 - Modified assumed plate scale by mode to more accurately reflect anamorphic
   magnification effects for cross-dispersed modes.
 
-EXES Redux v2.0.0 (2021-10-21)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v2.0.0 (2021-10-21)
+
 *User manual: Rev. B*
 
 - Adopted EXES PI team version for SOFIA DPS support as a facility class
@@ -94,8 +94,8 @@ EXES Redux v2.0.0 (2021-10-21)
   unit conversion and flux conservation, that was historically inconsistently
   applied to flux and variance planes.
 
-EXES Redux v1.6.0 (2019-04-02)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v1.6.0 (2019-04-02)
+
 *User manual: Rev. A*
 
 - Added handling for darks to allow for black-dark flat generation method
@@ -108,23 +108,23 @@ EXES Redux v1.6.0 (2019-04-02)
 - Added options to subtract a dark frame instead of nods, for sky emission
   spectra
 
-EXES Redux v1.0.2 (2015-07-17)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v1.0.2 (2015-07-17)
+
 *User manual: Rev. A*
 
 - Modified nonlinearity correction to allow for a lower-limit plane in the
   coefficient reference file.
 
-EXES Redux v1.0.1 (2015-05-14)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v1.0.1 (2015-05-14)
+
 *User manual: Rev. -*
 
 - Added ASSC_AOR keyword to track all input AOR-IDs.
 - Attached reference atmospheric transmission data to spectra.
 - Improved wavelength calibration.
 
-EXES Redux v1.0.0 (2015-03-17)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric::  EXES Redux v1.0.0 (2015-03-17)
+
 *User manual: Rev. -*
 
 - Initial release.
