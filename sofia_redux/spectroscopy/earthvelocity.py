@@ -1,6 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-from astropy import log
 import astropy.units as u
 from astropy.coordinates import (
     SkyCoord, Angle, EarthLocation, Latitude, Longitude)

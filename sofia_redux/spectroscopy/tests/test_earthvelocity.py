@@ -1,10 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-import os
-from pathlib import Path
 
 from astropy.units import Unit
-from astropy.time import Time, TimeDelta
+from astropy.time import Time
 from astropy.coordinates import EarthLocation
 import numpy as np
 import pytest
