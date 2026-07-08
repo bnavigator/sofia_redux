@@ -467,7 +467,8 @@ measurements of the positions of known spectral lines. The optics within
 FIFI-LS tend to drift with time and therefore the FIFI-LS team updates
 the wavelength solution every year. The wavelength equation (below) is
 stored in a script, while all relevant constants are stored in a
-reference table, with an associated date of applicability.
+reference table, with an associated date of applicability. These
+can be found within *sofia_redux/instruments/fifi_ls/data/wave_cal/*.
 
 The wavelength (:math:`\lambda`) for the pixel at spatial position *i* and spectral
 position *j* is calculated from the equation:
@@ -609,7 +610,11 @@ units:
 .. math:: d\nu_{ij}/dp = (c / \lambda^2) (d\lambda_{ij}/dp)
 
 The resulting flux density values (units :math:`ADU/sec/Hz`) are propagated
-throughout the rest of the pipeline.
+throughout the rest of the pipeline. If flux calibration is performed, the units
+will be converted to :math:`Jy`, and thus remain as a flux density. Older
+pipeline versions may lack this crucial conversion from integrated flux to flux
+density, and thus care should be taken when comparing data with differing
+heritage.
 
 The wavelength values calculated by the pipeline for each pixel are stored in
 a new 25 x 16 array in an image extension for each grating scan (extension name
@@ -626,15 +631,7 @@ the optics not being perfectly aligned. See
 average of the center of each spaxel location, as measured in the lab.
 This location is slightly different at each wavelength. These spaxel
 positions are determined by the FIFI-LS team and recorded in a look-up
-table.
-
-.. figure:: images/fifi_spaxel_position.png
-   :alt: Spaxel positions
-   :name: fifi_spaxel_position
-
-   Average fitted spaxel positions in arcsecond offsets from the
-   center of the detector.  The red dots indicate the positions for the
-   RED channel; blue dots indicate the BLUE channel.
+table, found in *sofia_redux/instruments/fifi_ls/data/spatial_cal/*.
 
 For a particular observation in standard chop-nod modes, the recorded
 dither offsets in arcseconds are used to calculate the x and y coordinates
@@ -680,6 +677,14 @@ spatial coordinates match the number of spaxels and ramps in the flux data,
 which has dimensions 25 x 16 x N\ :sub:`ramp`, such that the ``XS_Gi``,
 ``YS_Gi``, ``RA_Gi``, and ``DEC_Gi``, extensions have dimensions
 25 x 1 x N\ :sub:`ramp`.
+
+.. figure:: images/fifi_spaxel_position.png
+   :alt: Spaxel positions
+   :name: fifi_spaxel_position
+
+   Average fitted spaxel positions in arcsecond offsets from the
+   center of the detector.  The red dots indicate the positions for the
+   RED channel; blue dots indicate the BLUE channel.
 
 .. _fifi_step_apply_flat:
 
