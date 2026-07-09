@@ -9,8 +9,15 @@ for more information.
 For previously processed data, check the PIPEVERS keyword in the FITS
 header to determine the pipeline version used.
 
-.. rubric:: HAWC DRP v3.2.0 (2022-12-20)
+.. rubric:: HAWC+ Redux v3.3.0 (tba)
 
+*User manual: Iss. 01*
+
+- Maintainer changed from USRA to SDC.
+- Updated old references in documentation.
+
+HAWC DRP v3.2.0 (2022-12-20)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *User manual: Rev. L*
 
 - Improved the 'fixjumps' algorithm for correcting discrepant artifacts

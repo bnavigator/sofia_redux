@@ -1275,7 +1275,7 @@ produced by the Nod-Pol pipeline.
 Other Resources
 ---------------
 
-For more information on the code or algorithms used in the HAWC DRP pipeline,
+For more information on the code or algorithms used in the HAWC+ Redux pipeline,
 see the following documents:
 
 -  Far-infrared polarimetry analysis: `Hildebrand et. al. 2000 PASP,
