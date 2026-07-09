@@ -103,17 +103,49 @@ latex_documents = [('users',
 # Fix environment error, make one-sided document,
 # add NASA header and footer
 latex_elements = {
-    'classoptions': ',openany,oneside',
+    'classoptions': ',a4paper,openany,oneside',
     'babel': r'\usepackage[english]{babel}',
     'maxlistdepth': 20,
     'printindex': r'\footnotesize\raggedright\printindex',
     'preamble': r'''
+\usepackage[section]{placeins}
+\makeatletter
+\AtBeginDocument{%%
+  \@ifundefined{chapter}{}{%%
+    \let\oldchapter\chapter
+    \renewcommand{\chapter}{\FloatBarrier\oldchapter}%%
+  }
+  \let\oldpart\part
+  \renewcommand{\part}{\FloatBarrier\oldpart}%%
+  \let\oldsection\section
+  \renewcommand{\section}{\FloatBarrier\oldsection}%%
+  \let\oldsubsection\subsection
+  \renewcommand{\subsection}{\FloatBarrier\oldsubsection}%%
+  \let\oldsubsubsection\subsubsection
+  \renewcommand{\subsubsection}{\FloatBarrier\oldsubsubsection}%%
+}
+\makeatother
 \pagestyle{plain}
 \setcounter{tocdepth}{2}
+\usepackage{chngcntr}
+\counterwithin{section}{part}
+\counterwithin{subsection}{section}
+\counterwithin{subsubsection}{subsection}
+\renewcommand{\thepart}{\arabic{part}}
+\renewcommand{\partname}{Part}
+\renewcommand{\thesection}{\thepart.\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\setcounter{secnumdepth}{3}
+\makeatletter
+\renewcommand{\l@section}{\@dottedtocline{1}{1.5em}{2.3em}}
+\renewcommand{\l@subsection}{\@dottedtocline{2}{3.8em}{3.2em}}
+\renewcommand{\l@subsubsection}{\@dottedtocline{3}{7.0em}{4.1em}}
+\makeatother
 \usepackage{fancyhdr}
 \fancypagestyle{normal}{
 \fancyhf{}
-\fancyhead[R]{%s\\Rev. %s}
+\fancyhead[R]{%s\\Iss. %s}
 \fancyfoot[C]{\textbf{VERIFY THAT THIS IS THE CORRECT REVISION BEFORE USE}\\\thepage}
 \setlength{\headheight}{22.36003pt}
 \renewcommand{\headrulewidth}{0pt}
