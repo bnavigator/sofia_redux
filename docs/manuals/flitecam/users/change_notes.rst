@@ -15,8 +15,8 @@ that was processed with this pipeline.
 For previously processed data, check the PIPEVERS keyword in the
 FITS header to determine the pipeline version used.
 
-FLITECAM Redux v2.1.0 (2026-06-09)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: FLITECAM Redux v2.1.0 (2026-06-09)
+
 *User manual: Iss. 01*
 
 - Maintainer changed from USRA to SDC. Removed notes about formal documentation
@@ -25,102 +25,102 @@ FLITECAM Redux v2.1.0 (2026-06-09)
   calibration files are now downloaded and cached from the SDC Astronomy Dataverse
   at DaRUS instead of the PIPELINE_REFERENCE directory at IRSA.
 
-FLITECAM Redux v2.0.0 (2021-09-24)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: FLITECAM Redux v2.0.0 (2021-09-24)
+
 *User manual: Rev. B*
 
-All modes
-^^^^^^^^^
-- Full reimplementation of the IDL pipeline into Python 3.
+- All modes
 
-Imaging
-^^^^^^^
-- Data formats change significantly.  Imaging products now separate
-  flux, error, and exposure map into separate FITS image extensions,
-  rather than storing them as a 3D cube in the primary extension.
+  - Full reimplementation of the IDL pipeline into Python 3.
 
-Spectroscopy
-^^^^^^^^^^^^
-- Data formats change significantly.  Images and spectra are stored
-  in the same FITS file, under separate extensions.  Final 1D spectra
-  (CMB files, PRODTYPE=combined_spectrum) are still stored in the
-  same format as before; the spectrum corresponds to the SPECTRAL_FLUX
-  extension in the COA (PRODTYPE=coadded_spectrum) file.
+- Imaging
+
+  - Data formats change significantly.  Imaging products now separate
+    flux, error, and exposure map into separate FITS image extensions,
+    rather than storing them as a 3D cube in the primary extension.
+
+- Spectroscopy
+
+  - Data formats change significantly.  Images and spectra are stored
+    in the same FITS file, under separate extensions.  Final 1D spectra
+    (CMB files, PRODTYPE=combined_spectrum) are still stored in the
+    same format as before; the spectrum corresponds to the SPECTRAL_FLUX
+    extension in the COA (PRODTYPE=coadded_spectrum) file.
 
 
-FLITECAM Redux v1.2.0 (2017-12-15)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: FLITECAM Redux v1.2.0 (2017-12-15)
+
 *User manual: Rev. A*
 
-Imaging
-^^^^^^^
-- Flux calibration procedure revised to separate telluric correction
-  from flux calibration.  Telluric correction is now performed on a
-  file-by-file basis, for better accuracy, after registration.  The
-  REG file is no longer saved by default; it is replaced by a TEL file
-  which is telluric-corrected but not flux calibration.  The final
-  calibration factor is still applied at the end of the pipeline, making
-  a single CAL file.  The CALFCTR stored in the header is now the
-  calibration factor at the reference altitude and zenith angle; it no
-  longer includes the telluric correction factor.  The latter value is
-  stored in the new keyword TELCORR.
-- Image registration default set to use the WCS for most image shifts,
-  instead of centroid or cross-correlation algorithms.
+- Imaging
 
-FLITECAM Redux v1.1.0 (2016-09-20)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  - Flux calibration procedure revised to separate telluric correction
+    from flux calibration.  Telluric correction is now performed on a
+    file-by-file basis, for better accuracy, after registration.  The
+    REG file is no longer saved by default; it is replaced by a TEL file
+    which is telluric-corrected but not flux calibration.  The final
+    calibration factor is still applied at the end of the pipeline, making
+    a single CAL file.  The CALFCTR stored in the header is now the
+    calibration factor at the reference altitude and zenith angle; it no
+    longer includes the telluric correction factor.  The latter value is
+    stored in the new keyword TELCORR.
+  - Image registration default set to use the WCS for most image shifts,
+    instead of centroid or cross-correlation algorithms.
+
+.. rubric:: FLITECAM Redux v1.1.0 (2016-09-20)
+
 *User manual: Rev. A*
 
-Imaging
-^^^^^^^
-- Flux calibration factors are now applied to data arrays to
-  convert them to physical units (Jy).  The calibrated data product
-  has file code CAL (PRODTYPE=calibrated).  COA files are no longer
-  designated Level 3, even if their headers contain calibration
-  factors.
+- Imaging
 
-Spectroscopy
-^^^^^^^^^^^^
-- Grism calibration incorporated into the pipeline, using stored
-  instrumental response files, similar to the FORCAST grism calibration
-  process.
+  - Flux calibration factors are now applied to data arrays to
+    convert them to physical units (Jy).  The calibrated data product
+    has file code CAL (PRODTYPE=calibrated).  COA files are no longer
+    designated Level 3, even if their headers contain calibration
+    factors.
 
-FLITECAM Redux v1.0.3 (2015-10-06)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Spectroscopy
+
+  - Grism calibration incorporated into the pipeline, using stored
+    instrumental response files, similar to the FORCAST grism calibration
+    process.
+
+.. rubric:: FLITECAM Redux v1.0.3 (2015-10-06)
+
 *User manual: Rev. -*
 
-All modes
-^^^^^^^^^
-- Minor bug fixes for filename handling and batch processing.
+- All modes
 
-FLITECAM Redux v1.0.2 (2015-09-03)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  - Minor bug fixes for filename handling and batch processing.
+
+.. rubric:: FLITECAM Redux v1.0.2 (2015-09-03)
+
 *User manual: Rev. -*
 
-Imaging
-^^^^^^^
-- Improvements to the flat generation procedures.
+- Imaging
 
-FLITECAM Redux v1.0.1 (2015-05-14)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  - Improvements to the flat generation procedures.
+
+.. rubric:: FLITECAM Redux v1.0.1 (2015-05-14)
+
 *User manual: Rev. -*
 
-All modes
-^^^^^^^^^
-- EXPTIME keyword updated to track total nominal on-source integration time.
-- ASSC_AOR keyword added to track all input AOR-IDs.
+- All modes
 
-Imaging
-^^^^^^^
-- Separate flat and sky files accommodated.
-- Flux calibration incorporated into pipeline, rather than applied as a
-  separate step.
+  - EXPTIME keyword updated to track total nominal on-source integration time.
+  - ASSC_AOR keyword added to track all input AOR-IDs.
 
-FLITECAM Redux v1.0.0 (2015-01-23)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Imaging
+
+  - Separate flat and sky files accommodated.
+  - Flux calibration incorporated into pipeline, rather than applied as a
+    separate step.
+
+.. rubric:: FLITECAM Redux v1.0.0 (2015-01-23)
+
 *User manual: Rev. -*
 
-All modes
-^^^^^^^^^
-- Integrated FLITECAM imaging algorithms (FDRP) with Spextool spectral
-  extraction algorithms, in a standard pipeline interface (Redux).
+-All modes
+
+  - Integrated FLITECAM imaging algorithms (FDRP) with Spextool spectral
+    extraction algorithms, in a standard pipeline interface (Redux).
