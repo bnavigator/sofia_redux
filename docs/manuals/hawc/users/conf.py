@@ -71,8 +71,8 @@ rst_epilog += """
 # -- Project information ------------------------------------------------------
 
 # NASA document number and revision
-docnumber = 'SOF-US-HBK-OP10-2008'
-docrev = 'L'
+docnumber = 'SDC-MAN-XXXX'
+issue = '01'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']
@@ -85,7 +85,7 @@ copyright = '{0}, {1}'.format(
 # built documents.
 
 package = docnumber
-version = 'Rev. %s' % docrev
+version = 'Iss. %s' % issue
 release = ': %s %s' % (package, version)
 
 
@@ -96,9 +96,8 @@ release = ': %s %s' % (package, version)
 # [howto/manual]).
 latex_documents = [('users',
                     'hawc_users.tex',
-                    "HAWC+ DRP User's Manual",
-                    "M. Clarke, D. Perera, M. Berthoud, A. Kovács, "
-                    "F. Santos, G. Novak",
+                    "HAWC+ Redux User's Manual",
+                    r"From Iss. 01: K. Schindler, A. Bryant, B. Greiner \and\large{Until Rev. L: M. Clarke, D. Perera, M. Berthoud, A. Kovács, F. Santos, G. Novak}",
                     'howto')]
 
 # Fix environment error, make one-sided document,
@@ -116,9 +115,10 @@ latex_elements = {
 \fancyhf{}
 \fancyhead[R]{%s\\Rev. %s}
 \fancyfoot[C]{\textbf{VERIFY THAT THIS IS THE CORRECT REVISION BEFORE USE}\\\thepage}
+\setlength{\headheight}{22.36003pt}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
-''' % (docnumber, docrev),
+''' % (docnumber, issue),
 }
 
 # number figures for manuals
