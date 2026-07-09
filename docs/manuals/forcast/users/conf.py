@@ -100,7 +100,7 @@ release = ': %s %s' % (package, version)
 latex_documents = [('users',
                     'forcast_users.tex',
                     "FORCAST Redux User's Manual",
-                    r"From Iss. 01: A. Bryant, B. Greiner \and\large{Until Rev. M: M. Clarke, W. Vacca, E. Chambers, J. Radomski}",
+                    r"From Iss. 01: M. Wiedemann, A. Bryant, B. Greiner \and\large{Until Rev. M: M. Clarke, W. Vacca, E. Chambers, J. Radomski}",
                     'howto'),
                    ]
 
