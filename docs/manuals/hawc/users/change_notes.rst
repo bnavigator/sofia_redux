@@ -16,21 +16,21 @@ header to determine the pipeline version used.
 - Maintainer changed from USRA to SDC.
 - Updated old references in documentation.
 
-HAWC DRP v3.2.0 (2022-12-20)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: HAWC+ DRP v3.2.0 (2022-12-20)
+
 *User manual: Rev. L*
 
 - Improved the 'fixjumps' algorithm for correcting discrepant artifacts
   in scan maps caused by detector flux jumps.
 
-.. rubric:: HAWC DRP v3.1.0 (2022-09-12)
+.. rubric:: HAWC+ DRP v3.1.0 (2022-09-12)
 
 *User manual: Rev. K*
 
 - Added a 'grid' parameter for the scan map steps to allow easy spatial
   regridding without impacting flux conservation.
 
-.. rubric:: HAWC DRP v3.0.0 (2022-02-15)
+.. rubric:: HAWC+ DRP v3.0.0 (2022-02-15)
 
 *User manual: Rev. J*
 
@@ -39,7 +39,7 @@ HAWC DRP v3.2.0 (2022-12-20)
 - Added optional step to correct the zero level in total intensity
   scan maps.
 
-.. rubric:: HAWC DRP v2.7.0 (2021-08-23)
+.. rubric:: HAWC+ DRP v2.7.0 (2021-08-23)
 
 *User manual: Rev. H*
 
@@ -49,7 +49,7 @@ HAWC DRP v3.2.0 (2022-12-20)
   only the exposure time from a single HWP angle.
 - Added new visualization tools to the pipeline interface and QAD tool.
 
-.. rubric:: HAWC DRP v2.6.0 (2021-04-26)
+.. rubric:: HAWC+ DRP v2.6.0 (2021-04-26)
 
 *User manual: Rev. G*
 
@@ -64,7 +64,7 @@ HAWC DRP v3.2.0 (2022-12-20)
 - Introduce a zero-level correction algorithm for scanning polarimetry
   maps of large, diffuse sources.
 
-.. rubric:: HAWC DRP v2.5.0 (2020-06-09)
+.. rubric:: HAWC+ DRP v2.5.0 (2020-06-09)
 
 *User manual: Rev. F*
 
@@ -73,7 +73,7 @@ HAWC DRP v3.2.0 (2022-12-20)
 - Improve error estimates for photometry profile fits for flux
   standards.
 
-.. rubric:: HAWC DRP v2.4.0 (2020-01-15)
+.. rubric:: HAWC+ DRP v2.4.0 (2020-01-15)
 
 *User manual: Rev. E*
 
@@ -81,7 +81,7 @@ HAWC DRP v3.2.0 (2022-12-20)
   for computing pointing corrections for the scan-mode pipeline.
 - Internal C library replaced with Python algorithms.
 
-.. rubric:: HAWC DRP v2.3.2 (2019-09-17)
+.. rubric:: HAWC+ DRP v2.3.2 (2019-09-17)
 
 *User manual: Rev. D*
 
@@ -91,13 +91,13 @@ HAWC DRP v3.2.0 (2022-12-20)
 - Add option to allow manual override for Stokes combination,
   when HWP angle is inaccurately recorded.
 
-.. rubric:: HAWC DRP v2.3.1 (2019-08-06)
+.. rubric:: HAWC+ DRP v2.3.1 (2019-08-06)
 
 *User manual: Rev. D*
 
 - Fix for occasional WCS offset error in scan-pol mode.
 
-.. rubric:: HAWC DRP v2.3.0 (2019-07-02)
+.. rubric:: HAWC+ DRP v2.3.0 (2019-07-02)
 
 *User manual: Rev. D*
 
@@ -106,14 +106,14 @@ HAWC DRP v3.2.0 (2022-12-20)
   running common HWP angles through the CRUSH sub-pipeline together.
   This allows better correction for sky rotation angle (VPA).
 
-.. rubric:: HAWC DRP v2.2.0 (2019-05-24)
+.. rubric:: HAWC+ DRP v2.2.0 (2019-05-24)
 
 *User manual: Rev. D*
 
 - Fix for parameter resets between files in a single reduction run.
 - Revise Python packaging structure to avoid manual C library compilation.
 
-.. rubric:: HAWC DRP v2.1.0 (2019-02-21)
+.. rubric:: HAWC+ DRP v2.1.0 (2019-02-21)
 
 *User manual: Rev. D*
 
@@ -125,7 +125,7 @@ HAWC DRP v3.2.0 (2022-12-20)
 - Introduced option for sigma-clipping on telescope velocity in the
   scan modes.
 
-.. rubric:: HAWC DRP v2.0.0 (2018-09-24)
+.. rubric:: HAWC+ DRP v2.0.0 (2018-09-24)
 
 *User manual: Rev. C*
 
@@ -134,7 +134,7 @@ HAWC DRP v3.2.0 (2022-12-20)
   with other SOFIA pipelines.
 - Fixes for BUNIT keywords in extension headers.
 
-.. rubric:: HAWC DRP v1.3.0 (2018-05-17)
+.. rubric:: HAWC+ DRP v1.3.0 (2018-05-17)
 
 *User manual: Rev. B*
 
@@ -151,19 +151,19 @@ HAWC DRP v3.2.0 (2022-12-20)
   samples (before demodulation and R-T subtraction), and propagating
   covariance between Stokes parameters.
 
-.. rubric:: HAWC DRP v1.2.0 (2017-11-09)
+.. rubric:: HAWC+ DRP v1.2.0 (2017-11-09)
 
 *User manual: Rev. A*
 
 - Track all input MISSN-IDs in the ASSC_MSN FITS keyword.
 
-.. rubric:: HAWC DRP v1.1.1 (2017-05-17)
+.. rubric:: HAWC+ DRP v1.1.1 (2017-05-17)
 
 *User manual: Rev. A*
 
 - Fix sign error for WCS in SI reference frame.
 
-.. rubric:: HAWC DRP v1.1.0 (2017-05-02)
+.. rubric:: HAWC+ DRP v1.1.0 (2017-05-02)
 
 *User manual: Rev. A*
 
@@ -172,13 +172,13 @@ HAWC DRP v3.2.0 (2022-12-20)
 - Update scan mode opacity corrections to match chop-nod mode method
   (from ATRAN model).
 
-.. rubric:: HAWC DRP v1.0.1 (2017-01-30)
+.. rubric:: HAWC+ DRP v1.0.1 (2017-01-30)
 
 *User manual: Rev. -*
 
 - Fix for bad pixel mask handling for T array.
 
-.. rubric:: HAWC DRP v1.0.0 (2017-01-25)
+.. rubric:: HAWC+ DRP v1.0.0 (2017-01-25)
 
 *User manual: Rev. -*
 
