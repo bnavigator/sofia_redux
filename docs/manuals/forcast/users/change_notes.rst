@@ -15,6 +15,13 @@ processed with this pipeline.
 For previously processed data, check the PIPEVERS keyword in the
 FITS header to determine the pipeline version used.
 
+.. rubric::  FORCAST Redux v2.8.0 (tba)
+
+*User manual: Iss. 01*
+
+- Maintainer changed from USRA to SDC.
+- Updated old references in documentation.
+
 .. rubric::  FORCAST Redux v2.7.0 (2022-12-13)
 
 *User manual: Rev. M*
