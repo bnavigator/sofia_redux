@@ -148,6 +148,7 @@ latex_elements = {
 \fancyhf{}
 \fancyhead[R]{%s\\Iss. %s}
 \fancyfoot[C]{\textbf{VERIFY THAT THIS IS THE CORRECT REVISION BEFORE USE}\\\thepage}
+\setlength{\headheight}{22.36003pt}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
 ''' % (docnumber, issue),
