@@ -107,7 +107,7 @@ latex_documents = [('users',
 # Fix environment error, make one-sided document,
 # add NASA header and footer
 latex_elements = {
-    'classoptions': ',openany,oneside',
+    'classoptions': ',a4paper,openany,oneside',
     'babel': r'\usepackage[english]{babel}',
     'inputenc': r'\usepackage[utf8x]{inputenc}',
     'maxlistdepth': 20,
