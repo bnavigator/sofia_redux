@@ -12,7 +12,7 @@ Introduction
 The SOFIA Data Center (SDC) is the successor to the SOFIA Science Mission Operations
 Center (SMO) in maintaining the HAWC+ Redux User’s Manual. The SMO managed the
 manual under the document number SOF-US-HBK-OP10-2008, up to revision L. With
-SDC as the new maintainer, the document number has changed to SDC-MAN-XXXX.
+SDC as the new maintainer, the document number has changed to SDC-MAN-0008.
 
 The SI Pipeline Users Manual is intended for use by both SDC staff during 
 routine data processing and analysis, and also as a reference for General 

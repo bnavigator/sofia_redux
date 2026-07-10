@@ -12,7 +12,7 @@ Introduction
 The SOFIA Data Center (SDC) is the successor to the SOFIA Science Mission Operations
 Center (SMO) in maintaining the FORCAST Redux User’s Manual. The SMO managed the
 manual under the document number SCI-US-HBK-OP10-2003, up to revision M. With
-SDC as the new maintainer, the document number has changed to SDC-MAN-XXXX.
+SDC as the new maintainer, the document number has changed to SDC-MAN-0007.
 
 The SI Pipeline Users Manual is intended for use by both SDC staff during 
 routine data processing and analysis, and also as a reference for General 

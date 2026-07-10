@@ -74,7 +74,7 @@ rst_epilog += """
 # -- Project information ------------------------------------------------------
 
 # NASA document number and revision
-docnumber = 'SDC-MAN-XXXX'
+docnumber = 'SDC-MAN-0007'
 issue = '01'
 
 # This does not *have* to match the package name, but typically does
