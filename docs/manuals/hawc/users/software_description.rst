@@ -874,7 +874,7 @@ Appendix: Sample Configuration Files
 ====================================
 
 Full Pipeline Configuration File
----------------------------
+--------------------------------
 
 Below is a copy of the full configuration file used by the pipeline in
 the Redux environment (*pipeconf.cfg*). It is in INI format, and is readable
@@ -884,7 +884,7 @@ by the configobj Python module.
    :literal:
 
 Pipeline Override Configuration File
--------------------------------
+------------------------------------
 
 Below is a sample override configuration file that demonstrates how to set
 override parameters to provide to the HAWC+ pipeline. The parameters
