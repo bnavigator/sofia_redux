@@ -302,9 +302,9 @@ DEFAULT = {
          'dtype': 'bool',
          'wtype': 'check_box'},
         {'key': 'atran_dir',
-         'name': 'ATRAN directory',
+         'name': 'ATRAN or ATRAN_SDC directory',
          'value': '',
-         'description': 'Override default set of ATRAN FITS files',
+         'description': 'Override default set of ATRAN_SDC FITS files',
          'dtype': 'str',
          'wtype': 'pick_directory'},
         {'key': 'cutoff',
@@ -356,15 +356,15 @@ DEFAULT = {
         {'key': 'atran_file',
          'name': 'ATRAN file override',
          'value': '',
-         'description': 'If set, use this exact ATRAN file, skipping '
-                        'all automatic file selection.',
+         'description': 'If set, use this exact ATRAN or ATRAN_SDC file, '
+                        'skipping all automatic file selection.',
          'dtype': 'str',
          'wtype': 'pick_file'},
         {'key': 'interpolated',
-         'name': 'Interpolate between ATRAN files',
+         'name': 'Interpolate between ATRAN_SDC files',
          'value': True,
-         'description': 'If set, interpolate between the four '
-                        'ATRAN files. If not set, use the single '
+         'description': 'If set, interpolate between four '
+                        'ATRAN_SDC files. If not set, use the single '
                         'nearest-matching file.',
          'dtype': 'bool',
          'wtype': 'check_box'},
