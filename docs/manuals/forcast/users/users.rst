@@ -23,7 +23,7 @@ and assess the data quality of the resulting products. It will also provide a
 description of the algorithms used by the pipeline and both the final and intermediate
 data products.
 
-This manual applies to FORCAST Redux version 2.7.3.
+This manual applies to FORCAST Redux version |pipevers|.
 
 .. include:: data_description.rst
 

@@ -32,6 +32,7 @@ import datetime
 import sys
 from pathlib import Path
 from tomllib import load as toml_load
+from sofia_redux.instruments.fifi_ls.version import version as pipevers
 
 try:
     from sphinx_astropy.conf.v2 import *  # noqa
@@ -65,14 +66,18 @@ exclude_patterns.append('software_description.rst')
 
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
-rst_epilog += """
+rst_epilog += f"""
+.. |pipevers| replace:: {pipevers}
 """
 
 # -- Project information ------------------------------------------------------
 
-# NASA document number and revision
+# SDC document number and revision
 docnumber = 'SDC-MAN-0001'
 issue = '04'
+
+# set the release date of the manual manually
+today = '2026-06-30'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']

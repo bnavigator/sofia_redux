@@ -22,7 +22,7 @@ information to execute the SI data reduction pipeline, and assess the data quali
 of the resulting products. It will also provide a description of the algorithms
 used by the pipeline and both the final and intermediate data products.
 
-This manual applies to HAWC+ Redux version 3.2.2.
+This manual applies to HAWC+ Redux version |pipevers|.
 
 
 .. include:: data_description.rst

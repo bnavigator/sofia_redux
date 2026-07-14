@@ -32,9 +32,10 @@ import datetime
 import sys
 from pathlib import Path
 from tomllib import load as toml_load
+from sofia_redux.instruments.hawc.version import version as pipevers
 
 try:
-    from sphinx_astropy.conf.v1 import *  # noqa
+    from sphinx_astropy.conf.v2 import *  # noqa
 except ImportError:
     print('ERROR: the documentation requires the sphinx-astropy package to be installed')
     sys.exit(1)
@@ -65,7 +66,8 @@ exclude_patterns.append('software_description.rst')
 
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
-rst_epilog += """
+rst_epilog += f"""
+.. |pipevers| replace:: {pipevers}
 """
 
 # -- Project information ------------------------------------------------------
@@ -73,6 +75,9 @@ rst_epilog += """
 # NASA document number and revision
 docnumber = 'SDC-MAN-0008'
 issue = '01'
+
+# set the release date of the manual manually
+today = '2025-12-04'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']
