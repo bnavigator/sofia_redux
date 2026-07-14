@@ -15,7 +15,7 @@ that was processed with this pipeline.
 For previously processed data, check the PIPEVERS keyword in the
 FITS header to determine the pipeline version used.
 
-.. rubric:: FLITECAM Redux v2.1.0 (2026-06-09)
+.. rubric:: FLITECAM Redux v2.1.0 (2026-06-30)
 
 *User manual: Iss. 01*
 

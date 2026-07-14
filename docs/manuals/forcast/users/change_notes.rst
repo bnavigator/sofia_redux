@@ -15,7 +15,7 @@ processed with this pipeline.
 For previously processed data, check the PIPEVERS keyword in the
 FITS header to determine the pipeline version used.
 
-.. rubric::  FORCAST Redux v2.8.0 (tba)
+.. rubric::  FORCAST Redux v2.7.3 (2026-06-30)
 
 *User manual: Iss. 01*
 

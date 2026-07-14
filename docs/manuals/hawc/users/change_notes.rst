@@ -9,7 +9,7 @@ for more information.
 For previously processed data, check the PIPEVERS keyword in the FITS
 header to determine the pipeline version used.
 
-.. rubric:: HAWC+ Redux v3.3.0 (tba)
+.. rubric:: HAWC+ Redux v3.2.2 (2025-12-04)
 
 *User manual: Iss. 01*
 

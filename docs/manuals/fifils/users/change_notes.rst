@@ -12,7 +12,7 @@ data, check the ``PIPEVERS`` keyword in the FITS header to determine the
 pipeline version used.
 
 
-.. rubric:: FIFI-LS Redux v2.11.0
+.. rubric:: FIFI-LS Redux v2.11.0 (2026-06-30)
 
 *User manual: Iss. 04*
 

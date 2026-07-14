@@ -11,7 +11,7 @@ v3.0.0 and later were implemented in Python.  For previously processed data,
 check the PIPEVERS keyword in the FITS header to determine the pipeline
 version used.
 
-.. rubric::  EXES Redux v3.1.0 (2026-06-09)
+.. rubric::  EXES Redux v3.1.0 (2026-06-30)
 
 *User manual: Iss. 01*
 
