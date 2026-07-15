@@ -12,7 +12,7 @@ alternately referred to as HAWC or HAWC+. HAWC+ is designed for
 far-infrared imaging observations in either total intensity (imaging) or
 polarimetry mode.
 
-HAWC currently consists of dual TES BUG Detector arrays in a 64x40
+HAWC+ currently consists of dual TES BUG Detector arrays in a 64x40
 rectangular format. A six-position filter wheel is populated with five
 broadband filters ranging from 40 to 250 :math:`\mu`\ m and a dedicated
 position for diagnostics. Another wheel holds pupil masks and rotating
@@ -20,7 +20,7 @@ half-wave plates (HWPs) for polarization observations. A polarizing beam
 splitter directs the two orthogonal linear polarizations to the two
 detectors (the reflected (R) array and the transmitted (T) array). Each
 array was designed to have two 32x40 subarrays, for four total detectors
-(R0, R1, T0, and T1), but T1 is not currently available for HAWC. Since
+(R0, R1, T0, and T1), but T1 is not currently available for HAWC+. Since
 polarimetry requires paired R and T pixels, it is currently only
 available for the R0 and T0 arrays. Total intensity observations may use
 the full set of 3 subarrays.
@@ -28,10 +28,10 @@ the full set of 3 subarrays.
 HAWC+ Observing Modes
 ---------------------
 
-The HAWC instrument has two instrument configurations, for imaging and
+The HAWC+ instrument has two instrument configurations, for imaging and
 polarization observations. In both types of observations, removing
 background flux due to the telescope and sky is a challenge that
-requires one of several observational strategies. The HAWC instrument
+requires one of several observational strategies. The HAWC+ instrument
 may use the secondary mirror to chop rapidly between two positions
 (source and sky), may use discrete telescope motions to nod between
 different sky positions, or may use slow continuous scans of the
@@ -53,8 +53,8 @@ All modes that include chopping or nodding may be chopped and nodded
 on-chip or off-chip. Currently, only two-point chop patterns with
 matching nod amplitudes (nod-match-chop) are used in either Chop-Nod or
 Nod-Pol observations, and nodding is performed in an A-B-B-A pattern
-only. All HAWC modes can optionally have a small dither pattern or a
-larger mapping pattern, to cover regions of the sky larger than HAWC’s
+only. All HAWC+ modes can optionally have a small dither pattern or a
+larger mapping pattern, to cover regions of the sky larger than HAWC+’s
 fields of view. Scanning patterns may be either box rasters or Lissajous
 patterns.
 
@@ -70,7 +70,7 @@ intensity) reductions use the same methods as Nod-Pol observations, but
 either apply the algorithm to the data for the single HWP angle
 available, or else, if the step is specifically for polarimetry, have no
 effect when called on total intensity data. Since nearly all total
-intensity HAWC observations are taken with scanning mode, the following
+intensity HAWC+ observations are taken with scanning mode, the following
 sections will focus primarily on Nod-Pol data.
 
 See the figures below for flow charts that illustrate the data reduction
@@ -117,7 +117,7 @@ The first step in the pipeline is to prepare the raw data for
 processing, by rearranging and regularizing the raw input data tables,
 and performing some initial calculations required by subsequent steps.
 
-The raw (Level 0) HAWC files contain all information in FITS binary
+The raw (Level 0) HAWC+ files contain all information in FITS binary
 table extensions located in two Header Data Unit (HDU) extensions. The
 raw file includes the following HDUs:
 
@@ -414,7 +414,7 @@ foreground polarization is removed, the parameters may then be rotated
 into sky coordinates. The pipeline calculates a relative rotation angle,
 :math:`\alpha`, that accounts for the vertical position angle of the
 instrument, the initial angle of the half-wave plate position, and an
-offset position that is different for each HAWC filter. It applies the
+offset position that is different for each HAWC+ filter. It applies the
 correction to the Q and U images with a standard rotation matrix, such
 that:
 
@@ -622,7 +622,7 @@ and the output errors and covariances are
 where :math:`w_i` is the pixel weight and :math:`w_{tot}` is the sum of
 the weights of all input pixels.
 
-As of HAWC DRP v2.4.0, the distance-weighted input pixels within the fit
+As of HAWC+ DRP v2.4.0, the distance-weighted input pixels within the fit
 radius may optionally be fit by a low-order polynomial surface, rather than
 a weighted average. In this case, each output pixel value is the value of
 the local polynomial fit, evaluated at that grid location.  Errors and
@@ -815,7 +815,7 @@ every detector channel, and sky coordinates to every time frame in the
 scan.
 
 The input timestream is then checked for inconsistencies.
-For example, HAWC data is prone to discontinuous jumps in flux levels.
+For example, HAWC+ data is prone to discontinuous jumps in flux levels.
 The pipeline will search the timestream for flux jumps, and flag or fix
 jump-related artifacts as necessary.  The pipeline also checks for gaps in
 the astrometry data in the timestream, gyro drifts over the course of
@@ -1034,7 +1034,7 @@ or a motion filter to reject responses synchronous to the dominant
 telescope motion. In the end, every one of these filters is represented
 by an appropriate scalar filter profile :math:`\phi_{cf}`, so the
 discussion remains unchanged.  Only the whitening filter is used by default
-for HAWC data.
+for HAWC+ data.
 
 Once a filter profile is determined, we apply the filter by first
 calculating a rejected signal:
@@ -1207,7 +1207,7 @@ Scan Map Output
 
 Since the Scan mode algorithms are iterative, there are no well-defined
 intermediate products that may be written to disk. For Scan mode data,
-the pipeline takes as input a set of raw Level 0 HAWC FITS files,
+the pipeline takes as input a set of raw Level 0 HAWC+ FITS files,
 described in the :ref:`prepare` section, and writes as output a single FITS
 file per file group, saved with PRODTYPE = *scanmap* (file name code SMP).
 These files contain an image of the source map in units of detector counts,
@@ -1275,7 +1275,7 @@ produced by the Nod-Pol pipeline.
 Other Resources
 ---------------
 
-For more information on the code or algorithms used in the HAWC DRP pipeline,
+For more information on the code or algorithms used in the HAWC+ Redux pipeline,
 see the following documents:
 
 -  Far-infrared polarimetry analysis: `Hildebrand et. al. 2000 PASP,
@@ -1301,7 +1301,7 @@ Data Products
 File names
 ----------
 
-Output files from the HAWC pipeline are named according to the
+Output files from the HAWC+ pipeline are named according to the
 convention:
 
     FILENAME =
@@ -1324,7 +1324,7 @@ type.
 Data format
 -----------
 
-Most HAWC data is stored in FITS files, conforming to the FITS standard
+Most HAWC+ data is stored in FITS files, conforming to the FITS standard
 (Pence et al. 2010). Each FITS file contains a primary Header Data Unit
 (HDU) which may contain the most appropriate image data for that
 particular data reduction level. Most files have additional data stored
@@ -1337,7 +1337,7 @@ Pipeline products
 -----------------
 
 The following tables list all intermediate and final products that may
-be generated by the HAWC pipeline, in the order in which they are
+be generated by the HAWC+ pipeline, in the order in which they are
 produced for each mode. The product type is stored in the primary
 header, under the keyword PRODTYPE. By default, for Nod-Pol mode, the
 *demodulate*, *opacity*, *calibrate*, *merge*, and *polmap* products

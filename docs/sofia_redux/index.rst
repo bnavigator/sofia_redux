@@ -71,11 +71,19 @@ Manuals
 
 User's Manuals:
 
-- :doc:`../manuals/exes/users/users`
-- :doc:`../manuals/fifils/users/users`
-- :doc:`../manuals/flitecam/users/users`
-- :doc:`../manuals/forcast/users/users`
-- :doc:`../manuals/hawc/users/users`
+- :doc:`../manuals/exes/users/users` [:doc:`HTML <../manuals/exes/users/users>` ,
+  `PDF <https://redux.sofiadatacenter.de/resources/SDC-MAN-0005_Iss01%20EXES%20Redux%20User%27s%20Manual.pdf>`__]
+- :doc:`../manuals/fifils/users/users` [:doc:`HTML <../manuals/fifils/users/users>` ,
+  `PDF <https://redux.sofiadatacenter.de/resources/SDC-MAN-0001_Iss04%20FIFI-LS%20Redux%20User%27s%20Manual.pdf>`__]
+- :doc:`../manuals/flitecam/users/users` [:doc:`HTML <../manuals/flitecam/users/users>` ,
+  `PDF <https://redux.sofiadatacenter.de/resources/SDC-MAN-0006_Iss01%20FLITECAM%20Redux%20User%27s%20Manual.pdf>`__]
+- :doc:`../manuals/forcast/users/users` [:doc:`HTML <../manuals/forcast/users/users>`,
+  `PDF <https://redux.sofiadatacenter.de/resources/SDC-MAN-0007_Iss01%20FORCAST%20Redux%20User%27s%20Manual.pdf>`__]
+- :doc:`../manuals/hawc/users/users` [:doc:`HTML <../manuals/hawc/users/users>`,
+  `PDF <https://redux.sofiadatacenter.de/resources/SDC-MAN-0008_Iss01%20HAWC+%20Redux%20User%27s%20Manual.pdf>`__]
+
+Older versions of the pipeline user's manuals can be found at
+`IRSA Data Pipelines <https://irsa.ipac.caltech.edu/data/SOFIA/docs/data/data-pipelines/index.html#pipeline>`__.
 
 Developer's Manuals:
 
@@ -96,7 +104,7 @@ Instrument Pipeline Modules
   instruments/fifi_ls/index.rst
   instruments/flitecam/index.rst
   instruments/forcast/index.rst
-  instruments/hawc/index.rst    
+  instruments/hawc/index.rst
 
 
 Submodules

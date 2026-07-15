@@ -44,7 +44,7 @@ Configuration and Execution
 Installation
 ------------
 
-The HAWC pipeline is written entirely in Python.  The pipeline is
+The HAWC+ pipeline is written entirely in Python.  The pipeline is
 platform independent and has been tested on Linux, Mac OS X, and Windows
 operating systems.  Running the pipeline requires a minimum of 16GB RAM,
 or equivalent-sized swap file.
@@ -54,7 +54,7 @@ The pipeline is comprised of six modules within the `sofia_redux` package:
 `sofia_redux.calibration`, `sofia_redux.scan`, `sofia_redux.toolkit`, and
 `sofia_redux.visualization`.
 The `hawc` module provides the data processing
-algorithms specific to HAWC, with supporting libraries from the
+algorithms specific to HAWC+, with supporting libraries from the
 `calibration`, `scan`, `toolkit`, and `visualization`
 modules.  The `pipeline` module provides interactive and batch interfaces
 to the pipeline algorithms.
@@ -83,7 +83,7 @@ is not available on the Windows platform.
 Source Code Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The source code for the HAWC pipeline maintained by the SOFIA Data
+The source code for the HAWC+ pipeline maintained by the SOFIA Data
 Center (SDC)  team can be obtained directly from the
 external `GitHub repository <https://github.com/SOFIA-Data-Center/sofia_redux>`__.
 This repository contains all needed configuration
@@ -118,12 +118,12 @@ should display a brief help message for the command line interface.
 Configuration
 -------------
 
-The DRP pipeline requires a valid and complete configuration file to
+The HAWC+ pipeline requires a valid and complete configuration file to
 run. Configuration files are written in plain text, in the INI format
 readable by the configobj Python library. These files are divided into
 sections, specified by brackets (e.g. [section]), each of which may
 contain keyword-value pairs or subsections (e.g. [[subsection]]). The
-HAWC configuration file must contain the following sections:
+HAWC+ configuration file must contain the following sections:
 
 -  Data configuration, including specifications for input and output
    file names and formats, and specifications for metadata handling
@@ -178,14 +178,14 @@ for the scan map algorithm.
 Input Data
 ----------
 
-The HAWC pipeline takes as input raw HAWC data files, which contain
+The HAWC+ pipeline takes as input raw HAWC+ data files, which contain
 binary tables of instrument readouts and metadata. The FITS headers
 contain data acquisition and observation parameters and, combined with
 the pipeline configuration files and other auxiliary files on disk,
 comprise the information necessary to complete all steps of the data
 reduction process. Some critical keywords are required to be present in
 the raw data in order to perform a successful grouping, reduction, and
-ingestion into the SOFIA archive. These are defined in the DRP pipeline
+ingestion into the SOFIA archive. These are defined in the HAWC+ pipeline
 in a configuration file that describes the allowed values for each
 keyword, in INI format (see :ref:`kwd_appendix`).
 
@@ -202,14 +202,14 @@ Auxiliary Files
 ~~~~~~~~~~~~~~~
 
 In order to complete a standard reduction, the pipeline requires a
-number of files to be on disk, with locations specified in the DRP
+number of files to be on disk, with locations specified in the Redux
 configuration file. Current default files described in the default
 configuration are stored along with the code, typically in the
 *sofia_redux/instruments/hawc/data* directory. See below for a table of
 all commonly used types of auxiliary files.
 
 .. _auxfiles:
-.. table:: Auxiliary files used by DRP reductions for Chop-Nod and Nod-Pol data
+.. table:: Auxiliary files used by Redux reductions for Chop-Nod and Nod-Pol data
 
    +-------------------+-------------+-----------------------------+-------------------------------------------------------------------------------+
    | Auxiliary File    | File Type   | Pipe Step                   | Comments                                                                      |
@@ -266,7 +266,7 @@ for direct multiplication with the flux values in the Flat Correct step.
 There should be one back-up flat file available for each filter
 passband.
 
-In addition to these files, stored with the DRP code, the pipeline
+In addition to these files, stored with the Redux code, the pipeline
 requires several additional auxiliary files to perform flux calibration.
 These are tracked in the *pipecal* package, used to support SOFIA
 flux calibration for several instruments, including HAWC.  The required
@@ -287,7 +287,7 @@ values for altitude, ZA, and PWV are listed in the headers of the text
 files, in comment lines preceded with *#*.
 
 Calibration factors are also stored in ASCII format, and list the
-correction factor by mode and HAWC filter band, to be applied to
+correction factor by mode and HAWC+ filter band, to be applied to
 opacity-corrected data.
 
 Some additional auxiliary files are used in reductions of flux
@@ -390,7 +390,7 @@ and standard flux tables, by date and source.
 Important Parameters
 --------------------
 
-Below are some useful parameters for HAWC reductions.
+Below are some useful parameters for HAWC+ reductions.
 Parameters for most pipeline steps may be set directly as key/value
 pairs in pipeline configuration files; most scan map parameters are
 added to the *options* parameter string in pipeline configuration files.  All
@@ -400,7 +400,7 @@ interface as well.
 The pipeline steps are as named in
 the configuration file, in the order they are typically run. Not all steps
 are run for all modes.  Note that this list is
-not exhaustive; see the HAWC+ DRP Developer's Manual or the code itself
+not exhaustive; see the HAWC+ Redux Developer's Manual or the code itself
 for more information.
 
 
@@ -770,7 +770,7 @@ For any mode:
 -  Check the output to the log file (usually called
    *redux\_[date]\_[time].log*), written to the same directory as the
    output files. Look for messages marked ERROR or WARNING. The log will
-   also list every parameter used in DRP steps, which may help
+   also list every parameter used in Redux steps, which may help
    disambiguate the parameters as actually-run for the pipeline.
 
 -  Check that the expected files were written to disk. There should be,
@@ -873,21 +873,21 @@ Appendix: Scan Map Option Glossary
 Appendix: Sample Configuration Files
 ====================================
 
-Full DRP Configuration File
----------------------------
+Full Pipeline Configuration File
+--------------------------------
 
 Below is a copy of the full configuration file used by the pipeline in
-the DPS environment (*pipeconf.cfg*). It is in INI format, and is readable
+the Redux environment (*pipeconf.cfg*). It is in INI format, and is readable
 by the configobj Python module.
 
 .. include:: include/pipeconf.cfg
    :literal:
 
-DRP Override Configuration File
--------------------------------
+Pipeline Override Configuration File
+------------------------------------
 
 Below is a sample override configuration file that demonstrates how to set
-override parameters to provide to the HAWC pipeline. The parameters
+override parameters to provide to the HAWC+ pipeline. The parameters
 listed here are those most likely to change from one flight series to
 another.
 
@@ -908,7 +908,7 @@ HAWC+ Scan Map Configuration File
 ---------------------------------
 
 Below is the HAWC+ configuration file for the scan map algorithm. Values in
-this file override those in the global configuration file for HAWC reductions.
+this file override those in the global configuration file for HAWC+ reductions.
 
 .. include:: include/hawc_default.cfg
    :literal:
@@ -919,7 +919,7 @@ this file override those in the global configuration file for HAWC reductions.
 Appendix: Required Header Keywords
 ==================================
 
-The file below defines all keywords that the HAWC pipeline checks for
+The file below defines all keywords that the HAWC+ pipeline checks for
 validity before proceeding. It is normally located in the hawc
 distribution at *hawc/pipeline/config/header\_req\_config.cfg*. The path
 to this file should be specified in the pipeline configuration file

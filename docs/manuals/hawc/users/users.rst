@@ -1,6 +1,6 @@
-***********************
-HAWC+ DRP User’s Manual
-***********************
+*************************
+HAWC+ Redux User’s Manual
+*************************
 
 .. raw:: latex
 
@@ -9,23 +9,20 @@ HAWC+ DRP User’s Manual
 Introduction
 ============
 
-The SI Pipeline User’s Manual (OP10) is intended for use by both SOFIA
-Science Center staff during routine data processing and analysis, and
-also as a reference for Guest Observers (GOs) and archive users to
-understand how the data in which they are interested was processed. This
-manual is intended to provide all the needed information to execute the
-SI data reduction pipeline, and assess the data quality of the resulting
-products. It will also provide a description of the algorithms used by
-the pipeline and both the final and intermediate data products.
+The SOFIA Data Center (SDC) is the successor to the SOFIA Science Mission Operations
+Center (SMO) in maintaining the HAWC+ Redux User’s Manual. The SMO managed the
+manual under the document number SOF-US-HBK-OP10-2008, up to revision L. With
+SDC as the new maintainer, the document number has changed to SDC-MAN-0008.
 
-A description of the current pipeline capabilities, testing results,
-known issues, and installation procedures are documented in the SI
-Pipeline Software Version Description Document (SVDD, SW06, DOCREF). The
-overall Verification and Validation (V&V) approach can be found in the
-Data Processing System V&V Plan (SV01-2232). Both documents can be
-obtained from the SOFIA document library in Windchill.
+The SI Pipeline Users Manual is intended for use by both SDC staff during
+routine data processing and analysis, and also as a reference for General
+Investigators (GIs) and archive users to understand how the data in which they
+are interested was processed. This manual is intended to provide all the needed
+information to execute the SI data reduction pipeline, and assess the data quality
+of the resulting products. It will also provide a description of the algorithms
+used by the pipeline and both the final and intermediate data products.
 
-This manual applies to HAWC DRP version 3.2.0.
+This manual applies to HAWC+ Redux version |pipevers|.
 
 
 .. include:: data_description.rst

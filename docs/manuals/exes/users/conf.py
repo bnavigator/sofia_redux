@@ -32,6 +32,8 @@ import datetime
 import sys
 from pathlib import Path
 from tomllib import load as toml_load
+from sofia_redux.instruments.exes.version import version as pipevers
+
 
 try:
     from sphinx_astropy.conf.v2 import *  # noqa
@@ -65,7 +67,8 @@ exclude_patterns.append('software_description.rst')
 
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
-rst_epilog += """
+rst_epilog += f"""
+.. |pipevers| replace:: {pipevers}
 """
 
 # -- Project information ------------------------------------------------------
@@ -73,6 +76,9 @@ rst_epilog += """
 # NASA document number and revision
 docnumber = 'SDC-MAN-0005'
 issue = '01'
+
+# set the release date of the manual manually
+today = '2026-06-30'
 
 # This does not *have* to match the package name, but typically does
 project = pyproject['name']
@@ -103,19 +109,52 @@ latex_documents = [('users',
 # Fix environment error, make one-sided document,
 # add NASA header and footer
 latex_elements = {
-    'classoptions': ',openany,oneside',
+    'classoptions': ',a4paper,openany,oneside',
     'babel': r'\usepackage[english]{babel}',
     'inputenc': r'\usepackage[utf8x]{inputenc}',
     'maxlistdepth': 20,
     'printindex': r'\footnotesize\raggedright\printindex',
     'preamble': r'''
+\usepackage[section]{placeins}
+\makeatletter
+\AtBeginDocument{%%
+  \@ifundefined{chapter}{}{%%
+    \let\oldchapter\chapter
+    \renewcommand{\chapter}{\FloatBarrier\oldchapter}%%
+  }
+  \let\oldpart\part
+  \renewcommand{\part}{\FloatBarrier\oldpart}%%
+  \let\oldsection\section
+  \renewcommand{\section}{\FloatBarrier\oldsection}%%
+  \let\oldsubsection\subsection
+  \renewcommand{\subsection}{\FloatBarrier\oldsubsection}%%
+  \let\oldsubsubsection\subsubsection
+  \renewcommand{\subsubsection}{\FloatBarrier\oldsubsubsection}%%
+}
+\makeatother
 \pagestyle{plain}
 \setcounter{tocdepth}{2}
+\usepackage{chngcntr}
+\counterwithin{section}{part}
+\counterwithin{subsection}{section}
+\counterwithin{subsubsection}{subsection}
+\renewcommand{\thepart}{\arabic{part}}
+\renewcommand{\partname}{Part}
+\renewcommand{\thesection}{\thepart.\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\setcounter{secnumdepth}{3}
+\makeatletter
+\renewcommand{\l@section}{\@dottedtocline{1}{1.5em}{2.3em}}
+\renewcommand{\l@subsection}{\@dottedtocline{2}{3.8em}{3.2em}}
+\renewcommand{\l@subsubsection}{\@dottedtocline{3}{7.0em}{4.1em}}
+\makeatother
 \usepackage{fancyhdr}
 \fancypagestyle{normal}{
 \fancyhf{}
 \fancyhead[R]{%s\\Iss. %s}
 \fancyfoot[C]{\textbf{VERIFY THAT THIS IS THE CORRECT REVISION BEFORE USE}\\\thepage}
+\setlength{\headheight}{22.36003pt}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
 ''' % (docnumber, issue),

@@ -72,8 +72,10 @@ Atmospheric models
 ~~~~~~~~~~~~~~~~~~
 For optimal telluric correction, FORCAST, FLITECAM, and FIFI-LS spectroscopic
 reductions require a library of FITS files, containing model atmospheric
-transmission spectra, derived from the Steve Lord's ATRAN model
+transmission spectra, derived either from Steve Lord's ATRAN model
 `(bibcode: 1992nstc.rept.....L) <https://ntrs.nasa.gov/citations/19930010877>`__.
+(older models), or from ATRAN_SDC, a SOFIA-specific version of the former
+that was created with permission by the author.
 
 The EXES pipeline does not use ATRAN models for telluric correction, but it
 does attach a reference atmospheric model at a matching altitude and zenith
@@ -100,10 +102,11 @@ from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
 - FIFI-LS:
 
   For FIFI-LS, modified ATRAN_SDC models, parameterized by water vapor, are stored in the DaRUS data repository.
-  The Pipeline will attempt to retrieve these automatically, however they can also be downloaded and stored locally, and specified
-  as an input ATRAN directory. ECMWF water vapor data are also stored in DaRUS, and can also either be automatically retrieved
+  The Pipeline will attempt to retrieve these automatically, however they can also be downloaded and stored locally
+  in a directory referenced by the `atran_dir` or `atran_file` configuration parameters of the `telluric_correct` step.
+  ECMWF water vapor data are also stored in DaRUS, and can also either be automatically retrieved
   by the pipeline, or downloaded and locally stored. See the user manual for details.
-  
+
   - ATRAN_SDC models, organized by flight altitude
 
     - Link: `DaRUS dataverse <https://darus.uni-stuttgart.de/dataverse/irs-sofia-ad?q=atran&types=datasets>`__
@@ -119,7 +122,7 @@ from the `Planetary Spectrum Generator (PSG) <https://psg.gsfc.nasa.gov/>`__.
 - FLITECAM:
 
   For FLITECAM, only approximate ATRAN models, with water vapor parameterized by flight altitude, are available.
-  
+
   - Approximate models, not accounting for water vapor variation
 
     - Download: `atran_flitecam_standard.tgz <https://irsa.ipac.caltech.edu/data/SOFIA/ATRAN_FITS/atran_flitecam_standard.tgz>`__
@@ -142,7 +145,7 @@ FORCAST or FLITECAM, the *Telluric Correct* step for FIFI-LS, or the
 
 Standard flux models
 ~~~~~~~~~~~~~~~~~~~~
-In addition to the ATRAN models, a library of standard flux models is
+In addition to the ATRAN_SDC models, a library of standard flux models is
 required to reduce FORCAST or FLITECAM standard spectra to instrumental
 response curves. This should be rarely needed for standard scientific reductions,
 since reference response curves are provided for most data.  If needed for
