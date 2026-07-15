@@ -132,7 +132,8 @@ def timepoint():
 @pytest.fixture
 def obj(timepoint):
     target = 'Ceres'
-    return jpl.Horizons(id=target, epochs=timepoint.jd, location='399')
+    return jpl.Horizons(id=target, epochs=timepoint.jd, location='399',
+                        id_type='smallbody')
 
 
 @pytest.fixture

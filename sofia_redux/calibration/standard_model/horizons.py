@@ -166,7 +166,8 @@ def horizons_object(target, date, time):
         target = 'Vesta'
     elif 'juno' in target.lower():
         target = 'Juno;'
-    obj = aj.Horizons(id=target, location='399', epochs=t.jd)
+    obj = aj.Horizons(id=target, location='399', epochs=t.jd,
+                      id_type='smallbody')
     return obj, t
 
 
