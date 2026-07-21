@@ -29,6 +29,12 @@ import sys
 from datetime import UTC, datetime
 from importlib import import_module
 
+from sofia_redux.instruments.exes.version import version as exes_pipevers
+from sofia_redux.instruments.fifi_ls.version import version as fifils_pipevers
+from sofia_redux.instruments.flitecam.version import version as flitecam_pipevers
+from sofia_redux.instruments.forcast.version import version as forcast_pipevers
+from sofia_redux.instruments.hawc.version import version as hawc_pipevers
+
 try:
     from sphinx_astropy.conf.v2 import *  # noqa
 except ImportError:
@@ -64,7 +70,12 @@ exclude_patterns.append('manuals/*/*/api')
 
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
-rst_epilog += """
+rst_epilog += f"""
+.. |exes_pipevers| replace:: {exes_pipevers}
+.. |fifils_pipevers| replace:: {fifils_pipevers}
+.. |flitecam_pipevers| replace:: {flitecam_pipevers}
+.. |forcast_pipevers| replace:: {forcast_pipevers}
+.. |hawc_pipevers| replace:: {hawc_pipevers}
 """
 
 # -- Project information ------------------------------------------------------

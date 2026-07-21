@@ -33,7 +33,7 @@ import datetime
 import sys
 from pathlib import Path
 from tomllib import load as toml_load
-from sofia_redux.instruments.forcast.version import version as pipevers
+from sofia_redux.instruments.forcast.version import version as forcast_pipevers
 
 try:
     from sphinx_astropy.conf.v2 import *  # noqa
@@ -70,7 +70,7 @@ exclude_patterns.append('spectral_calibration.rst')
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
 rst_epilog += f"""
-.. |pipevers| replace:: {pipevers}
+.. |forcast_pipevers| replace:: {forcast_pipevers}
 """
 
 # -- Project information ------------------------------------------------------

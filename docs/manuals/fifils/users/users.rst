@@ -22,7 +22,7 @@ information to execute the SI Level 2/3/4 Pipeline, and assess the data quality
 of the resulting products. It will also provide a description of the algorithms
 used by the pipeline and both the final and intermediate data products.
 
-This manual applies to FIFI-LS Redux version |pipevers|.
+This manual applies to FIFI-LS Redux version |fifils_pipevers|.
 
 .. include:: data_description.rst
 
