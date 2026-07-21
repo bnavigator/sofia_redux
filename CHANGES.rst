@@ -1,5 +1,30 @@
+1.5.1 (2026-07-21)
+==================
+
+- Reformat and release PDF versions of Pipeline User's Manuals:
+
+  - SDC-MAN-0005_Iss01 EXES Pipeline User's Manual
+  - SDC-MAN-0006_Iss01 FLITECAM Pipeline User's Manual
+  - SDC-MAN-0007_Iss01 FORCAST Pipeline User's Manual
+  - SDC-MAN-0008_Iss01 EXES Pipeline User's Manual
+  - Hyperlinks to PDF and HTML versions of the manual in the
+    `Redux online documentation <https://redux.sofiadatacenter.de/stable/sofia_redux/index.html#manuals>`__.
+
+- calibration module v1.7.0
+
+  - Fix for changed behavior in Astroquery JPL Horizons minor body queries
+
+- pipeline module v2.16.0
+
+  - Clarify FIFI-LS pipeline parameter descriptions
+
+- spectroscopy module v1.5.0
+  - Remove custom error handling around Astropy IERS data queries
+
+
 1.5.0 (2026-06-29)
-===========
+==================
+
 - FIFI-LS pipeline v2.11.0:
 
   - Document changes to spectral/spatial resolution data file,
