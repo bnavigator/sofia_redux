@@ -29,7 +29,7 @@ Optional Requirements
 PyQt6
 ^^^^^
 
-If sofia_redux is installed via pip, the PyQt5 package, required for
+If sofia_redux is installed via pip, the PyQt6 package, required for
 the pipeline GUI interface, is not automatically installed as a dependency.
 To use the GUI tools, install PyQt6 via pip::
 
