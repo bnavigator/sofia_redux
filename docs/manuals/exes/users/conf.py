@@ -32,7 +32,7 @@ import datetime
 import sys
 from pathlib import Path
 from tomllib import load as toml_load
-from sofia_redux.instruments.exes.version import version as pipevers
+from sofia_redux.instruments.exes.version import version as exes_pipevers
 
 
 try:
@@ -68,7 +68,7 @@ exclude_patterns.append('software_description.rst')
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
 rst_epilog += f"""
-.. |pipevers| replace:: {pipevers}
+.. |exes_pipevers| replace:: {exes_pipevers}
 """
 
 # -- Project information ------------------------------------------------------
